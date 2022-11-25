@@ -1,1 +1,1 @@
-package posts
+package main
