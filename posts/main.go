@@ -3,52 +3,58 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/takez0o/honestwork-api/utils/client"
+	"github.com/takez0o/honestwork-api/utils/config"
+	"github.com/takez0o/honestwork-api/utils/crypto"
+	"github.com/takez0o/honestwork-api/utils/schema"
 )
-
-type ReturnJson struct {
-	Value int `json:"value"`
-	Age   int `json:"age"`
-}
 
 func main() {
 	app := fiber.New()
 
-	redis := client.NewClient()
+	conf, err := config.ParseConfig("../config.yaml")
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 
-	app.Get("/age", func(c *fiber.Ctx) error {
-		var returnJ ReturnJson
+	redis := client.NewClient(conf.DB.Posts.ID)
 
-		data, err := redis.Do(redis.Context(), "JSON.GET", "testJson").Result()
-		if err != nil {
-			fmt.Println("Error:", err)
-		}
-
-		err = json.Unmarshal([]byte(fmt.Sprint(data)), &returnJ)
-		if err != nil {
-			fmt.Println("Error:", err)
-		}
-
-		// return c.SendString(strconv.Itoa(returnJ.Age))
-		return c.JSON(returnJ)
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.SendString("Healthy looking API, doc.")
 	})
 
-	app.Post("/newuser", func(c *fiber.Ctx) error {
-		payload := struct {
-			Name  string `json:"name"`
-			Email string `json:"email"`
-		}{}
+	app.Get("/posts/:id", func(c *fiber.Ctx) error {
+		var user schema.User
 
-		if err := c.BodyParser(&payload); err != nil {
+		data, err := redis.Do(redis.Context(), "JSON.GET", c.Params("id")).Result()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		return c.JSON(user)
+	})
+
+	app.Get("/test", func(c *fiber.Ctx) error {
+		res := crypto.VerifySignatureTest()
+		return c.SendString(strconv.FormatBool(res))
+	})
+
+	app.Post("/posts/new", func(c *fiber.Ctx) error {
+		var user schema.User
+		if err := c.BodyParser(&user); err != nil {
 			return err
 		}
 
-		cmd := redis.Do(redis.Context(), "JSON.SET", "testJason", "$", c.Body())
-		fmt.Println(cmd)
-		return c.JSON(payload)
+		redis.Do(redis.Context(), "JSON.SET", "testJbson", "$", c.Body())
+		return c.JSON(user)
 	})
 
-	app.Listen(":3000")
+	app.Listen(":" + conf.API.Posts.Port)
 }
