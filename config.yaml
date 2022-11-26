@@ -1,0 +1,14 @@
+api:
+  auth:
+    port: 3000
+  broker:
+    port: 3001
+  messages:
+    port: 3002
+  posts:
+    port: 3003
+db:
+  users:
+    id: 0
+  posts:
+    id: 1
