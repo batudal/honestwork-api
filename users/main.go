@@ -12,6 +12,7 @@ import (
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
+// abstract all into api.go + handlers.go
 func main() {
 	app := fiber.New()
 
@@ -24,10 +25,10 @@ func main() {
 
 	app.Use(cors.New())
 
-	app.Get("/users/:id", func(c *fiber.Ctx) error {
+	app.Get("/users/:address", func(c *fiber.Ctx) error {
 		var user schema.User
 
-		data, err := redis.Do(redis.Context(), "JSON.GET", c.Params("id")).Result()
+		data, err := redis.Do(redis.Context(), "JSON.GET", c.Params("address")).Result()
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -70,6 +71,35 @@ func main() {
 
 		user_db := client.NewClient(conf.DB.Users.ID)
 		user_db.Do(redis.Context(), "JSON.SET", c.Params("address"), "$", c.Body())
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		return c.JSON(user)
+	})
+
+	app.Post("/users/increment_post/:address/:signature", func(c *fiber.Ctx) error {
+		// change salt to a branded msg
+		result := crypto.VerifySignature("post", c.Params("address"), (c.Params("signature")))
+		if !result {
+			return c.SendString("Wrong signature.")
+		}
+
+		var user schema.User
+		data, err := redis.Do(redis.Context(), "JSON.GET", c.Params("address")).Result()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		redis.Do(redis.Context(), "JSON.SET", c.Params("address"), "$.posts", user.Posts+1)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}

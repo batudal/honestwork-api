@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,9 +16,9 @@ import (
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
+// abstract all into api.go + handlers.go
 func main() {
 	app := fiber.New()
-
 	conf, err := config.ParseConfig("../config.yaml")
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -51,25 +54,33 @@ func main() {
 			return err
 		}
 
-		// dont call db directly -> fix by calling users api
 		var user schema.User
-		user_db := client.NewClient(conf.DB.Users.ID)
-		data, err := user_db.Do(redis.Context(), "JSON.GET", c.Params("address")).Result()
+		resp, err := http.Get("http://localhost:3002/users/" + c.Params("address"))
+		if err != nil {
+			print(err)
+		}
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			print(err)
+		}
+		err = json.Unmarshal([]byte(body), &user)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
 
-		err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
+		// deal with response body
+		http.Post("http://localhost:3002/users/increment_post/"+c.Params("address")+"/"+c.Params("signature"),
+			"application/json", bytes.NewBuffer(body))
 		if err != nil {
-			fmt.Println("Error:", err)
+			print(err)
 		}
 
 		salt := "post" + strconv.Itoa(user.Posts+1)
-		user_db.Do(redis.Context(), "JSON.SET", c.Params("address"), "$.posts", user.Posts+1)
 		hash := crypto.GenerateID(salt, c.Params("address"))
 		redis.Do(redis.Context(), "JSON.SET", hash, "$", c.Body())
 
-		return c.JSON(user)
+		return c.SendString("1")
 	})
 
 	app.Listen(":" + conf.API.Posts.Port)
