@@ -1,27 +1,26 @@
 package schema
 
 type User struct {
-	Address string `json:"address"`
-	Email   string `json:"email"`
-	Name    string `json:"name"`
-	Bio     string `json:"bio"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	Bio   string `json:"bio"`
+	Posts int    `json:"posts"`
 }
 
-type Scope struct {
-	Name     string `json:"name"`
-	Basic    string `json:"starter"`
-	Standard string `json:"standard"`
-	Premium  string `json:"premium"`
-}
+// type Scope struct {
+// 	Name     string `json:"name"`
+// 	Basic    string `json:"basic"`
+// 	Standard string `json:"standard"`
+// 	Premium  string `json:"premium"`
+// }
 
 type Post struct {
 	Address string   `json:"address"`
-	UUID    string   `json:"id"`
 	Title   string   `json:"title"`
 	Text    string   `json:"text"`
 	Formats []string `json:"formats"`
 	Images  []string `json:"images"`
-	Scopes  []Scope  `json:"scopes"`
+	// Scopes  []Scope  `json:"scopes"`
 }
 
 type Project struct {

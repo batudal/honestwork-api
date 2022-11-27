@@ -3,6 +3,8 @@ api:
     port: 3000
   posts:
     port: 3001
+  users:
+    port: 3002
 db:
   users:
     id: 0

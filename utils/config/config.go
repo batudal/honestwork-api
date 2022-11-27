@@ -8,21 +8,11 @@ import (
 
 type Config struct {
 	API struct {
-		Auth struct {
-			Port string `yaml:"port"`
-			ID   int    `yaml:"id"`
-		}
-		Broker struct {
-			Port string `yaml:"port"`
-			ID   int    `yaml:"id"`
-		}
-		Messages struct {
-			Port string `yaml:"port"`
-			ID   int    `yaml:"id"`
-		}
 		Posts struct {
 			Port string `yaml:"port"`
-			ID   int    `yaml:"id"`
+		}
+		Users struct {
+			Port string `yaml:"port"`
 		}
 	}
 

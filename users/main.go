@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -21,11 +20,11 @@ func main() {
 		fmt.Println("Error:", err)
 	}
 
-	redis := client.NewClient(conf.DB.Posts.ID)
+	redis := client.NewClient(conf.DB.Users.ID)
 
 	app.Use(cors.New())
 
-	app.Get("/posts/:id", func(c *fiber.Ctx) error {
+	app.Get("/users/:id", func(c *fiber.Ctx) error {
 		var user schema.User
 
 		data, err := redis.Do(redis.Context(), "JSON.GET", c.Params("id")).Result()
@@ -40,37 +39,47 @@ func main() {
 		return c.JSON(user)
 	})
 
-	app.Post("/posts/new/:address/:signature", func(c *fiber.Ctx) error {
+	app.Post("/users/new/:address/:signature", func(c *fiber.Ctx) error {
+		// change salt to a branded msg
 		result := crypto.VerifySignature("post", c.Params("address"), (c.Params("signature")))
 		if !result {
 			return c.SendString("Wrong signature.")
 		}
 
-		var post schema.Post
-		if err := c.BodyParser(&post); err != nil {
-			return err
-		}
-
-		// dont call db directly -> fix by calling users api
 		var user schema.User
-		user_db := client.NewClient(conf.DB.Users.ID)
-		data, err := user_db.Do(redis.Context(), "JSON.GET", c.Params("address")).Result()
+		var user_ schema.User
+
+		err = json.Unmarshal(c.Body(), &user)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
 
+		data, err := redis.Do(redis.Context(), "JSON.GET", c.Params("address")).Result()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		err = json.Unmarshal([]byte(fmt.Sprint(data)), &user_)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		if user.Posts != user_.Posts {
+			return c.SendString("You can't edit post count manually.")
+		}
+
+		user_db := client.NewClient(conf.DB.Users.ID)
+		user_db.Do(redis.Context(), "JSON.SET", c.Params("address"), "$", c.Body())
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 		err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
 
-		salt := "post" + strconv.Itoa(user.Posts+1)
-		user_db.Do(redis.Context(), "JSON.SET", c.Params("address"), "$.posts", user.Posts+1)
-		hash := crypto.GenerateID(salt, c.Params("address"))
-		redis.Do(redis.Context(), "JSON.SET", hash, "$", c.Body())
-
 		return c.JSON(user)
 	})
 
-	app.Listen(":" + conf.API.Posts.Port)
+	app.Listen(":" + conf.API.Users.Port)
 }
