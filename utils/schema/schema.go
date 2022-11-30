@@ -16,6 +16,7 @@ type User struct {
 
 type Skill struct {
 	Address      string   `json:"address"`
+	Slot         int      `json:"slot"`
 	Title        string   `json:"title"`
 	Description  string   `json:"description"`
 	Links        []string `json:"links"`

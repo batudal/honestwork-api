@@ -65,3 +65,22 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	}
 	return "success"
 }
+
+func HandleAddSkill(redis *redis.Client, address string, signature string, body []byte) string {
+	return ""
+}
+
+func HandleGetSkill(redis *redis.Client, address string, slot int) schema.Skill {
+	var skill schema.Skill
+	return skill
+}
+
+func HandleGetSkills(redis *redis.Client, address string) []schema.Skill {
+	var skills []schema.Skill
+	return skills
+}
+
+func HandleUpdateSkill(redis *redis.Client, address string, signature string, slot int, body []byte) schema.Skill {
+	var skill schema.Skill
+	return skill
+}
