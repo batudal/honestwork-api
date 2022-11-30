@@ -55,7 +55,7 @@ func HandleNewPost(redis *redis.Client, address string, signature string, body [
 	user := getUserFromAddress(address)
 	http.Post("http://localhost:3002/users/increment_post/"+address+"/"+signature,
 		"application/json", bytes.NewBuffer([]byte("")))
-	salt := "post" + strconv.Itoa(user.Posts+1)
+	salt := "post" + strconv.Itoa(len(user.Skills)+1)
 	hash := crypto.GenerateID(salt, address)
 	redis.Do(redis.Context(), "JSON.SET", hash, "$", body)
 

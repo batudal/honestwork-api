@@ -1,31 +1,24 @@
 package schema
 
 type User struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
-	Bio   string `json:"bio"`
-	Posts int    `json:"posts"`
+	Username   string   `json:"username"`
+	ShowEns    bool     `json:"show_ens"`
+	Title      string   `json:"title"`
+	ImageUrl   string   `json:"image_url"`
+	ShowNFT    bool     `json:"show_nft"`
+	NFTAddress string   `json:"nft_address"`
+	NFTId      string   `json:"nft_id"`
+	Email      string   `json:"email"`
+	Bio        string   `json:"bio"`
+	Links      []string `json:"links"`
+	Skills     []Skill  `json:"skills"`
 }
 
-// type Scope struct {
-// 	Name     string `json:"name"`
-// 	Basic    string `json:"basic"`
-// 	Standard string `json:"standard"`
-// 	Premium  string `json:"premium"`
-// }
-
-type Post struct {
-	Address string   `json:"address"`
-	Title   string   `json:"title"`
-	Text    string   `json:"text"`
-	Formats []string `json:"formats"`
-	Images  []string `json:"images"`
-	// Scopes  []Scope  `json:"scopes"`
-}
-
-type Project struct {
-	Employee User   `json:"employee"`
-	Employer User   `json:"employer"`
-	Token    string `json:"token"`
-	Amount   string `json:"amount"`
+type Skill struct {
+	Address      string   `json:"address"`
+	Title        string   `json:"title"`
+	Description  string   `json:"description"`
+	Links        []string `json:"links"`
+	ImageUrls    []string `json:"image_urls"`
+	MinimumPrice float64  `json:"minimum_price"`
 }

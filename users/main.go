@@ -25,12 +25,8 @@ func main() {
 		return c.JSON(HandleGetAddress(redis, c.Params("address")))
 	})
 
-	app.Post("/users/new/:address/:signature", func(c *fiber.Ctx) error {
+	app.Post("/users/update/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleUserUpdate(redis, c.Params("address"), c.Params("signature"), c.Body()))
-	})
-
-	app.Post("/users/increment_post/:address/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandlePostIncrement(redis, c.Params("address"), c.Params("signature")))
 	})
 
 	app.Listen(":" + conf.API.Users.Port)
