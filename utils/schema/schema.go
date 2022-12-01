@@ -9,13 +9,13 @@ type User struct {
 	NFTAddress string   `json:"nft_address"`
 	NFTId      string   `json:"nft_id"`
 	Email      string   `json:"email"`
+	Timezone   string   `json:"timezone"`
 	Bio        string   `json:"bio"`
 	Links      []string `json:"links"`
 	Skills     []Skill  `json:"skills"`
 }
 
 type Skill struct {
-	Address      string   `json:"address"`
 	Slot         int      `json:"slot"`
 	Title        string   `json:"title"`
 	Description  string   `json:"description"`
