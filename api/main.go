@@ -25,7 +25,7 @@ func main() {
 		return c.JSON(HandleGetUser(redis, c.Params("address")))
 	})
 
-	app.Post("/users/:address/:signature", func(c *fiber.Ctx) error {
+	app.Patch("/users/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleUserUpdate(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 
@@ -41,9 +41,9 @@ func main() {
 		return c.JSON(HandleAddSkill(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 
-	// app.Patch("/skills/:address/:signature/:slot", func(c *fiber.Ctx) error {
-	// 	return c.JSON(HandleUpdateSkill(redis, c.Params("address"), c.Params("signature"), c.Params("slot"), c.Body()))
-	// })
+	app.Patch("/skills/:address/:signature/:slot", func(c *fiber.Ctx) error {
+		return c.JSON(HandleUpdateSkill(redis, c.Params("address"), c.Params("signature"), c.Params("slot"), c.Body()))
+	})
 
 	app.Listen(":" + conf.API.Users.Port)
 }
