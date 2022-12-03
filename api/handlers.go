@@ -112,8 +112,8 @@ func HandleGetUser(redis *redis.Client, address string) schema.User {
 }
 
 func HandleUserUpdate(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	result := crypto.VerifySignature(salt, address, signature)
-	if !result {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
 		return "Wrong signature."
 	}
 
@@ -226,8 +226,8 @@ func HandleAddSkill(redis *redis.Client, address string, salt string, signature 
 }
 
 func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
-	result := crypto.VerifySignature(salt, address, signature)
-	if !result {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
 		return "Wrong signature."
 	}
 
