@@ -29,7 +29,7 @@ func getUserFromAddress(redis *redis.Client, address string) schema.User {
 }
 
 func getAllowedSkillAmount(tier int) int {
-	conf, err := config.ParseConfig("../config.yaml")
+	conf, err := config.ParseConfig()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -43,6 +43,16 @@ func getAllowedSkillAmount(tier int) int {
 	default:
 		return 0
 	}
+}
+
+// todo: impletement all validators
+func validateUserInput(user schema.User) bool {
+	if ValidateUsername(user.Username) &&
+		ValidateTitle(user.Title) &&
+		ValidateBio(user.Bio) {
+		return true
+	}
+	return false
 }
 
 func HandleSignup(redis *redis.Client, address string, salt string, signature string) string {
@@ -109,9 +119,13 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 
 	// new user
 	var user schema.User
-	err := json.Unmarshal(body, &user) // todo: validate input after unmarshal
+	err := json.Unmarshal(body, &user)
 	if err != nil {
 		fmt.Println("Error:", err)
+	}
+
+	if !validateUserInput(user) {
+		return "Invalid input."
 	}
 
 	// current user in db
@@ -125,8 +139,10 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 		fmt.Println("Error:", err)
 	}
 
-	// set skills in input json
+	// filter
 	user.Skills = user_db.Skills
+	user.Salt = user_db.Salt
+	user.Signature = user_db.Signature
 
 	// marshal back to bytes
 	new_data, err := json.Marshal(user)

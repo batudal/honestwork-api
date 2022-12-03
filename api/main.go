@@ -12,7 +12,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	conf, err := config.ParseConfig("../config.yaml")
+	conf, err := config.ParseConfig()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
