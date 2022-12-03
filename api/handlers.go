@@ -46,11 +46,19 @@ func getAllowedSkillAmount(tier int) int {
 }
 
 // todo: impletement all validators
-func validateUserInput(user schema.User) bool {
+func validateUserInput(redis *redis.Client, user schema.User) bool {
 	if ValidateUsername(user.Username) &&
 		ValidateTitle(user.Title) &&
 		ValidateBio(user.Bio) {
 		return true
+	}
+	return false
+}
+
+func authorize(redis *redis.Client, address string, salt string, signature string) bool {
+	result := crypto.VerifySignature(salt, address, signature)
+	if result {
+		return AuthorizeSignature(redis, address, salt, signature)
 	}
 	return false
 }
@@ -103,8 +111,8 @@ func HandleGetUser(redis *redis.Client, address string) schema.User {
 	return user
 }
 
-func HandleUserUpdate(redis *redis.Client, address string, signature string, body []byte) string {
-	result := crypto.VerifySignature("post", address, signature)
+func HandleUserUpdate(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	result := crypto.VerifySignature(salt, address, signature)
 	if !result {
 		return "Wrong signature."
 	}
@@ -124,7 +132,7 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 		fmt.Println("Error:", err)
 	}
 
-	if !validateUserInput(user) {
+	if !validateUserInput(redis, user) {
 		return "Invalid input."
 	}
 
@@ -168,9 +176,9 @@ func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Ski
 	return user.Skills[s]
 }
 
-func HandleAddSkill(redis *redis.Client, address string, signature string, body []byte) string {
-	result := crypto.VerifySignature("post", address, signature)
-	if !result {
+func HandleAddSkill(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
 		return "Wrong signature."
 	}
 
@@ -217,8 +225,8 @@ func HandleAddSkill(redis *redis.Client, address string, signature string, body 
 	return "success"
 }
 
-func HandleUpdateSkill(redis *redis.Client, address string, signature string, slot string, body []byte) string {
-	result := crypto.VerifySignature("post", address, signature)
+func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
+	result := crypto.VerifySignature(salt, address, signature)
 	if !result {
 		return "Wrong signature."
 	}
