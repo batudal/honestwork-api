@@ -6,6 +6,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Tiers struct {
+	Tier_1 int `yaml:"tier_1"`
+	Tier_2 int `yaml:"tier_2"`
+	Tier_3 int `yaml:"tier_3"`
+}
+
 type Config struct {
 	API struct {
 		Posts struct {
@@ -24,9 +30,17 @@ type Config struct {
 			ID int `yaml:"id"`
 		}
 	}
+
+	Settings struct {
+		Skills      Tiers
+		Jobs        Tiers
+		Duration    Tiers
+		Referral    Tiers
+		Price       Tiers
+		Application Tiers
+	}
 }
 
-// ParseConfig
 func ParseConfig(filename string) (*Config, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {

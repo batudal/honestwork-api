@@ -10,3 +10,28 @@ db:
     id: 0
   posts:
     id: 1
+settings:
+  skills:
+    tier_1: 3
+    tier_2: 6
+    tier_3: 8
+  jobs:
+    tier_1: 1
+    tier_2: 5
+    tier_3: 8
+  duration:
+    tier_1: 604800
+    tier_2: 2419200
+    tier_3: 7257600
+  referral:
+    tier_1: 2
+    tier_2: 3
+    tier_3: 4
+  price:
+    tier_1: 100
+    tier_2: 250
+    tier_3: 300
+  application:
+    tier_1: 2
+    tier_2: 3
+    tier_3: 5

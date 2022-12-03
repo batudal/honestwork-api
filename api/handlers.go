@@ -6,11 +6,13 @@ import (
 	"strconv"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/crypto"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
+// 0-no tokens, 1-not soulbound, 2-soulbound(tier 1), 3-soulbound(tier 2), 4-soulbound(tier-3)
 // todo: fix error handling
 // todo: move validation to middleware
 func getUserFromAddress(redis *redis.Client, address string) schema.User {
@@ -24,6 +26,23 @@ func getUserFromAddress(redis *redis.Client, address string) schema.User {
 		fmt.Println("Error:", err)
 	}
 	return user
+}
+
+func getAllowedSkillAmount(tier int) int {
+	conf, err := config.ParseConfig("../config.yaml")
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	switch tier {
+	case 1:
+		return conf.Settings.Skills.Tier_1
+	case 2:
+		return conf.Settings.Skills.Tier_2
+	case 3:
+		return conf.Settings.Skills.Tier_3
+	default:
+		return 0
+	}
 }
 
 func HandleGetUser(redis *redis.Client, address string) schema.User {
@@ -90,24 +109,34 @@ func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Ski
 	return user.Skills[s]
 }
 
-// todo: check user skill limit from nft
 func HandleAddSkill(redis *redis.Client, address string, signature string, body []byte) string {
 	result := crypto.VerifySignature("post", address, signature)
 	if !result {
 		return "Wrong signature."
 	}
 
+	user := getUserFromAddress(redis, address)
 	state := web3.FetchUserState(address)
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
 	case 1:
 		return "User didn't bind NFT yet."
-	}
-
-	user := getUserFromAddress(redis, address)
-	if len(user.Skills) == 3 {
-		return "You can only have 3 skills."
+	case 2:
+		max_allowed := getAllowedSkillAmount(1)
+		if len(user.Skills) == max_allowed {
+			return "User reached skill limit."
+		}
+	case 3:
+		max_allowed := getAllowedSkillAmount(2)
+		if len(user.Skills) == max_allowed {
+			return "User reached skill limit."
+		}
+	case 4:
+		max_allowed := getAllowedSkillAmount(3)
+		if len(user.Skills) == max_allowed {
+			return "User reached skill limit."
+		}
 	}
 
 	var skill schema.Skill
@@ -135,17 +164,25 @@ func HandleUpdateSkill(redis *redis.Client, address string, signature string, sl
 		return "Wrong signature."
 	}
 
+	user := getUserFromAddress(redis, address)
 	state := web3.FetchUserState(address)
+	s, _ := strconv.Atoi(slot)
+	var max_allowed int
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
 	case 1:
 		return "User didn't bind NFT yet."
-	}
+	case 2:
+		max_allowed = getAllowedSkillAmount(1)
+	case 3:
+		max_allowed = getAllowedSkillAmount(2)
+	case 4:
+		max_allowed = getAllowedSkillAmount(3)
 
-	user := getUserFromAddress(redis, address)
-	if len(user.Skills) == 3 {
-		return "You can only have 3 skills."
+	}
+	if s > max_allowed {
+		return "User reached skill limit."
 	}
 
 	var skill schema.Skill
