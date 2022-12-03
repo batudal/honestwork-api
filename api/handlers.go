@@ -45,6 +45,49 @@ func getAllowedSkillAmount(tier int) int {
 	}
 }
 
+func HandleSignup(redis *redis.Client, address string, salt string, signature string) string {
+	result := crypto.VerifySignature(salt, address, signature)
+	if !result {
+		return "Wrong signature."
+	}
+
+	// new user
+	var user schema.User
+	data, err := redis.Do(redis.Context(), "JSON.GET", address).Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	state := web3.FetchUserState(address)
+	switch state {
+	case 0:
+		return "User doesn't have NFT."
+	case 1, 2, 3, 4:
+		if (user.Signature != "") && (user.Salt != "") {
+			return "User already signed up."
+		}
+	}
+
+	user.Salt = salt
+	user.Signature = signature
+
+	// marshal back to bytes
+	new_data, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	redis.Do(redis.Context(), "JSON.SET", address, "$", new_data)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return "success"
+}
+
 func HandleGetUser(redis *redis.Client, address string) schema.User {
 	user := getUserFromAddress(redis, address)
 	return user

@@ -17,33 +17,37 @@ func main() {
 		fmt.Println("Error:", err)
 	}
 
-	redis := client.NewClient(conf.DB.Users.ID)
+	redis := client.NewClient(conf.DB.ID)
 
 	app.Use(cors.New())
 
-	app.Get("/users/:address", func(c *fiber.Ctx) error {
+	app.Post("/api/v1/users/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleSignup(redis, c.Params("address"), c.Params("salt"), c.Params("signature")))
+	})
+
+	app.Get("/api/v1/users/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetUser(redis, c.Params("address")))
 	})
 
-	app.Patch("/users/:address/:signature", func(c *fiber.Ctx) error {
+	app.Patch("/api/v1/users/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleUserUpdate(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 
-	app.Get("/skills/:address", func(c *fiber.Ctx) error {
+	app.Get("/api/v1/skills/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetSkills(redis, c.Params("address")))
 	})
 
-	app.Get("/skills/:address/:slot", func(c *fiber.Ctx) error {
+	app.Get("/api/v1/skills/:address/:slot", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetSkill(redis, c.Params("address"), c.Params("slot")))
 	})
 
-	app.Post("/skills/:address/:signature", func(c *fiber.Ctx) error {
+	app.Post("/api/v1/skills/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleAddSkill(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 
-	app.Patch("/skills/:address/:signature/:slot", func(c *fiber.Ctx) error {
+	app.Patch("/api/v1/skills/:address/:signature/:slot", func(c *fiber.Ctx) error {
 		return c.JSON(HandleUpdateSkill(redis, c.Params("address"), c.Params("signature"), c.Params("slot"), c.Body()))
 	})
 
-	app.Listen(":" + conf.API.Users.Port)
+	app.Listen(":" + conf.API.Port)
 }

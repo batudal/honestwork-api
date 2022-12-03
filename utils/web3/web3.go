@@ -8,6 +8,7 @@ import (
 	genesis "github.com/takez0o/honestwork-api/utils/abi"
 )
 
+// move contract addr to config
 func FetchUserState(address string) int {
 	nft_address := "0x32058e2CCdAA0b4615994362d44cC64dFFd3340A"
 

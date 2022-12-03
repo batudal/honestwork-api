@@ -1,6 +1,8 @@
 package schema
 
 type User struct {
+	Salt       string   `json:"salt"`
+	Signature  string   `json:"signature"`
 	Username   string   `json:"username"`
 	ShowEns    bool     `json:"show_ens"`
 	Title      string   `json:"title"`

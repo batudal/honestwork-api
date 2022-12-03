@@ -14,21 +14,12 @@ type Tiers struct {
 
 type Config struct {
 	API struct {
-		Posts struct {
-			Port string `yaml:"port"`
-		}
-		Users struct {
-			Port string `yaml:"port"`
-		}
+		Port string `yaml:"port"`
 	}
 
 	DB struct {
-		Users struct {
-			ID int `yaml:"id"`
-		}
-		Posts struct {
-			ID int `yaml:"id"`
-		}
+		Port string `yaml:"port"`
+		ID   int    `yaml:"id"`
 	}
 
 	Settings struct {
