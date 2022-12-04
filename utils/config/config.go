@@ -15,13 +15,11 @@ type Tiers struct {
 type Config struct {
 	API struct {
 		Port string `yaml:"port"`
-	}
-
+	} `yaml:"api"`
 	DB struct {
 		Port string `yaml:"port"`
 		ID   int    `yaml:"id"`
-	}
-
+	} `yaml:"db"`
 	Settings struct {
 		Skills      Tiers
 		Jobs        Tiers
@@ -29,11 +27,18 @@ type Config struct {
 		Referral    Tiers
 		Price       Tiers
 		Application Tiers
-	}
+	} `yaml:"settings"`
+	CharLimits struct {
+		Profile struct {
+			Username int `yaml:"username"`
+			Title    int `yaml:"title"`
+			Bio      int `yaml:"bio"`
+		} `yaml:"profile"`
+	} `yaml:"char_limits"`
 }
 
-func ParseConfig(filename string) (*Config, error) {
-	data, err := os.ReadFile(filename)
+func ParseConfig() (*Config, error) {
+	data, err := os.ReadFile("../config.yaml")
 	if err != nil {
 		return nil, err
 	}

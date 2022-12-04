@@ -28,3 +28,8 @@ settings:
     tier_1: 2
     tier_2: 3
     tier_3: 5
+char_limits:
+  profile:
+    username: 15
+    title: 15
+    bio: 1000
