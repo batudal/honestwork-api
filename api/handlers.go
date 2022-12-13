@@ -151,6 +151,9 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	user.Skills = user_db.Skills
 	user.Salt = user_db.Salt
 	user.Signature = user_db.Signature
+	if user.ImageUrl == "" {
+		user.ImageUrl = user_db.ImageUrl
+	}
 
 	// marshal back to bytes
 	new_data, err := json.Marshal(user)
@@ -261,6 +264,12 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	i, _ := strconv.Atoi(slot)
 	if i != skill.Slot {
 		return "Slot number doesn't match."
+	}
+
+	for index, url := range skill.ImageUrls {
+		if url == "" {
+			skill.ImageUrls[index] = user.Skills[i].ImageUrls[index]
+		}
 	}
 
 	user.Skills[i] = skill
