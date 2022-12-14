@@ -10,7 +10,7 @@ import (
 
 // move contract addr to config
 func FetchUserState(address string) int {
-	nft_address := "0x32058e2CCdAA0b4615994362d44cC64dFFd3340A"
+	nft_address := "0x10c0C42A0883699225363341743F719CC87a404e"
 
 	client, err := ethclient.Dial("https://decoded.wtf")
 	if err != nil {

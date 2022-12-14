@@ -1,5 +1,6 @@
 package schema
 
+// todo: fix []string unmarshal error
 type User struct {
 	Salt       string   `json:"salt"`
 	Signature  string   `json:"signature"`
