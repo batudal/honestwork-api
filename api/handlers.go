@@ -75,6 +75,7 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -84,10 +85,10 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
-	case 1, 2, 3, 4:
-		if (user.Signature != "") && (user.Salt != "") {
-			return "User already signed up."
-		}
+	// case 1, 2, 3, 4:
+	// 	if (user.Signature != "") && (user.Salt != "") {
+	// 		return "User already signed up."
+	// 	}
 	}
 
 	user.Salt = salt
@@ -187,26 +188,21 @@ func HandleAddSkill(redis *redis.Client, address string, salt string, signature 
 
 	user := getUserFromAddress(redis, address)
 	state := web3.FetchUserState(address)
+	var max_allowed int
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
 	case 1:
 		return "User didn't bind NFT yet."
 	case 2:
-		max_allowed := getAllowedSkillAmount(1)
-		if len(user.Skills) == max_allowed {
-			return "User reached skill limit."
-		}
+		max_allowed = getAllowedSkillAmount(1)
 	case 3:
-		max_allowed := getAllowedSkillAmount(2)
-		if len(user.Skills) == max_allowed {
-			return "User reached skill limit."
-		}
+		max_allowed = getAllowedSkillAmount(2)
 	case 4:
-		max_allowed := getAllowedSkillAmount(3)
-		if len(user.Skills) == max_allowed {
-			return "User reached skill limit."
-		}
+		max_allowed = getAllowedSkillAmount(3)
+	}
+	if len(user.Skills) == max_allowed {
+		return "User reached skill limit."
 	}
 
 	var skill schema.Skill
@@ -228,15 +224,15 @@ func HandleAddSkill(redis *redis.Client, address string, salt string, signature 
 	return "success"
 }
 
-func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
+func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string,slot string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
 
+	s, _ := strconv.Atoi(slot)
 	user := getUserFromAddress(redis, address)
 	state := web3.FetchUserState(address)
-	s, _ := strconv.Atoi(slot)
 	var max_allowed int
 	switch state {
 	case 0:
@@ -249,10 +245,10 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 		max_allowed = getAllowedSkillAmount(2)
 	case 4:
 		max_allowed = getAllowedSkillAmount(3)
-
 	}
-	if s > max_allowed {
-		return "User reached skill limit."
+
+	if (s > max_allowed - 1) {
+		return "User doesn't have that many skill slots."
 	}
 
 	var skill schema.Skill
@@ -260,19 +256,19 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-
-	i, _ := strconv.Atoi(slot)
-	if i != skill.Slot {
-		return "Slot number doesn't match."
-	}
+	fmt.Println(skill)
 
 	for index, url := range skill.ImageUrls {
 		if url == "" {
-			skill.ImageUrls[index] = user.Skills[i].ImageUrls[index]
+			if len(user.Skills[s].ImageUrls) > index {
+				skill.ImageUrls[index] = user.Skills[s].ImageUrls[index]
+			} else {
+				skill.ImageUrls[index] = ""
+			}
 		}
 	}
 
-	user.Skills[i] = skill
+	user.Skills[s] = skill
 	updated_user, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println("Error:", err)
