@@ -2,7 +2,6 @@ package crypto
 
 import (
 	"bytes"
-
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -21,7 +20,6 @@ func VerifySignature(salt string, address string, signature string) bool {
 	}
 
 	recoveredAddr := crypto.PubkeyToAddress(*recovered)
-
 	return address == recoveredAddr.Hex()
 }
 

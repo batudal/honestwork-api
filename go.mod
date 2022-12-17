@@ -6,6 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gofiber/fiber/v2 v2.40.1
+	github.com/joho/godotenv v1.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

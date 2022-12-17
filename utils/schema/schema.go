@@ -19,10 +19,9 @@ type User struct {
 }
 
 type Skill struct {
-	Slot         int      `json:"slot"`
 	Title        string   `json:"title"`
 	Description  string   `json:"description"`
 	Links        []string `json:"links"`
 	ImageUrls    []string `json:"image_urls"`
-	MinimumPrice float64  `json:"minimum_price"`
+	MinimumPrice string   `json:"minimum_price"`
 }
