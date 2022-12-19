@@ -10,8 +10,9 @@ import (
 )
 
 func AuthorizeSignature(redis *redis.Client, address string, salt string, signature string) bool {
+	record_id := "user:" + address
 	var user_db schema.User
-	data, err := redis.Do(redis.Context(), "JSON.GET", address).Result()
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}

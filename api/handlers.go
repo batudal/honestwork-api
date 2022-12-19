@@ -16,7 +16,7 @@ import (
 // 0-no tokens, 1-not soulbound, 2-soulbound(tier 1), 3-soulbound(tier 2), 4-soulbound(tier-3)
 // todo: fix error handling
 // todo: move validation to middleware
-func getUserFromAddress(redis *redis.Client, address string) schema.User {
+func getUser(redis *redis.Client, address string) schema.User {
 	record_id := "user:" + address
 	var user schema.User
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
@@ -30,7 +30,7 @@ func getUserFromAddress(redis *redis.Client, address string) schema.User {
 	return user
 }
 
-func getSkillFromAddress(redis *redis.Client, slot int, address string) schema.Skill {
+func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
 	s := strconv.Itoa(slot)
 	record_id := "skill:" + s + ":" + address
 	var skill schema.Skill
@@ -38,7 +38,6 @@ func getSkillFromAddress(redis *redis.Client, slot int, address string) schema.S
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Println("Skilldata:", data)
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &skill)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -46,12 +45,13 @@ func getSkillFromAddress(redis *redis.Client, slot int, address string) schema.S
 	return skill
 }
 
-func getAllSkillsFromAddress(redis *redisearch.Client, address string) []schema.Skill {
-	//index search
+func getAllSkills(redis *redisearch.Client, address string) []schema.Skill {
+	// index search with redisearch-go
 	data, _, err := redis.Search(redisearch.NewQuery("*").AddFilter(redisearch.Filter{
 		Field:   "user_address",
 		Options: address,
 	}))
+	// manual search
 	// data, err := redis.Do(redis.Context(), "FT.SEARCH", "skillIndex '@user_adress:(0xC370b50eC6101781ed1f1690A00BF91cd27D77c4)'").Result()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -72,29 +72,6 @@ func getAllSkillsFromAddress(redis *redisearch.Client, address string) []schema.
 	}
 	// We only need the keys
 	return skills
-}
-
-func fetchValue(value interface{}) {
-	switch value.(type) {
-	case string:
-		fmt.Printf("%v is an interface \n ", value)
-	case bool:
-		fmt.Printf("%v is bool \n ", value)
-	case float64:
-		fmt.Printf("%v is float64 \n ", value)
-	case []interface{}:
-		fmt.Printf("%v is a slice of interface \n ", value)
-		for _, v := range value.([]interface{}) { // use type assertion to loop over []interface{}
-			fetchValue(v)
-		}
-	case map[string]interface{}:
-		fmt.Printf("%v is a map \n ", value)
-		for _, v := range value.(map[string]interface{}) { // use type assertion to loop over map[string]interface{}
-			fetchValue(v)
-		}
-	default:
-		fmt.Printf("%v is unknown \n ", value)
-	}
 }
 
 func getAllowedSkillAmount(tier int) int {
@@ -139,31 +116,15 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 	}
 
 	// new user
-	var user schema.User
-	data, err := redis.Do(redis.Context(), "JSON.GET", address).Result()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
+	user := getUser(redis, address)
 	state := web3.FetchUserState(address)
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
-		// case 1, 2, 3, 4:
-		// 	if (user.Signature != "") && (user.Salt != "") {
-		// 		return "User already signed up."
-		// 	}
 	}
 
 	user.Salt = salt
 	user.Signature = signature
-
-	// marshal back to bytes
 	new_data, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -177,7 +138,7 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 }
 
 func HandleGetUser(redis *redis.Client, address string) schema.User {
-	user := getUserFromAddress(redis, address)
+	user := getUser(redis, address)
 	return user
 }
 
@@ -207,15 +168,7 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	}
 
 	// current user in db
-	var user_db schema.User
-	data, err := redis.Do(redis.Context(), "JSON.GET", address).Result()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user_db)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	user_db := getUser(redis, address)
 
 	// filter
 	user.Salt = user_db.Salt
@@ -224,13 +177,14 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 		user.ImageUrl = user_db.ImageUrl
 	}
 
-	// marshal back to bytes
 	new_data, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	redis.Do(redis.Context(), "JSON.SET", address, "$", new_data)
+	record_id := "user:" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -238,23 +192,22 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 }
 
 func HandleGetSkills(redis *redisearch.Client, address string) []schema.Skill {
-	skills := getAllSkillsFromAddress(redis, address)
+	skills := getAllSkills(redis, address)
 	return skills
 }
 
 func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Skill {
 	s, _ := strconv.Atoi(slot)
-	skill := getSkillFromAddress(redis, s, address)
+	skill := getSkill(redis, s, address)
 	return skill
 }
 
-func HandleAddSkill(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, address string, salt string, signature string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
 
-	user := getUserFromAddress(redis, address)
 	state := web3.FetchUserState(address)
 	var max_allowed int
 	switch state {
@@ -269,7 +222,9 @@ func HandleAddSkill(redis *redis.Client, address string, salt string, signature 
 	case 4:
 		max_allowed = getAllowedSkillAmount(3)
 	}
-	if len(user.Skills) == max_allowed {
+
+	all_skills := getAllSkills(redis_search, address)
+	if len(all_skills) == max_allowed {
 		return "User reached skill limit."
 	}
 
@@ -279,13 +234,10 @@ func HandleAddSkill(redis *redis.Client, address string, salt string, signature 
 		fmt.Println("Error:", err)
 	}
 
-	user.Skills = append(user.Skills, skill)
-	updated_user, err := json.Marshal(user)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	slot := strconv.Itoa(len(all_skills))
+	record_id := "skill:" + slot + ":" + address
 
-	redis.Do(redis.Context(), "JSON.SET", address, "$", updated_user)
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", skill)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -299,7 +251,7 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	}
 
 	s, _ := strconv.Atoi(slot)
-	user := getUserFromAddress(redis, address)
+	current_skill := getSkill(redis, s, address)
 	state := web3.FetchUserState(address)
 	var max_allowed int
 	switch state {
@@ -324,25 +276,24 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Println(skill)
 
 	for index, url := range skill.ImageUrls {
 		if url == "" {
-			if len(user.Skills[s].ImageUrls) > index {
-				skill.ImageUrls[index] = user.Skills[s].ImageUrls[index]
+			if len(current_skill.ImageUrls) > index {
+				skill.ImageUrls[index] = current_skill.ImageUrls[index]
 			} else {
 				skill.ImageUrls[index] = ""
 			}
 		}
 	}
 
-	user.Skills[s] = skill
-	updated_user, err := json.Marshal(user)
+	new_data, err := json.Marshal(skill)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+	record_id := "skill:" + slot + ":" + address
 
-	redis.Do(redis.Context(), "JSON.SET", address, "$", updated_user)
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}

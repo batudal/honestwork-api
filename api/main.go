@@ -44,7 +44,7 @@ func main() {
 	})
 
 	app.Post("/api/v1/skills/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleAddSkill(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+		return c.JSON(HandleAddSkill(redis, redis_search, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
 	})
 
 	app.Patch("/api/v1/skills/:address/:salt/:signature/:slot", func(c *fiber.Ctx) error {

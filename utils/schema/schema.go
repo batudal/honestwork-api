@@ -15,7 +15,7 @@ type User struct {
 	Timezone   string   `json:"timezone"`
 	Bio        string   `json:"bio"`
 	Links      []string `json:"links"`
-	Skills     []Skill  `json:"skills"`
+	// Skills     []Skill  `json:"skills"`
 }
 
 type Skill struct {
