@@ -16,8 +16,9 @@ import (
 // todo: fix error handling
 // todo: move validation to middleware
 func getUserFromAddress(redis *redis.Client, address string) schema.User {
+	record_id := "user:" + address
 	var user schema.User
-	data, err := redis.Do(redis.Context(), "JSON.GET", address).Result()
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -26,6 +27,37 @@ func getUserFromAddress(redis *redis.Client, address string) schema.User {
 		fmt.Println("Error:", err)
 	}
 	return user
+}
+
+func getSkillFromAddress(redis *redis.Client, slot int, address string) schema.Skill {
+	s := strconv.Itoa(slot)
+	record_id := "skill:" + s + ":" + address
+	var skills []schema.Skill
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &skills)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return skill
+}
+
+func getAllSkillsFromAddress(redis *redis.Client, slot int, address string) []schema.Skill {
+	//index search
+	data := redis.Do(redis.Context(), "FT.SEARCH", "skillIndex", "@user_adress:("+ address +")")
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// }
+	fmt.Println("Data;",data)
+	// var skill schema.Skill
+	// err = json.Unmarshal([]byte(fmt.Sprint(data)), &skill)
+	// if err != nil {
+	// 	fmt.Println("Error:", err)
+	// }
+	return data
+
 }
 
 func getAllowedSkillAmount(tier int) int {
@@ -45,7 +77,7 @@ func getAllowedSkillAmount(tier int) int {
 	}
 }
 
-// todo: impletement all validators
+// todo: implement all validators
 func validateUserInput(redis *redis.Client, user schema.User) bool {
 	if ValidateUsername(user.Username) &&
 		ValidateTitle(user.Title) &&
@@ -149,7 +181,6 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	}
 
 	// filter
-	user.Skills = user_db.Skills
 	user.Salt = user_db.Salt
 	user.Signature = user_db.Signature
 	if user.ImageUrl == "" {
@@ -170,14 +201,13 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 }
 
 func HandleGetSkills(redis *redis.Client, address string) []schema.Skill {
-	user := getUserFromAddress(redis, address)
-	return user.Skills
+	skill := getSkillFromAddress(redis, slot, address)
+	return skill
 }
 
 func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Skill {
-	s, _ := strconv.Atoi(slot)
-	user := getUserFromAddress(redis, address)
-	return user.Skills[s]
+	skill := getSkillFromAddress(redis, slot, address)
+	return skill
 }
 
 func HandleAddSkill(redis *redis.Client, address string, salt string, signature string, body []byte) string {
