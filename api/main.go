@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/takez0o/honestwork-api/utils/client"
@@ -18,6 +19,7 @@ func main() {
 	}
 
 	redis := client.NewClient(conf.DB.ID)
+	redis_search := redisearch.NewClient("localhost:6379", "skillIndex")
 
 	app.Use(cors.New())
 
@@ -34,7 +36,7 @@ func main() {
 	})
 
 	app.Get("/api/v1/skills/:address", func(c *fiber.Ctx) error {
-		return c.JSON(HandleGetSkills(redis, c.Params("address")))
+		return c.JSON(HandleGetSkills(redis_search, c.Params("address")))
 	})
 
 	app.Get("/api/v1/skills/:address/:slot", func(c *fiber.Ctx) error {

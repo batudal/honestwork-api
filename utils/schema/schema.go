@@ -19,9 +19,12 @@ type User struct {
 }
 
 type Skill struct {
+	UserAddress  string   `json:"user_address"`
 	Title        string   `json:"title"`
 	Description  string   `json:"description"`
+	Tags         []string `json:"tags"`
 	Links        []string `json:"links"`
 	ImageUrls    []string `json:"image_urls"`
-	MinimumPrice string   `json:"minimum_price"`
+	MinimumPrice int      `json:"minimum_price"`
+	Publish      bool     `json:"publish"`
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
 	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/crypto"
@@ -32,32 +33,68 @@ func getUserFromAddress(redis *redis.Client, address string) schema.User {
 func getSkillFromAddress(redis *redis.Client, slot int, address string) schema.Skill {
 	s := strconv.Itoa(slot)
 	record_id := "skill:" + s + ":" + address
-	var skills []schema.Skill
+	var skill schema.Skill
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &skills)
+	fmt.Println("Skilldata:", data)
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &skill)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 	return skill
 }
 
-func getAllSkillsFromAddress(redis *redis.Client, slot int, address string) []schema.Skill {
+func getAllSkillsFromAddress(redis *redisearch.Client, address string) []schema.Skill {
 	//index search
-	data := redis.Do(redis.Context(), "FT.SEARCH", "skillIndex", "@user_adress:("+ address +")")
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// }
-	fmt.Println("Data;",data)
-	// var skill schema.Skill
-	// err = json.Unmarshal([]byte(fmt.Sprint(data)), &skill)
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// }
-	return data
+	data, _, err := redis.Search(redisearch.NewQuery("*").AddFilter(redisearch.Filter{
+		Field:   "user_address",
+		Options: address,
+	}))
+	// data, err := redis.Do(redis.Context(), "FT.SEARCH", "skillIndex '@user_adress:(0xC370b50eC6101781ed1f1690A00BF91cd27D77c4)'").Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 
+	var skills []schema.Skill
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			translationKeys = append(translationKeys, key)
+		}
+		var skill schema.Skill
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		skills = append(skills, skill)
+	}
+	// We only need the keys
+	return skills
+}
+
+func fetchValue(value interface{}) {
+	switch value.(type) {
+	case string:
+		fmt.Printf("%v is an interface \n ", value)
+	case bool:
+		fmt.Printf("%v is bool \n ", value)
+	case float64:
+		fmt.Printf("%v is float64 \n ", value)
+	case []interface{}:
+		fmt.Printf("%v is a slice of interface \n ", value)
+		for _, v := range value.([]interface{}) { // use type assertion to loop over []interface{}
+			fetchValue(v)
+		}
+	case map[string]interface{}:
+		fmt.Printf("%v is a map \n ", value)
+		for _, v := range value.(map[string]interface{}) { // use type assertion to loop over map[string]interface{}
+			fetchValue(v)
+		}
+	default:
+		fmt.Printf("%v is unknown \n ", value)
+	}
 }
 
 func getAllowedSkillAmount(tier int) int {
@@ -117,10 +154,10 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
-	// case 1, 2, 3, 4:
-	// 	if (user.Signature != "") && (user.Salt != "") {
-	// 		return "User already signed up."
-	// 	}
+		// case 1, 2, 3, 4:
+		// 	if (user.Signature != "") && (user.Salt != "") {
+		// 		return "User already signed up."
+		// 	}
 	}
 
 	user.Salt = salt
@@ -200,13 +237,14 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	return "success"
 }
 
-func HandleGetSkills(redis *redis.Client, address string) []schema.Skill {
-	skill := getSkillFromAddress(redis, slot, address)
-	return skill
+func HandleGetSkills(redis *redisearch.Client, address string) []schema.Skill {
+	skills := getAllSkillsFromAddress(redis, address)
+	return skills
 }
 
 func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Skill {
-	skill := getSkillFromAddress(redis, slot, address)
+	s, _ := strconv.Atoi(slot)
+	skill := getSkillFromAddress(redis, s, address)
 	return skill
 }
 
@@ -254,7 +292,7 @@ func HandleAddSkill(redis *redis.Client, address string, salt string, signature 
 	return "success"
 }
 
-func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string,slot string, body []byte) string {
+func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
 	if !authorized {
 		return "Wrong signature."
@@ -277,7 +315,7 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 		max_allowed = getAllowedSkillAmount(3)
 	}
 
-	if (s > max_allowed - 1) {
+	if s > max_allowed-1 {
 		return "User doesn't have that many skill slots."
 	}
 
