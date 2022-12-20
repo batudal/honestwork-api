@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/takez0o/honestwork-api/utils/client"
@@ -19,7 +18,7 @@ func main() {
 	}
 
 	redis := client.NewClient(conf.DB.ID)
-	redis_search := redisearch.NewClient("localhost:6379", "skillIndex")
+	redis_search := client.NewSearchClient()
 
 	app.Use(cors.New())
 
