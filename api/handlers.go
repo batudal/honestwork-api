@@ -106,7 +106,7 @@ func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Ski
 
 	var skills []schema.Skill
 	for _, d := range data {
-		fmt.Println("Inner data:", d)
+		fmt.Println("Data props:", d.Properties)
 		translationKeys := make([]string, 0, len(d.Properties))
 		for key := range d.Properties {
 			translationKeys = append(translationKeys, key)
