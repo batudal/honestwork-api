@@ -101,7 +101,7 @@ func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Ski
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Println("Data:", data))
+	fmt.Println("Data:", data)
 
 	var skills []schema.Skill
 	for _, d := range data {
