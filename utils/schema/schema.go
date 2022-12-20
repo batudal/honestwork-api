@@ -1,6 +1,5 @@
 package schema
 
-// todo: fix []string unmarshal error
 type User struct {
 	Salt       string   `json:"salt"`
 	Signature  string   `json:"signature"`
@@ -15,7 +14,6 @@ type User struct {
 	Timezone   string   `json:"timezone"`
 	Bio        string   `json:"bio"`
 	Links      []string `json:"links"`
-	// Skills     []Skill  `json:"skills"`
 }
 
 type Skill struct {
@@ -27,4 +25,5 @@ type Skill struct {
 	ImageUrls    []string `json:"image_urls"`
 	MinimumPrice int      `json:"minimum_price"`
 	Publish      bool     `json:"publish"`
+	CreatedAt    int64    `json:"created_at"`
 }
