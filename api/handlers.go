@@ -97,10 +97,11 @@ func getAllSkills(redis *redisearch.Client) []schema.Skill {
 }
 
 func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Skill {
-	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy("created_at", false).Limit(offset, size))
+	data, _, err := redis.Search(redisearch.NewQuery("*").Limit(offset, size).SetSortBy("created_at", false))
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+	fmt.Println("Data:", data))
 
 	var skills []schema.Skill
 	for _, d := range data {
