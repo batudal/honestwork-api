@@ -97,25 +97,22 @@ func getAllSkills(redis *redisearch.Client) []schema.Skill {
 }
 
 func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Skill {
-	data, total, err := redis.Search(redisearch.NewQuery("*").Limit(offset, size).SetSortBy("created_at", false))
+	sort_field := "created_at"
+	data, _, err := redis.Search(redisearch.NewQuery("*").Limit(offset, size).SetSortBy(sort_field, false))
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Println("Data:", data)
-	fmt.Println("Total:", total)
 
 	var skills []schema.Skill
 	for _, d := range data {
-		fmt.Println("Data props:", d.Properties)
 		translationKeys := make([]string, 0, len(d.Properties))
 		for key := range d.Properties {
-			translationKeys = append(translationKeys, key)
-			fmt.Println("Key:", key)
-
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
 		}
 		var skill schema.Skill
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
-		fmt.Println("Skill:", skill)
 
 		if err != nil {
 			fmt.Println("Error:", err)
