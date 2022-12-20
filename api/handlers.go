@@ -237,7 +237,12 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	slot := strconv.Itoa(len(all_skills))
 	record_id := "skill:" + slot + ":" + address
 
-	redis.Do(redis.Context(), "JSON.SET", record_id, "$", skill)
+	new_data, err := json.Marshal(skill)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
