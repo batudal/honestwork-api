@@ -45,7 +45,7 @@ func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
 	return skill
 }
 
-func getAllSkills(redis *redisearch.Client, address string) []schema.Skill {
+func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 	// index search with redisearch-go
 	data, _, err := redis.Search(redisearch.NewQuery("*").AddFilter(redisearch.Filter{
 		Field:   "user_address",
@@ -70,8 +70,76 @@ func getAllSkills(redis *redisearch.Client, address string) []schema.Skill {
 		}
 		skills = append(skills, skill)
 	}
-	// We only need the keys
 	return skills
+}
+
+func getAllSkills(redis *redisearch.Client) []schema.Skill {
+	data, _, err := redis.Search(redisearch.NewQuery("*"))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var skills []schema.Skill
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			translationKeys = append(translationKeys, key)
+		}
+		var skill schema.Skill
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		skills = append(skills, skill)
+	}
+
+	return skills
+}
+
+func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Skill {
+	data, _, err := redis.Search(redisearch.NewQuery("*").Limit(offset, size))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var skills []schema.Skill
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			translationKeys = append(translationKeys, key)
+		}
+		var skill schema.Skill
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		skills = append(skills, skill)
+	}
+
+	return skills
+}
+
+func getTotalSkills(redis *redisearch.Client) int {
+	_, total, err := redis.Search(redisearch.NewQuery("*").Limit(0, 0))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return total
+}
+
+func HandleGetTotalSkills(redis *redisearch.Client) int {
+	data := getTotalSkills(redis)
+	return data
+}
+
+func HandleGetSkillsTotal(redis *redisearch.Client) int {
+	data := getTotalSkills(redis)
+	return data
+}
+
+func HandleGetSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Skill {
+	data := getSkillsLimit(redis, offset, size)
+	return data
 }
 
 func getAllowedSkillAmount(tier int) int {
@@ -192,7 +260,7 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 }
 
 func HandleGetSkills(redis *redisearch.Client, address string) []schema.Skill {
-	skills := getAllSkills(redis, address)
+	skills := getSkills(redis, address)
 	return skills
 }
 
@@ -223,7 +291,7 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 		max_allowed = getAllowedSkillAmount(3)
 	}
 
-	all_skills := getAllSkills(redis_search, address)
+	all_skills := getSkills(redis_search, address)
 	if len(all_skills) == max_allowed {
 		return "User reached skill limit."
 	}
@@ -303,4 +371,9 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 		fmt.Println("Error:", err)
 	}
 	return "success"
+}
+
+func HandleGetAllSkills(redis *redisearch.Client) []schema.Skill {
+	skills := getAllSkills(redis)
+	return skills
 }
