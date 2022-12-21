@@ -47,10 +47,11 @@ func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
 
 func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 	// index search with redisearch-go
+	sort_field := "created_at"
 	data, _, err := redis.Search(redisearch.NewQuery("*").AddFilter(redisearch.Filter{
 		Field:   "user_address",
 		Options: address,
-	}))
+	}).SetSortBy(sort_field, true))
 	// manual search
 	// data, err := redis.Do(redis.Context(), "FT.SEARCH", "skillIndex '@user_adress:(0xC370b50eC6101781ed1f1690A00BF91cd27D77c4)'").Result()
 	if err != nil {
@@ -61,7 +62,9 @@ func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 	for _, d := range data {
 		translationKeys := make([]string, 0, len(d.Properties))
 		for key := range d.Properties {
-			translationKeys = append(translationKeys, key)
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
 		}
 		var skill schema.Skill
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
@@ -74,7 +77,8 @@ func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 }
 
 func getAllSkills(redis *redisearch.Client) []schema.Skill {
-	data, _, err := redis.Search(redisearch.NewQuery("*"))
+	sort_field := "created_at"
+	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, false))
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -83,7 +87,9 @@ func getAllSkills(redis *redisearch.Client) []schema.Skill {
 	for _, d := range data {
 		translationKeys := make([]string, 0, len(d.Properties))
 		for key := range d.Properties {
-			translationKeys = append(translationKeys, key)
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
 		}
 		var skill schema.Skill
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
@@ -113,7 +119,6 @@ func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Ski
 		}
 		var skill schema.Skill
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
-
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -363,6 +368,9 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 			}
 		}
 	}
+
+	skill.CreatedAt = current_skill.CreatedAt
+	skill.UserAddress = current_skill.UserAddress
 
 	new_data, err := json.Marshal(skill)
 	if err != nil {
