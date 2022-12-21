@@ -46,14 +46,10 @@ func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
 }
 
 func getSkills(redis *redisearch.Client, address string) []schema.Skill {
-	// index search with redisearch-go
 	sort_field := "created_at"
-	data, _, err := redis.Search(redisearch.NewQuery("*").AddFilter(redisearch.Filter{
-		Field:   "user_address",
-		Options: address,
-	}).SetSortBy(sort_field, true))
-	// manual search
-	// data, err := redis.Do(redis.Context(), "FT.SEARCH", "skillIndex '@user_adress:(0xC370b50eC6101781ed1f1690A00BF91cd27D77c4)'").Result()
+	infield := "user_address"
+	data, _, err := redis.Search(redisearch.NewQuery("*").SetInFields(infield).SetSortBy(sort_field, true))
+
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -71,7 +67,11 @@ func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
+		// if skill.UserAddress == address {
+		// 	skills = append(skills, skill)
+		// }
 		skills = append(skills, skill)
+
 	}
 	return skills
 }
@@ -202,12 +202,15 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 
 	user.Salt = salt
 	user.Signature = signature
+	
 	new_data, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	redis.Do(redis.Context(), "JSON.SET", address, "$", new_data)
+	record_id := "user:" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
