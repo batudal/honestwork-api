@@ -48,7 +48,7 @@ func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
 func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 	sort_field := "created_at"
 	infield := "user_address"
-	data, _, err := redis.Search(redisearch.NewQuery("*").SetInFields(infield).SetSortBy(sort_field, true))
+	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, true))
 
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -67,18 +67,15 @@ func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
-		// if skill.UserAddress == address {
-		// 	skills = append(skills, skill)
-		// }
-		skills = append(skills, skill)
-
+		if skill.Publish {
+			skills = append(skills, skill)
+		}
 	}
 	return skills
 }
 
-func getAllSkills(redis *redisearch.Client) []schema.Skill {
-	sort_field := "created_at"
-	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, false))
+func getAllSkills(redis *redisearch.Client, sort_field string, ascending bool) []schema.Skill {
+	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, ascending))
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -96,9 +93,10 @@ func getAllSkills(redis *redisearch.Client) []schema.Skill {
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
-		skills = append(skills, skill)
+		if skill.Publish {
+			skills = append(skills, skill)
+		}
 	}
-
 	return skills
 }
 
@@ -202,7 +200,7 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 
 	user.Salt = salt
 	user.Signature = signature
-	
+
 	new_data, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -253,6 +251,7 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	// filter
 	user.Salt = user_db.Salt
 	user.Signature = user_db.Signature
+	fmt.Println("ImageUrl:", user.ImageUrl)
 	if user.ImageUrl == "" {
 		user.ImageUrl = user_db.ImageUrl
 	}
@@ -303,6 +302,7 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 		max_allowed = getAllowedSkillAmount(3)
 	}
 
+	fmt.Println("Max allowed:",max_allowed)
 	all_skills := getSkills(redis_search, address)
 	if len(all_skills) == max_allowed {
 		return "User reached skill limit."
@@ -317,6 +317,8 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	slot := strconv.Itoa(len(all_skills))
 	record_id := "skill:" + slot + ":" + address
 
+	fmt.Println("Record id:",record_id)
+	fmt.Println("Skill:",skill)
 	new_data, err := json.Marshal(skill)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -388,7 +390,7 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	return "success"
 }
 
-func HandleGetAllSkills(redis *redisearch.Client) []schema.Skill {
-	skills := getAllSkills(redis)
+func HandleGetAllSkills(redis *redisearch.Client, sort_field string, ascending bool) []schema.Skill {
+	skills := getAllSkills(redis, sort_field, ascending)
 	return skills
 }

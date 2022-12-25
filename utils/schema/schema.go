@@ -26,4 +26,5 @@ type Skill struct {
 	MinimumPrice int      `json:"minimum_price"`
 	Publish      bool     `json:"publish"`
 	CreatedAt    int64    `json:"created_at"`
+	Rating 		 int64    `json:"rating"`
 }

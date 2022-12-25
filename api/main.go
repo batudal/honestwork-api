@@ -43,8 +43,9 @@ func main() {
 		size, _ := strconv.Atoi(c.Params("size"))
 		return c.JSON(HandleGetSkillsLimit(redis_search, offset, size))
 	})
-	app.Get("/api/v1/skills", func(c *fiber.Ctx) error {
-		return c.JSON(HandleGetAllSkills(redis_search))
+	app.Get("/api/v1/skills/:sort/:order", func(c *fiber.Ctx) error {
+		asc, _ := strconv.ParseBool(c.Params("order"))
+		return c.JSON(HandleGetAllSkills(redis_search, c.Params("sort"), asc))
 	})
 	app.Get("/api/v1/skills/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetSkills(redis_search, c.Params("address")))
