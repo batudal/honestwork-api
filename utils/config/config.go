@@ -57,6 +57,16 @@ type Config struct {
 			} `yaml:"profile"`
 		} `yaml:"char_limits"`
 	} `yaml:"settings"`
+	ContractAddresses struct {
+		MembershipNFT string `yaml:"membership_nft"`
+		JobPayments   string `yaml:"job_payments"`
+	} `yaml:"contract_addresses"`
+	Network struct {
+		ChainID struct {
+			Name   string `yaml:"name"`
+			RPCURL string `yaml:"rpc_url"`
+		} `yaml:"chain_id"`
+	} `yaml:"network"`
 }
 
 func ParseConfig() (*Config, error) {

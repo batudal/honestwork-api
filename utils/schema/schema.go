@@ -33,7 +33,8 @@ type Skill struct {
 
 type Job struct {
 	UserAddress      string        `json:"user_address"`
-	PaymentTxHash    string        `json:"payment_tx_hash"`
+	PaymentId        string        `json:"payment_id"`
+	TokenPaid        string        `json:"token_paid"`
 	Title            string        `json:"title"`
 	Description      string        `json:"description"`
 	Tags             []string      `json:"tags"`

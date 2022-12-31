@@ -302,7 +302,7 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 		max_allowed = getAllowedSkillAmount(3)
 	}
 
-	fmt.Println("Max allowed:",max_allowed)
+	fmt.Println("Max allowed:", max_allowed)
 	all_skills := getSkills(redis_search, address)
 	if len(all_skills) == max_allowed {
 		return "User reached skill limit."
@@ -317,8 +317,8 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	slot := strconv.Itoa(len(all_skills))
 	record_id := "skill:" + slot + ":" + address
 
-	fmt.Println("Record id:",record_id)
-	fmt.Println("Skill:",skill)
+	fmt.Println("Record id:", record_id)
+	fmt.Println("Skill:", skill)
 	new_data, err := json.Marshal(skill)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -393,4 +393,48 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 func HandleGetAllSkills(redis *redisearch.Client, sort_field string, ascending bool) []schema.Skill {
 	skills := getAllSkills(redis, sort_field, ascending)
 	return skills
+}
+
+func HandleAddJob(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	state := web3.FetchUserState(address)
+	switch state {
+	case 0:
+		return "User doesn't have NFT."
+	case 1:
+		return "User didn't bind NFT yet."
+	}
+
+	var job schema.Job
+	err := json.Unmarshal(body, &job)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	amount, err := web3.CalculatePayment(&job.HighlightOptions)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	_, err = web3.CheckOutstandingPayment(address, []byte(job.PaymentId), job.TokenPaid, amount)
+	if err != nil {
+		return err.Error()
+	}
+
+	new_data, err := json.Marshal(job)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "job:" + job.PaymentId
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return "success"
 }

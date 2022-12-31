@@ -34,3 +34,10 @@ settings:
       username: 15
       title: 15
       bio: 1000
+contract_addresses:
+  membership_nft: 0x610907faEb17Db469fDFcd2b7355c2094cCD1bAF
+  job_payments: 0x610907faEb17Db469fDFcd2b7355c2094cCD1bAF
+network:
+  1453:
+    name: devm
+    rpc_url: https://decoded.wtf

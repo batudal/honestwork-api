@@ -60,5 +60,28 @@ func main() {
 		return c.JSON(HandleUpdateSkill(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
 	})
 
+	// job routes
+	// app.Get("/api/v1/jobs/total", func(c *fiber.Ctx) error {
+	// 	return c.JSON(HandleGetJobsTotal(redis))
+	// })
+	// app.Get("/api/v1/jobs/limit/:offset/:size", func(c *fiber.Ctx) error {
+	// 	offset, _ := strconv.Atoi(c.Params("offset"))
+	// 	size, _ := strconv.Atoi(c.Params("size"))
+	// 	return c.JSON(HandleGetJobsLimit(redis, offset, size))
+	// })
+	// app.Get("/api/v1/jobs/:sort/:order", func(c *fiber.Ctx) error {
+	// 	asc, _ := strconv.ParseBool(c.Params("order"))
+	// 	return c.JSON(HandleGetAllJobs(redis, c.Params("sort"), asc))
+	// })
+	// app.Get("/api/v1/jobs/:address", func(c *fiber.Ctx) error {
+	// 	return c.JSON(HandleGetJobs(redis, c.Params("address")))
+	// })
+	app.Post("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	})
+	// app.Patch("/api/v1/jobs/:address/:salt/:signature/:slot", func(c *fiber.Ctx) error {
+	// 	return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
+	// })
+
 	app.Listen(":" + conf.API.Port)
 }
