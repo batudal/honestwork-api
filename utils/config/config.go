@@ -21,20 +21,42 @@ type Config struct {
 		ID   int    `yaml:"id"`
 	} `yaml:"db"`
 	Settings struct {
-		Skills      Tiers
-		Jobs        Tiers
-		Duration    Tiers
-		Referral    Tiers
-		Price       Tiers
-		Application Tiers
+		Skills Tiers
+		Jobs   struct {
+			ServiceFee         int `yaml:"service_fee"`
+			SuccessFeeBrackets struct {
+				Bracket_0 int `yaml:"bracket_0"`
+				Bracket_1 int `yaml:"bracket_1"`
+				Bracket_2 int `yaml:"bracket_2"`
+				Bracket_3 int `yaml:"bracket_3"`
+				Bracket_4 int `yaml:"bracket_4"`
+			} `yaml:"success_fee_brackets"`
+			SuccessFeePercentages struct {
+				Percentage_0 int `yaml:"percentage_0"`
+				Percentage_1 int `yaml:"percentage_1"`
+				Percentage_2 int `yaml:"percentage_2"`
+				Percentage_3 int `yaml:"percentage_3"`
+				Percentage_4 int `yaml:"percentage_4"`
+			} `yaml:"success_fee_percentages"`
+			HighlightPrices struct {
+				StickyPrices struct {
+					Week   int `yaml:"7_days"`
+					Biweek int `yaml:"14_days"`
+					Month  int `yaml:"30_days"`
+				} `yaml:"sticky_prices"`
+				HighlightFrame struct {
+					Default int `yaml:"default"`
+				} `yaml:"highlight_frame"`
+			} `yaml:"highlight_prices"`
+		} `yaml:"jobs"`
+		CharLimits struct {
+			Profile struct {
+				Username int `yaml:"username"`
+				Title    int `yaml:"title"`
+				Bio      int `yaml:"bio"`
+			} `yaml:"profile"`
+		} `yaml:"char_limits"`
 	} `yaml:"settings"`
-	CharLimits struct {
-		Profile struct {
-			Username int `yaml:"username"`
-			Title    int `yaml:"title"`
-			Bio      int `yaml:"bio"`
-		} `yaml:"profile"`
-	} `yaml:"char_limits"`
 }
 
 func ParseConfig() (*Config, error) {

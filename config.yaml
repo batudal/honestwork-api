@@ -9,27 +9,28 @@ settings:
     tier_2: 6
     tier_3: 8
   jobs:
-    tier_1: 1
-    tier_2: 5
-    tier_3: 8
-  duration:
-    tier_1: 604800
-    tier_2: 2419200
-    tier_3: 7257600
-  referral:
-    tier_1: 2
-    tier_2: 3
-    tier_3: 4
-  price:
-    tier_1: 100
-    tier_2: 250
-    tier_3: 300
-  application:
-    tier_1: 2
-    tier_2: 3
-    tier_3: 5
-char_limits:
-  profile:
-    username: 15
-    title: 15
-    bio: 1000
+    service_fee: 10
+    success_fee_brackets:
+      bracket_0: 0
+      bracket_1: 3000
+      bracket_2: 8000
+      bracket_3: 20000
+      bracket_4: 50000
+    success_fee_percentages:
+      percentage_0: 50
+      percentage_1: 35
+      percentage_2: 25
+      percentage_3: 20
+      percentage_4: 10
+    highlight_prices:
+      sticky:
+        7_days: 49
+        14_days: 69
+        30_days: 99
+      highlight_frame:
+        default: 79
+  char_limits:
+    profile:
+      username: 15
+      title: 15
+      bio: 1000
