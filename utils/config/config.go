@@ -23,7 +23,7 @@ type Config struct {
 	Settings struct {
 		Skills Tiers
 		Jobs   struct {
-			ServiceFee         int `yaml:"service_fee"`
+			ServiceFee         string `yaml:"service_fee"`
 			SuccessFeeBrackets struct {
 				Bracket_0 int `yaml:"bracket_0"`
 				Bracket_1 int `yaml:"bracket_1"`
@@ -40,12 +40,12 @@ type Config struct {
 			} `yaml:"success_fee_percentages"`
 			HighlightPrices struct {
 				StickyPrices struct {
-					Week   int `yaml:"7_days"`
-					Biweek int `yaml:"14_days"`
-					Month  int `yaml:"30_days"`
+					Week   string `yaml:"7_days"`
+					Biweek string `yaml:"14_days"`
+					Month  string `yaml:"30_days"`
 				} `yaml:"sticky_prices"`
 				HighlightFrame struct {
-					Default int `yaml:"default"`
+					Default string `yaml:"default"`
 				} `yaml:"highlight_frame"`
 			} `yaml:"highlight_prices"`
 		} `yaml:"jobs"`
@@ -62,10 +62,14 @@ type Config struct {
 		JobPayments   string `yaml:"job_payments"`
 	} `yaml:"contract_addresses"`
 	Network struct {
-		ChainID struct {
-			Name   string `yaml:"name"`
+		Devm struct {
+			ID     string `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
-		} `yaml:"chain_id"`
+		} `yaml:"devm"`
+		Polygon struct {
+			ID     string `yaml:"id"`
+			RPCURL string `yaml:"rpc_url"`
+		} `yaml:"polygon"`
 	} `yaml:"network"`
 }
 

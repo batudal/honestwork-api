@@ -32,22 +32,17 @@ type Skill struct {
 }
 
 type Job struct {
-	UserAddress      string        `json:"user_address"`
-	PaymentId        string        `json:"payment_id"`
-	TokenPaid        string        `json:"token_paid"`
-	Title            string        `json:"title"`
-	Description      string        `json:"description"`
-	Tags             []string      `json:"tags"`
-	Links            []string      `json:"links"`
-	Budget           int64         `json:"budget"`
-	Installments     int64         `json:"installments"`
-	Networks         []string      `json:"networks"`
-	TimeZone         string        `json:"timezone"`
-	TokensAccepted   []string      `json:"tokens"`
-	HighlightOptions HighlightOpts `json:"highlight_options"`
-}
-
-type HighlightOpts struct {
-	StickyDuration  int64 `json:"sticky_duration"`
-	HighlightOption int64 `json:"highlight"`
+	UserAddress     string   `json:"user_address"`
+	TokenPaid       string   `json:"token_paid"`
+	Title           string   `json:"title"`
+	Description     string   `json:"description"`
+	Tags            []string `json:"tags"`
+	Links           []string `json:"links"`
+	Budget          int64    `json:"budget"`
+	Installments    int64    `json:"installments"`
+	Networks        []string `json:"networks"`
+	TimeZone        string   `json:"timezone"`
+	TokensAccepted  []string `json:"tokens"`
+	StickyDuration  int64    `json:"sticky_duration"`
+	HighlightOption int64    `json:"highlight"`
 }

@@ -33,6 +33,7 @@ func getUser(redis *redis.Client, address string) schema.User {
 func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
 	s := strconv.Itoa(slot)
 	record_id := "skill:" + s + ":" + address
+	fmt.Println("record_id:", record_id)
 	var skill schema.Skill
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
@@ -134,6 +135,55 @@ func getTotalSkills(redis *redisearch.Client) int {
 	return total
 }
 
+func getTotalJobs(redis *redisearch.Client) int {
+	_, total, err := redis.Search(redisearch.NewQuery("*").Limit(0, 0))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return total
+}
+
+func getJob(redis *redis.Client, payment_id []byte) schema.Job {
+	record_id := "job:" + string(payment_id)
+	var job schema.Job
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &job)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return job
+}
+
+func getJobs(redis *redisearch.Client, address string) []schema.Job {
+	sort_field := "budget"
+	infield := "user_address"
+	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, true))
+
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var jobs []schema.Job
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
+		}
+		var job schema.Job
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		jobs = append(jobs, job)
+	}
+	return jobs
+}
+
 func HandleGetTotalSkills(redis *redisearch.Client) int {
 	data := getTotalSkills(redis)
 	return data
@@ -189,9 +239,9 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 	if !result {
 		return "Wrong signature."
 	}
-
 	// new user
 	user := getUser(redis, address)
+
 	state := web3.FetchUserState(address)
 	switch state {
 	case 0:
@@ -251,7 +301,6 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	// filter
 	user.Salt = user_db.Salt
 	user.Signature = user_db.Signature
-	fmt.Println("ImageUrl:", user.ImageUrl)
 	if user.ImageUrl == "" {
 		user.ImageUrl = user_db.ImageUrl
 	}
@@ -302,7 +351,6 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 		max_allowed = getAllowedSkillAmount(3)
 	}
 
-	fmt.Println("Max allowed:", max_allowed)
 	all_skills := getSkills(redis_search, address)
 	if len(all_skills) == max_allowed {
 		return "User reached skill limit."
@@ -395,18 +443,19 @@ func HandleGetAllSkills(redis *redisearch.Client, sort_field string, ascending b
 	return skills
 }
 
-func HandleAddJob(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+func HandleGetJob(redis *redis.Client, payment_id []byte) schema.Job {
+	job := getJob(redis, payment_id)
+	return job
+}
+
+// func HandleGetJobs(redis *redisearch.Client, address string) []schema.Job {
+
+// }
+
+func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, salt string, signature string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
 	if !authorized {
 		return "Wrong signature."
-	}
-
-	state := web3.FetchUserState(address)
-	switch state {
-	case 0:
-		return "User doesn't have NFT."
-	case 1:
-		return "User didn't bind NFT yet."
 	}
 
 	var job schema.Job
@@ -415,12 +464,12 @@ func HandleAddJob(redis *redis.Client, address string, salt string, signature st
 		fmt.Println("Error:", err)
 	}
 
-	amount, err := web3.CalculatePayment(&job.HighlightOptions)
+	amount, err := web3.CalculatePayment(&job)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	_, err = web3.CheckOutstandingPayment(address, []byte(job.PaymentId), job.TokenPaid, amount)
+	_, err = web3.CheckOutstandingPayment(address, job.TokenPaid, amount)
 	if err != nil {
 		return err.Error()
 	}
@@ -430,7 +479,8 @@ func HandleAddJob(redis *redis.Client, address string, salt string, signature st
 		fmt.Println("Error:", err)
 	}
 
-	record_id := "job:" + job.PaymentId
+	user_jobs := getJobs(redisearch, address)
+	record_id := "job:" + strconv.Itoa(len(user_jobs)) + ":" + address
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
