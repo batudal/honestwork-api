@@ -13,9 +13,8 @@ import (
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
-// 0-no tokens, 1-not soulbound, 2-soulbound(tier 1), 3-soulbound(tier 2), 4-soulbound(tier-3)
-// todo: fix error handling
-// todo: move validation to middleware
+// todo: move validation to package
+// todo: create data extractor (for query results)
 func getUser(redis *redis.Client, address string) schema.User {
 	record_id := "user:" + address
 	var user schema.User
@@ -30,9 +29,8 @@ func getUser(redis *redis.Client, address string) schema.User {
 	return user
 }
 
-func getSkill(redis *redis.Client, slot int, address string) schema.Skill {
-	s := strconv.Itoa(slot)
-	record_id := "skill:" + s + ":" + address
+func getSkill(redis *redis.Client, slot string, address string) schema.Skill {
+	record_id := "skill:" + slot + ":" + address
 	fmt.Println("record_id:", record_id)
 	var skill schema.Skill
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
@@ -127,6 +125,32 @@ func getSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Ski
 	return skills
 }
 
+func getJobsLimit(redis *redisearch.Client, offset int, size int) []schema.Job {
+	sort_field := "created_at"
+	data, _, err := redis.Search(redisearch.NewQuery("*").Limit(offset, size).SetSortBy(sort_field, false))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var jobs []schema.Job
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
+		}
+		var job schema.Job
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		jobs = append(jobs, job)
+	}
+
+	return jobs
+}
+
 func getTotalSkills(redis *redisearch.Client) int {
 	_, total, err := redis.Search(redisearch.NewQuery("*").Limit(0, 0))
 	if err != nil {
@@ -143,8 +167,9 @@ func getTotalJobs(redis *redisearch.Client) int {
 	return total
 }
 
-func getJob(redis *redis.Client, payment_id []byte) schema.Job {
-	record_id := "job:" + string(payment_id)
+func getJob(redis *redis.Client, address string, slot string) schema.Job {
+	record_id := "job:" + slot + ":" + address
+	fmt.Println("record_id:", record_id)
 	var job schema.Job
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
@@ -182,21 +207,6 @@ func getJobs(redis *redisearch.Client, address string) []schema.Job {
 		jobs = append(jobs, job)
 	}
 	return jobs
-}
-
-func HandleGetTotalSkills(redis *redisearch.Client) int {
-	data := getTotalSkills(redis)
-	return data
-}
-
-func HandleGetSkillsTotal(redis *redisearch.Client) int {
-	data := getTotalSkills(redis)
-	return data
-}
-
-func HandleGetSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Skill {
-	data := getSkillsLimit(redis, offset, size)
-	return data
 }
 
 func getAllowedSkillAmount(tier int) int {
@@ -319,15 +329,29 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	return "success"
 }
 
+func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Skill {
+	skill := getSkill(redis, slot, address)
+	return skill
+}
+
 func HandleGetSkills(redis *redisearch.Client, address string) []schema.Skill {
 	skills := getSkills(redis, address)
 	return skills
 }
 
-func HandleGetSkill(redis *redis.Client, address string, slot string) schema.Skill {
-	s, _ := strconv.Atoi(slot)
-	skill := getSkill(redis, s, address)
-	return skill
+func HandleGetAllSkills(redis *redisearch.Client, sort_field string, ascending bool) []schema.Skill {
+	skills := getAllSkills(redis, sort_field, ascending)
+	return skills
+}
+
+func HandleGetSkillsLimit(redis *redisearch.Client, offset int, size int) []schema.Skill {
+	data := getSkillsLimit(redis, offset, size)
+	return data
+}
+
+func HandleGetSkillsTotal(redis *redisearch.Client) int {
+	data := getTotalSkills(redis)
+	return data
 }
 
 func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, address string, salt string, signature string, body []byte) string {
@@ -385,8 +409,7 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 		return "Wrong signature."
 	}
 
-	s, _ := strconv.Atoi(slot)
-	current_skill := getSkill(redis, s, address)
+	current_skill := getSkill(redis, slot, address)
 	state := web3.FetchUserState(address)
 	var max_allowed int
 	switch state {
@@ -402,6 +425,7 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 		max_allowed = getAllowedSkillAmount(3)
 	}
 
+	s, _ := strconv.Atoi(slot)
 	if s > max_allowed-1 {
 		return "User doesn't have that many skill slots."
 	}
@@ -438,19 +462,54 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	return "success"
 }
 
-func HandleGetAllSkills(redis *redisearch.Client, sort_field string, ascending bool) []schema.Skill {
-	skills := getAllSkills(redis, sort_field, ascending)
-	return skills
+func getAllJobs(redis *redisearch.Client, sort_field string, ascending bool) []schema.Job {
+	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, ascending))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var jobs []schema.Job
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
+		}
+		var job schema.Job
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		jobs = append(jobs, job)
+	}
+	return jobs
 }
 
-func HandleGetJob(redis *redis.Client, payment_id []byte) schema.Job {
-	job := getJob(redis, payment_id)
+func HandleGetJob(redis *redis.Client, address string, slot string) schema.Job {
+	job := getJob(redis, slot, address)
 	return job
 }
 
-// func HandleGetJobs(redis *redisearch.Client, address string) []schema.Job {
+func HandleGetJobs(redis *redisearch.Client, address string) []schema.Job {
+	jobs := getJobs(redis, address)
+	return jobs
+}
 
-// }
+func HandleGetAllJobs(redis *redisearch.Client, sort_field string, ascending bool) []schema.Job {
+	jobs := getAllJobs(redis, sort_field, ascending)
+	return jobs
+}
+
+func HandleGetJobsLimit(redis *redisearch.Client, offset int, size int) []schema.Job {
+	jobs := getJobsLimit(redis, offset, size)
+	return jobs
+}
+
+func HandleGetJobsTotal(redis *redisearch.Client) int {
+	jobs := getTotalJobs(redis)
+	return jobs
+}
 
 func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, salt string, signature string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
@@ -481,6 +540,32 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 
 	user_jobs := getJobs(redisearch, address)
 	record_id := "job:" + strconv.Itoa(len(user_jobs)) + ":" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return "success"
+}
+
+func HandleUpdateJob(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	var job schema.Job
+	err := json.Unmarshal(body, &job)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	new_data, err := json.Marshal(job)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "job:" + slot + ":" + address
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {

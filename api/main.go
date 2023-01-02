@@ -74,15 +74,18 @@ func main() {
 	// 	asc, _ := strconv.ParseBool(c.Params("order"))
 	// 	return c.JSON(HandleGetAllJobs(redis, c.Params("sort"), asc))
 	// })
-	// app.Get("/api/v1/jobs/:address", func(c *fiber.Ctx) error {
-	// 	return c.JSON(HandleGetJobs(redis, c.Params("address")))
-	// })
+	app.Get("/api/v1/jobs/:address/:slot", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetJob(redis, c.Params("address"), c.Params("slot")))
+	})
+	app.Get("/api/v1/jobs/:address", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetJobs(redis_job_index, c.Params("address")))
+	})
 	app.Post("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleAddJob(redis, redis_job_index, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
 	})
-	// app.Patch("/api/v1/jobs/:address/:salt/:signature/:slot", func(c *fiber.Ctx) error {
-	// 	return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
-	// })
+	app.Patch("/api/v1/jobs/:address/:salt/:signature/:slot", func(c *fiber.Ctx) error {
+		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
+	})
 
 	app.Listen(":" + conf.API.Port)
 }

@@ -45,4 +45,5 @@ type Job struct {
 	TokensAccepted  []string `json:"tokens"`
 	StickyDuration  int64    `json:"sticky_duration"`
 	HighlightOption int64    `json:"highlight"`
+	CreatedAt       int64    `json:"created_at"`
 }
