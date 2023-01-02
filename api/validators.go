@@ -28,7 +28,7 @@ func AuthorizeSignature(redis *redis.Client, address string, salt string, signat
 
 func ValidateUsername(username string) bool {
 	conf, err := config.ParseConfig()
-	if len(username) > conf.CharLimits.Profile.Username || err != nil {
+	if len(username) > conf.Settings.CharLimits.Profile.Username || err != nil {
 		return false
 	}
 	return true
@@ -40,7 +40,7 @@ func ValidateShowEns(address string) bool {
 
 func ValidateTitle(title string) bool {
 	conf, err := config.ParseConfig()
-	if len(title) > conf.CharLimits.Profile.Title || err != nil {
+	if len(title) > conf.Settings.CharLimits.Profile.Title || err != nil {
 		return false
 	}
 	return true
@@ -64,7 +64,7 @@ func ValidateTimezone(timezone string) bool {
 
 func ValidateBio(bio string) bool {
 	conf, err := config.ParseConfig()
-	if len(bio) > conf.CharLimits.Profile.Bio || err != nil {
+	if len(bio) > conf.Settings.CharLimits.Profile.Bio || err != nil {
 		return false
 	}
 	return true

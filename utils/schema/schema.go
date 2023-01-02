@@ -5,15 +5,18 @@ type User struct {
 	Signature  string   `json:"signature"`
 	Username   string   `json:"username"`
 	ShowEns    bool     `json:"show_ens"`
+	EnsName    string   `json:"ens_name"`
 	Title      string   `json:"title"`
 	ImageUrl   string   `json:"image_url"`
 	ShowNFT    bool     `json:"show_nft"`
+	NFTUrl     string   `json:"nft_url"`
 	NFTAddress string   `json:"nft_address"`
 	NFTId      string   `json:"nft_id"`
 	Email      string   `json:"email"`
 	Timezone   string   `json:"timezone"`
 	Bio        string   `json:"bio"`
 	Links      []string `json:"links"`
+	Rating     int64    `json:"rating"`
 }
 
 type Skill struct {
@@ -26,5 +29,21 @@ type Skill struct {
 	MinimumPrice int      `json:"minimum_price"`
 	Publish      bool     `json:"publish"`
 	CreatedAt    int64    `json:"created_at"`
-	Rating 		 int64    `json:"rating"`
+}
+
+type Job struct {
+	UserAddress     string   `json:"user_address"`
+	TokenPaid       string   `json:"token_paid"`
+	Title           string   `json:"title"`
+	Description     string   `json:"description"`
+	Tags            []string `json:"tags"`
+	Links           []string `json:"links"`
+	Budget          int64    `json:"budget"`
+	Installments    int64    `json:"installments"`
+	Networks        []string `json:"networks"`
+	TimeZone        string   `json:"timezone"`
+	TokensAccepted  []string `json:"tokens"`
+	StickyDuration  int64    `json:"sticky_duration"`
+	HighlightOption int64    `json:"highlight"`
+	CreatedAt       int64    `json:"created_at"`
 }
