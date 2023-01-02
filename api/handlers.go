@@ -511,6 +511,65 @@ func HandleGetJobsTotal(redis *redisearch.Client) int {
 	return jobs
 }
 
+func HandleGetFeed(redis *redisearch.Client) []schema.Job {
+	sort_field := "created_at"
+	filter_field := "sticky_duration"
+	var f redisearch.Filter
+	f.Field = filter_field
+	// todo: fetch from config
+	f.Options = redisearch.NumericFilterOptions{
+		Min: 7,
+	}
+	sticky_data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, false).AddFilter(f))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	f.Options = redisearch.NumericFilterOptions{
+		Max: 1,
+	}
+	regular_data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, false).AddFilter(f))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var jobs []schema.Job
+
+	var sticky_jobs []schema.Job
+	for _, d := range sticky_data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
+		}
+		var job schema.Job
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		jobs = append(sticky_jobs, job)
+	}
+
+	var regular_jobs []schema.Job
+	for _, d := range regular_data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
+		}
+		var job schema.Job
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		jobs = append(regular_jobs, job)
+	}
+
+	return jobs
+}
+
 func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, salt string, signature string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
 	if !authorized {
