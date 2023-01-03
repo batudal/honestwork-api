@@ -62,23 +62,26 @@ func main() {
 	})
 
 	// job routes
-	// app.Get("/api/v1/jobs/total", func(c *fiber.Ctx) error {
-	// 	return c.JSON(HandleGetJobsTotal(redis))
-	// })
-	// app.Get("/api/v1/jobs/limit/:offset/:size", func(c *fiber.Ctx) error {
-	// 	offset, _ := strconv.Atoi(c.Params("offset"))
-	// 	size, _ := strconv.Atoi(c.Params("size"))
-	// 	return c.JSON(HandleGetJobsLimit(redis, offset, size))
-	// })
-	// app.Get("/api/v1/jobs/:sort/:order", func(c *fiber.Ctx) error {
-	// 	asc, _ := strconv.ParseBool(c.Params("order"))
-	// 	return c.JSON(HandleGetAllJobs(redis, c.Params("sort"), asc))
-	// })
+	app.Get("/api/v1/jobs/total", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetJobsTotal(redis_job_index))
+	})
+	app.Get("/api/v1/jobs/limit/:offset/:size", func(c *fiber.Ctx) error {
+		offset, _ := strconv.Atoi(c.Params("offset"))
+		size, _ := strconv.Atoi(c.Params("size"))
+		return c.JSON(HandleGetJobsLimit(redis_job_index, offset, size))
+	})
+	app.Get("/api/v1/jobs/:sort/:order", func(c *fiber.Ctx) error {
+		asc, _ := strconv.ParseBool(c.Params("order"))
+		return c.JSON(HandleGetAllJobs(redis_job_index, c.Params("sort"), asc))
+	})
 	app.Get("/api/v1/jobs/:address/:slot", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetJob(redis, c.Params("address"), c.Params("slot")))
 	})
 	app.Get("/api/v1/jobs/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetJobs(redis_job_index, c.Params("address")))
+	})
+	app.Get("/api/v1/jobs/feed", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetFeed(redis_job_index))
 	})
 	app.Post("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleAddJob(redis, redis_job_index, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
