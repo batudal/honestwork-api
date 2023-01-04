@@ -268,6 +268,8 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 
 	record_id := "user:" + address
 
+	fmt.Println("Updating user:", record_id)
+
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -511,7 +513,7 @@ func HandleGetJobsTotal(redis *redisearch.Client) int {
 	return jobs
 }
 
-func HandleGetFeed(redis *redisearch.Client) []schema.Job {
+func HandleGetJobsFeed(redis *redisearch.Client) []schema.Job {
 	sort_field := "created_at"
 	filter_field := "sticky_duration"
 	var f redisearch.Filter
