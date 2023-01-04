@@ -32,18 +32,33 @@ type Skill struct {
 }
 
 type Job struct {
-	UserAddress     string   `json:"user_address"`
-	TokenPaid       string   `json:"token_paid"`
-	Title           string   `json:"title"`
-	Description     string   `json:"description"`
-	Tags            []string `json:"tags"`
-	Links           []string `json:"links"`
-	Budget          int64    `json:"budget"`
-	Installments    int64    `json:"installments"`
-	Networks        []string `json:"networks"`
-	TimeZone        string   `json:"timezone"`
-	TokensAccepted  []string `json:"tokens"`
-	StickyDuration  int64    `json:"sticky_duration"`
-	HighlightOption int64    `json:"highlight"`
-	CreatedAt       int64    `json:"created_at"`
+	UserAddress     string    `json:"user_address"`
+	TokenPaid       string    `json:"token_paid"`
+	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	Tags            []string  `json:"tags"`
+	Links           []string  `json:"links"`
+	Budget          int64     `json:"budget"`
+	Installments    int64     `json:"installments"`
+	TimeZone        string    `json:"timezone"`
+	TokensAccepted  []Network `json:"tokens_accepted"`
+	StickyDuration  int64     `json:"sticky_duration"`
+	HighlightOption int64     `json:"highlight"`
+	CreatedAt       int64     `json:"created_at"`
+}
+
+type Network struct {
+	Name   string  `json:"name"`
+	Id     int64   `json:"id"`
+	Tokens []Token `json:"tokens"`
+}
+type Token struct {
+	Name       string `json:"name"`
+	Symbol     string `json:"symbol"`
+	Address    string `json:"address"`
+	MaxAllowed int64  `json:"max_allowed"`
+}
+
+type Whitelist struct {
+	Tokens []Token `json:"tokens"`
 }
