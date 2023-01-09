@@ -391,8 +391,6 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	slot := strconv.Itoa(len(all_skills))
 	record_id := "skill:" + slot + ":" + address
 
-	fmt.Println("Record id:", record_id)
-	fmt.Println("Skill:", skill)
 	new_data, err := json.Marshal(skill)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -489,7 +487,7 @@ func getAllJobs(redis *redisearch.Client, sort_field string, ascending bool) []s
 }
 
 func HandleGetJob(redis *redis.Client, address string, slot string) schema.Job {
-	job := getJob(redis, slot, address)
+	job := getJob(redis, address, slot)
 	return job
 }
 
@@ -581,15 +579,15 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 	var job schema.Job
 	err := json.Unmarshal(body, &job)
 	if err != nil {
-		fmt.Println("Error:", err)
+		return err.Error()
 	}
 
 	amount, err := web3.CalculatePayment(&job)
 	if err != nil {
-		fmt.Println("Error:", err)
+		return err.Error()
 	}
 
-	_, err = web3.CheckOutstandingPayment(address, job.TokenPaid, amount)
+	err = web3.CheckOutstandingPayment(address, job.TokenPaid, amount, job.TxHash)
 	if err != nil {
 		return err.Error()
 	}
@@ -604,8 +602,9 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
-		fmt.Println("Error:", err)
+		return err.Error()
 	}
+
 	return "success"
 }
 

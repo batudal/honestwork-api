@@ -74,7 +74,7 @@ func main() {
 		asc, _ := strconv.ParseBool(c.Params("order"))
 		return c.JSON(HandleGetAllJobs(redis_job_index, c.Params("sort"), asc))
 	})
-	app.Get("/api/v1/jobs/:address/:slot", func(c *fiber.Ctx) error {
+	app.Get("/api/v1/job/:address/:slot", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetJob(redis, c.Params("address"), c.Params("slot")))
 	})
 	app.Get("/api/v1/jobs/:address", func(c *fiber.Ctx) error {

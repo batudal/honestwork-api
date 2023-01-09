@@ -1,11 +1,16 @@
 package web3
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/big"
+	"strings"
 
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/takez0o/honestwork-api/utils/abi/genesis"
@@ -42,36 +47,90 @@ func FetchUserState(address string) int {
 	return int(state.Int64())
 }
 
-func CheckOutstandingPayment(user_address string, token_address string, amount *big.Int) (*job_listing.JobListingPayment, error) {
+func CheckOutstandingPayment(user_address string, token_address string, amount *big.Int, tx_hash string) error {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		return new(job_listing.JobListingPayment), err
+		return err
 	}
-
 	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
 	if err != nil {
-		return new(job_listing.JobListingPayment), err
+		return err
 	}
 
-	payment_address_hex := common.HexToAddress(conf.ContractAddresses.JobPayments)
-	instance, err := job_listing.NewJobListing(payment_address_hex, client)
+	payment_address := common.HexToAddress(conf.ContractAddresses.JobPayments)
+	txHash := common.HexToHash(tx_hash)
+	tx, isPending, err := client.TransactionByHash(context.Background(), txHash)
 	if err != nil {
-		return new(job_listing.JobListingPayment), err
+		return err
+	}
+	if isPending {
+		return fmt.Errorf("tx is pending")
 	}
 
-	user_address_hex := common.HexToAddress(user_address)
-	outstanding_payment, err := instance.GetLatestPayment(nil, user_address_hex)
+	if *tx.To() != payment_address {
+		return fmt.Errorf("tx to address mismatch")
+	}
+
+	//todo: implement multichain payments (currently only polygon)
+	if tx.ChainId().Int64() != conf.Network.Polygon.ID {
+		return fmt.Errorf("tx chain id mismatch")
+	}
+
+	receipt, err := client.TransactionReceipt(context.Background(), txHash)
 	if err != nil {
-		return new(job_listing.JobListingPayment), err
+		return err
 	}
 
-	token_address_onchain := outstanding_payment.Token.String()
-	amount_is_eq := amount.Cmp(outstanding_payment.Amount)
+	event_sig := []byte("PaymentAdded(address,uint256)")
+	event_sig_hash := crypto.Keccak256Hash(event_sig)
 
-	if token_address != token_address_onchain || amount_is_eq != 0 {
-		return new(job_listing.JobListingPayment), fmt.Errorf("payment mismatch")
+	// block_hash := receipt.BlockHash
+	query := ethereum.FilterQuery{
+		FromBlock: receipt.BlockNumber,
+		ToBlock:   receipt.BlockNumber,
+		// BlockHash: &block_hash,
+		Addresses: []common.Address{
+			payment_address,
+		},
+		Topics: [][]common.Hash{
+			{
+				event_sig_hash,
+			},
+		},
 	}
-	return &outstanding_payment, err
+
+	logs, err := client.FilterLogs(context.Background(), query)
+	if err != nil {
+		return err
+	}
+	if (logs == nil) || (len(logs) == 0) {
+		return fmt.Errorf("no logs found")
+	}
+
+	contract_abi, err := abi.JSON(strings.NewReader(string(job_listing.JobListingABI)))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//todo: multiple events scenario
+	for _, v_log := range logs {
+		payment_event, err := contract_abi.Unpack("PaymentAdded", v_log.Data)
+		if err != nil {
+			return err
+		}
+
+		payment_amount := payment_event[0].(*big.Int)
+		if payment_amount.Cmp(amount) != 0 {
+			return fmt.Errorf("amount paid mismatch")
+		}
+
+		token_addr := common.BytesToAddress(v_log.Topics[1].Bytes()).Hex()
+		if token_addr != token_address {
+			return fmt.Errorf("token address mismatch")
+		}
+
+	}
+	return nil
 }
 
 func CalculatePayment(opts *schema.Job) (*big.Int, error) {
@@ -89,7 +148,7 @@ func CalculatePayment(opts *schema.Job) (*big.Int, error) {
 	} else if duration == 30 {
 		highlight_fee.SetString(conf.Settings.Jobs.HighlightPrices.StickyPrices.Month, 10)
 	} else {
-		return big.NewInt(0), fmt.Errorf("invalid duration")
+		highlight_fee = big.NewInt(0)
 	}
 
 	var service_fee = new(big.Int)

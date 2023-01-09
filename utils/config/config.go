@@ -63,11 +63,11 @@ type Config struct {
 	} `yaml:"contract_addresses"`
 	Network struct {
 		Devm struct {
-			ID     string `yaml:"id"`
+			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
 		} `yaml:"devm"`
 		Polygon struct {
-			ID     string `yaml:"id"`
+			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
 		} `yaml:"polygon"`
 	} `yaml:"network"`
