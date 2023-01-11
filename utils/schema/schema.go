@@ -46,6 +46,7 @@ type Job struct {
 	StickyDuration int64     `json:"sticky_duration"`
 	CreatedAt      int64     `json:"created_at"`
 	TxHash         string    `json:"tx_hash"`
+	ImageUrl       string    `json:"image_url"`
 }
 
 type Network struct {

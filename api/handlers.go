@@ -183,14 +183,36 @@ func getJob(redis *redis.Client, address string, slot string) schema.Job {
 }
 
 func getJobs(redis *redisearch.Client, address string) []schema.Job {
-	sort_field := "budget"
-	infield := "user_address"
-	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, true))
-
+	sort_field := "created_at"
+	ascending := false
+	data, _, err := redis.Search(redisearch.NewQuery(address).SetSortBy(sort_field, ascending).Limit(0, 10000))
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
+	var jobs []schema.Job
+	for _, d := range data {
+		translationKeys := make([]string, 0, len(d.Properties))
+		for key := range d.Properties {
+			if key != sort_field {
+				translationKeys = append(translationKeys, key)
+			}
+		}
+		var job schema.Job
+		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		jobs = append(jobs, job)
+	}
+	return jobs
+}
+
+func getAllJobs(redis *redisearch.Client, sort_field string, ascending bool) []schema.Job {
+	data, _, err := redis.Search(redisearch.NewQuery("*").Limit(0, 10000))
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 	var jobs []schema.Job
 	for _, d := range data {
 		translationKeys := make([]string, 0, len(d.Properties))
@@ -460,30 +482,6 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 		fmt.Println("Error:", err)
 	}
 	return "success"
-}
-
-func getAllJobs(redis *redisearch.Client, sort_field string, ascending bool) []schema.Job {
-	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, ascending))
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	var jobs []schema.Job
-	for _, d := range data {
-		translationKeys := make([]string, 0, len(d.Properties))
-		for key := range d.Properties {
-			if key != sort_field {
-				translationKeys = append(translationKeys, key)
-			}
-		}
-		var job schema.Job
-		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
-		if err != nil {
-			fmt.Println("Error:", err)
-		}
-		jobs = append(jobs, job)
-	}
-	return jobs
 }
 
 func HandleGetJob(redis *redis.Client, address string, slot string) schema.Job {
