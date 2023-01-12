@@ -32,21 +32,30 @@ type Skill struct {
 }
 
 type Job struct {
-	UserAddress    string    `json:"user_address"`
-	Username       string    `json:"username"`
-	TokenPaid      string    `json:"token_paid"`
-	Title          string    `json:"title"`
-	Description    string    `json:"description"`
-	Tags           []string  `json:"tags"`
-	Links          []string  `json:"links"`
-	Budget         int       `json:"budget"`
-	Installments   int64     `json:"installments"`
-	TimeZone       string    `json:"timezone"`
-	TokensAccepted []Network `json:"tokens_accepted"`
-	StickyDuration int64     `json:"sticky_duration"`
-	CreatedAt      int64     `json:"created_at"`
-	TxHash         string    `json:"tx_hash"`
-	ImageUrl       string    `json:"image_url"`
+	Slot           int           `json:"slot"`
+	UserAddress    string        `json:"user_address"`
+	Username       string        `json:"username"`
+	TokenPaid      string        `json:"token_paid"`
+	Title          string        `json:"title"`
+	Description    string        `json:"description"`
+	Tags           []string      `json:"tags"`
+	Links          []string      `json:"links"`
+	Budget         int           `json:"budget"`
+	Installments   int64         `json:"installments"`
+	TimeZone       string        `json:"timezone"`
+	TokensAccepted []Network     `json:"tokens_accepted"`
+	StickyDuration int64         `json:"sticky_duration"`
+	CreatedAt      int64         `json:"created_at"`
+	TxHash         string        `json:"tx_hash"`
+	ImageUrl       string        `json:"image_url"`
+	Applications   []Application `json:"application"`
+}
+
+type Application struct {
+	UserAddress string `json:"user_address"`
+	JobId       string `json:"job_id"`
+	CoverLetter string `json:"cover_letter"`
+	Date        int64  `json:"date"`
 }
 
 type Network struct {

@@ -90,5 +90,9 @@ func main() {
 		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
 	})
 
+	app.Post("/api/v1/jobs/apply/:address/:salt/:signature/:recruiter_address/:slot/", func(c *fiber.Ctx) error {
+		return c.JSON(HandleApplyJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("recruiter_address"), c.Params("slot"), c.Body()))
+	})
+
 	app.Listen(":" + conf.API.Port)
 }

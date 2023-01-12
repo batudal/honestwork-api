@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
@@ -168,8 +169,7 @@ func getTotalJobs(redis *redisearch.Client) int {
 }
 
 func getJob(redis *redis.Client, address string, slot string) schema.Job {
-	record_id := "job:" + slot + ":" + address
-	fmt.Println("record_id:", record_id)
+	record_id := "job:" + address + ":" + slot
 	var job schema.Job
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
@@ -209,7 +209,7 @@ func getJobs(redis *redisearch.Client, address string) []schema.Job {
 }
 
 func getAllJobs(redis *redisearch.Client, sort_field string, ascending bool) []schema.Job {
-	data, _, err := redis.Search(redisearch.NewQuery("*").Limit(0, 10000))
+	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, ascending).Limit(0, 10000))
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -580,6 +580,9 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 		return err.Error()
 	}
 
+	job.Applications = make([]schema.Application, 0)
+	job.Slot = len(getJobs(redisearch, address))
+
 	amount, err := web3.CalculatePayment(&job)
 	if err != nil {
 		return err.Error()
@@ -596,7 +599,7 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 	}
 
 	user_jobs := getJobs(redisearch, address)
-	record_id := "job:" + strconv.Itoa(len(user_jobs)) + ":" + address
+	record_id := "job:" + address + ":" + strconv.Itoa(len(user_jobs))
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
@@ -618,12 +621,56 @@ func HandleUpdateJob(redis *redis.Client, address string, salt string, signature
 		fmt.Println("Error:", err)
 	}
 
+	// check if a deal has started on this job
+
+	existing_job := getJob(redis, address, slot)
+	job.Applications = existing_job.Applications
+
 	new_data, err := json.Marshal(job)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
 	record_id := "job:" + slot + ":" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return "success"
+}
+
+func HandleApplyJob(redis *redis.Client, address string, salt string, signature string, recruiter_address string, slot string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	state := web3.FetchUserState(address)
+	switch state {
+	case 0:
+		return "User doesn't have NFT."
+	}
+
+	var application schema.Application
+	err := json.Unmarshal(body, &application)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	application.Date = time.Now().Unix()
+
+	// check if a deal has started on this job
+
+	existing_job := getJob(redis, address, slot)
+	existing_job.Applications = append(existing_job.Applications, application)
+
+	new_data, err := json.Marshal(existing_job)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "job:" + recruiter_address + ":" + slot
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
