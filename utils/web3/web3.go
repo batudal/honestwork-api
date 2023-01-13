@@ -31,7 +31,6 @@ func FetchUserState(address string) int {
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
-	fmt.Println("nft_address_hex:", nft_address_hex)
 
 	instance, err := genesis.NewGenesis(nft_address_hex, client)
 	if err != nil {

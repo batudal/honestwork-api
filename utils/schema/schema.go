@@ -32,6 +32,7 @@ type Skill struct {
 }
 
 type Job struct {
+	Email          string        `json:"email"`
 	Slot           int           `json:"slot"`
 	UserAddress    string        `json:"user_address"`
 	Username       string        `json:"username"`

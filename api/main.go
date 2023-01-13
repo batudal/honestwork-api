@@ -86,10 +86,9 @@ func main() {
 	app.Post("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleAddJob(redis, redis_job_index, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
 	})
-	app.Patch("/api/v1/jobs/:address/:salt/:signature/:slot", func(c *fiber.Ctx) error {
-		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
+	app.Patch("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
 	})
-
 	app.Post("/api/v1/jobs/apply/:address/:salt/:signature/:recruiter_address/:slot/", func(c *fiber.Ctx) error {
 		return c.JSON(HandleApplyJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("recruiter_address"), c.Params("slot"), c.Body()))
 	})

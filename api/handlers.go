@@ -289,9 +289,6 @@ func HandleSignup(redis *redis.Client, address string, salt string, signature st
 	}
 
 	record_id := "user:" + address
-
-	fmt.Println("Updating user:", record_id)
-
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -609,7 +606,7 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 	return "success"
 }
 
-func HandleUpdateJob(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
+func HandleUpdateJob(redis *redis.Client, address string, salt string, signature string, body []byte) string {
 	authorized := authorize(redis, address, salt, signature)
 	if !authorized {
 		return "Wrong signature."
@@ -623,15 +620,20 @@ func HandleUpdateJob(redis *redis.Client, address string, salt string, signature
 
 	// check if a deal has started on this job
 
-	existing_job := getJob(redis, address, slot)
+	s := strconv.Itoa(job.Slot)
+	existing_job := getJob(redis, address, s)
 	job.Applications = existing_job.Applications
+	job.CreatedAt = existing_job.CreatedAt
+	job.TokenPaid = existing_job.TokenPaid
+
+	// return if job doesnt exist
 
 	new_data, err := json.Marshal(job)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	record_id := "job:" + slot + ":" + address
+	record_id := "job:" + address + ":" + s
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
@@ -663,6 +665,11 @@ func HandleApplyJob(redis *redis.Client, address string, salt string, signature 
 	// check if a deal has started on this job
 
 	existing_job := getJob(redis, address, slot)
+	for _, app := range existing_job.Applications {
+		if app.UserAddress == address {
+			return "You have already applied to this job."
+		}
+	}
 	existing_job.Applications = append(existing_job.Applications, application)
 
 	new_data, err := json.Marshal(existing_job)
