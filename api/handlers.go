@@ -577,6 +577,8 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 		return err.Error()
 	}
 
+	// todo: check if tx has been consumed
+
 	job.Applications = make([]schema.Application, 0)
 	job.Slot = len(getJobs(redisearch, address))
 
