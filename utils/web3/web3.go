@@ -51,7 +51,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
 	if err != nil {
 		return err
 	}
@@ -70,8 +70,8 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 		return fmt.Errorf("tx to address mismatch")
 	}
 
-	//todo: implement multichain payments (currently only polygon)
-	if tx.ChainId().Int64() != conf.Network.Polygon.ID {
+	//todo: implement multichain payments (currently only binance)
+	if tx.ChainId().Int64() != conf.Network.Binance.ID {
 		return fmt.Errorf("tx chain id mismatch")
 	}
 

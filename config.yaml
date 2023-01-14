@@ -44,3 +44,6 @@ network:
   devm:
     id: 1453
     rpc_url: https://decoded.wtf
+  binance:
+    id: 56
+    rpc_url: https://skilled-patient-butterfly.bsc.quiknode.pro/89efe93217115973b4681365c2e7a1e2abc0c29b/

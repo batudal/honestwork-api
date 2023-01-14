@@ -70,6 +70,10 @@ type Config struct {
 			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
 		} `yaml:"polygon"`
+		Binance struct {
+			ID     int64  `yaml:"id"`
+			RPCURL string `yaml:"rpc_url"`
+		} `yaml:"binance"`
 	} `yaml:"network"`
 }
 
