@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/takez0o/honestwork-api/utils/client"
 	"github.com/takez0o/honestwork-api/utils/config"
 )
@@ -23,6 +24,7 @@ func main() {
 	redis_job_index := client.NewSearchClient("jobIndex")
 
 	app.Use(cors.New())
+	app.Use(recover.New())
 
 	// user routes
 	app.Post("/api/v1/users/:address/:salt/:signature", func(c *fiber.Ctx) error {
@@ -91,6 +93,14 @@ func main() {
 	})
 	app.Post("/api/v1/jobs/apply/:address/:salt/:signature/:recruiter_address/:slot/", func(c *fiber.Ctx) error {
 		return c.JSON(HandleApplyJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("recruiter_address"), c.Params("slot"), c.Body()))
+	})
+
+	// watchlist (for jobs listings)
+	app.Post("/api/v1/watchlist/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddWatchlist(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	})
+	app.Get("/api/v1/watchlist/:address", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetWatchlist(redis, c.Params("address")))
 	})
 
 	app.Listen(":" + conf.API.Port)

@@ -687,3 +687,54 @@ func HandleApplyJob(redis *redis.Client, address string, salt string, signature 
 	}
 	return "success"
 }
+
+func getWatchlist(redis *redis.Client, address string) []schema.Watchlist {
+	user := getUser(redis, address)
+	return user.Watchlist
+}
+
+func HandleGetWatchlist(redis *redis.Client, address string) []schema.Watchlist {
+	watchlist := getWatchlist(redis, address)
+	return watchlist
+}
+
+func HandleAddWatchlist(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	var watchlist_input schema.WatchlistInput
+	err := json.Unmarshal(body, &watchlist_input)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	job := getJob(redis, watchlist_input.Address, strconv.Itoa(watchlist_input.Slot))
+
+	watchlist := schema.Watchlist{
+		Input:    watchlist_input,
+		Username: job.Username,
+		Title:    job.Title,
+		ImageUrl: job.ImageUrl,
+	}
+
+	user := getUser(redis, address)
+	for _, app := range user.Watchlist {
+		if app.Input.Address == watchlist.Input.Address && app.Input.Slot == watchlist.Input.Slot {
+			return "You have already added this job to watchlist."
+		}
+	}
+	user.Watchlist = append(user.Watchlist, watchlist)
+
+	new_data, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "user:" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+
+	return "success"
+}

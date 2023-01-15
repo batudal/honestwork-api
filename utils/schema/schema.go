@@ -1,22 +1,35 @@
 package schema
 
 type User struct {
-	Salt       string   `json:"salt"`
-	Signature  string   `json:"signature"`
-	Username   string   `json:"username"`
-	ShowEns    bool     `json:"show_ens"`
-	EnsName    string   `json:"ens_name"`
-	Title      string   `json:"title"`
-	ImageUrl   string   `json:"image_url"`
-	ShowNFT    bool     `json:"show_nft"`
-	NFTUrl     string   `json:"nft_url"`
-	NFTAddress string   `json:"nft_address"`
-	NFTId      string   `json:"nft_id"`
-	Email      string   `json:"email"`
-	Timezone   string   `json:"timezone"`
-	Bio        string   `json:"bio"`
-	Links      []string `json:"links"`
-	Rating     int64    `json:"rating"`
+	Salt       string      `json:"salt"`
+	Signature  string      `json:"signature"`
+	Username   string      `json:"username"`
+	ShowEns    bool        `json:"show_ens"`
+	EnsName    string      `json:"ens_name"`
+	Title      string      `json:"title"`
+	ImageUrl   string      `json:"image_url"`
+	ShowNFT    bool        `json:"show_nft"`
+	NFTUrl     string      `json:"nft_url"`
+	NFTAddress string      `json:"nft_address"`
+	NFTId      string      `json:"nft_id"`
+	Email      string      `json:"email"`
+	Timezone   string      `json:"timezone"`
+	Bio        string      `json:"bio"`
+	Links      []string    `json:"links"`
+	Rating     int64       `json:"rating"`
+	Watchlist  []Watchlist `json:"watchlist"`
+}
+
+type Watchlist struct {
+	Input    WatchlistInput `json:"input"`
+	Username string         `json:"username"`
+	Title    string         `json:"title"`
+	ImageUrl string         `json:"image_url"`
+}
+
+type WatchlistInput struct {
+	Address string `json:"address"`
+	Slot    int    `json:"slot"`
 }
 
 type Skill struct {
