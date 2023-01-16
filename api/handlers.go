@@ -265,7 +265,13 @@ func authorize(redis *redis.Client, address string, salt string, signature strin
 	return false
 }
 
-func HandleSignup(redis *redis.Client, address string, salt string, signature string) string {
+func HandleSignup(redis *redis.Client, address string, signature string) string {
+	salt_id := "salt:" + address
+	salt, err := redis.Get(redis.Context(), salt_id).Result()
+	if err != nil {
+		return "No salt for this address found"
+	}
+
 	result := crypto.VerifySignature(salt, address, signature)
 	if !result {
 		return "Wrong signature."
@@ -849,4 +855,15 @@ func HandleRemoveFavorite(redis *redis.Client, address string, salt string, sign
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 
 	return "success"
+}
+
+func HandleGetSalt(redis *redis.Client, address string) string {
+	salt := crypto.GenerateSalt()
+	salt_id := "salt:" + address
+	ttl := time.Duration(24*30) * time.Hour
+	err := redis.Set(redis.Context(), salt_id, salt, ttl).Err()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return salt
 }

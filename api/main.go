@@ -27,8 +27,8 @@ func main() {
 	app.Use(recover.New())
 
 	// user routes
-	app.Post("/api/v1/users/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleSignup(redis, c.Params("address"), c.Params("salt"), c.Params("signature")))
+	app.Post("/api/v1/users/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleSignup(redis, c.Params("address"), c.Params("signature")))
 	})
 	app.Get("/api/v1/users/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetUser(redis, c.Params("address")))
@@ -115,6 +115,10 @@ func main() {
 	})
 	app.Get("/api/v1/favorites/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetFavorites(redis, c.Params("address")))
+	})
+
+	app.Get("api/v1/salt/:address", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetSalt(redis, c.Params("address")))
 	})
 
 	app.Listen(":" + conf.API.Port)

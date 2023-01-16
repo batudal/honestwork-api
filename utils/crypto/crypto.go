@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"bytes"
+	"math/rand"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -29,4 +30,21 @@ func GenerateID(salt string, address string) string {
 	data := bytes.Join(elements, []byte(""))
 	hash := crypto.Keccak256Hash(data)
 	return hash.Hex()
+}
+
+func GenerateSalt() string {
+	salt := RandomString(128)
+	intro := "HonestWork Login:\n\n"
+	result := intro + salt
+	return result
+}
+
+func RandomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
 }
