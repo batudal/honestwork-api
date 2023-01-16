@@ -18,6 +18,19 @@ type User struct {
 	Links      []string    `json:"links"`
 	Rating     int64       `json:"rating"`
 	Watchlist  []Watchlist `json:"watchlist"`
+	Favorites  []Favorite  `json:"favorites"`
+}
+
+type FavoriteInput struct {
+	Address string `json:"address"`
+	Slot    int    `json:"slot"`
+}
+
+type Favorite struct {
+	Input    FavoriteInput `json:"input"`
+	Username string        `json:"username"`
+	Title    string        `json:"title"`
+	ImageUrl string        `json:"image_url"`
 }
 
 type Watchlist struct {

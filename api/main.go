@@ -99,8 +99,22 @@ func main() {
 	app.Post("/api/v1/watchlist/:address/:salt/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleAddWatchlist(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
 	})
+	app.Delete("/api/v1/watchlist/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleRemoveWatchlist(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	})
 	app.Get("/api/v1/watchlist/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetWatchlist(redis, c.Params("address")))
+	})
+
+	// favorites (for skills)
+	app.Post("/api/v1/favorites/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddFavorite(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	})
+	app.Delete("/api/v1/favorites/:address/:salt/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleRemoveFavorite(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	})
+	app.Get("/api/v1/favorites/:address", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetFavorites(redis, c.Params("address")))
 	})
 
 	app.Listen(":" + conf.API.Port)

@@ -32,7 +32,6 @@ func getUser(redis *redis.Client, address string) schema.User {
 
 func getSkill(redis *redis.Client, slot string, address string) schema.Skill {
 	record_id := "skill:" + slot + ":" + address
-	fmt.Println("record_id:", record_id)
 	var skill schema.Skill
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
@@ -726,6 +725,119 @@ func HandleAddWatchlist(redis *redis.Client, address string, salt string, signat
 		}
 	}
 	user.Watchlist = append(user.Watchlist, watchlist)
+
+	new_data, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "user:" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+
+	return "success"
+}
+
+func getFavorites(redis *redis.Client, address string) []schema.Favorite {
+	user := getUser(redis, address)
+	return user.Favorites
+}
+
+func HandleRemoveWatchlist(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	var watchlist_input schema.WatchlistInput
+	err := json.Unmarshal(body, &watchlist_input)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	user := getUser(redis, address)
+	for i, app := range user.Watchlist {
+		if app.Input.Address == watchlist_input.Address && app.Input.Slot == watchlist_input.Slot {
+			user.Watchlist = append(user.Watchlist[:i], user.Watchlist[i+1:]...)
+		}
+	}
+
+	new_data, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "user:" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+
+	return "success"
+}
+
+func HandleGetFavorites(redis *redis.Client, address string) []schema.Favorite {
+	favorites := getFavorites(redis, address)
+	return favorites
+}
+
+func HandleAddFavorite(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	var favorite_input schema.FavoriteInput
+	err := json.Unmarshal(body, &favorite_input)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	skill := getSkill(redis, strconv.Itoa(favorite_input.Slot), favorite_input.Address)
+	skill_user := getUser(redis, skill.UserAddress)
+	favorite := schema.Favorite{
+		Input:    favorite_input,
+		Username: skill_user.Username,
+		Title:    skill.Title,
+		ImageUrl: skill.ImageUrls[0],
+	}
+
+	user := getUser(redis, address)
+	for _, app := range user.Favorites {
+		if app.Input.Address == favorite.Input.Address && app.Input.Slot == favorite.Input.Slot {
+			return "You have already added this job to favorites."
+		}
+	}
+	user.Favorites = append(user.Favorites, favorite)
+
+	new_data, err := json.Marshal(user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	record_id := "user:" + address
+
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+
+	return "success"
+}
+
+func HandleRemoveFavorite(redis *redis.Client, address string, salt string, signature string, body []byte) string {
+	authorized := authorize(redis, address, salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	var favorite_input schema.FavoriteInput
+	err := json.Unmarshal(body, &favorite_input)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	user := getUser(redis, address)
+	for i, app := range user.Favorites {
+		if app.Input.Address == favorite_input.Address && app.Input.Slot == favorite_input.Slot {
+			user.Favorites = append(user.Favorites[:i], user.Favorites[i+1:]...)
+		}
+	}
 
 	new_data, err := json.Marshal(user)
 	if err != nil {
