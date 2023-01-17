@@ -265,11 +265,26 @@ func authorize(redis *redis.Client, address string, salt string, signature strin
 	return false
 }
 
+func getWatchlist(redis *redis.Client, address string) []schema.Watchlist {
+	user := getUser(redis, address)
+	return user.Watchlist
+}
+
+func getFavorites(redis *redis.Client, address string) []schema.Favorite {
+	user := getUser(redis, address)
+	return user.Favorites
+}
+
 func HandleSignup(redis *redis.Client, address string, signature string) string {
 	salt_id := "salt:" + address
 	salt, err := redis.Get(redis.Context(), salt_id).Result()
 	if err != nil {
-		return "No salt for this address found"
+		return "No salt for this address found."
+	}
+
+	err = redis.Del(redis.Context(), salt_id).Err()
+	if err != nil {
+		return "Failed to delete salt."
 	}
 
 	result := crypto.VerifySignature(salt, address, signature)
@@ -693,11 +708,6 @@ func HandleApplyJob(redis *redis.Client, address string, salt string, signature 
 	return "success"
 }
 
-func getWatchlist(redis *redis.Client, address string) []schema.Watchlist {
-	user := getUser(redis, address)
-	return user.Watchlist
-}
-
 func HandleGetWatchlist(redis *redis.Client, address string) []schema.Watchlist {
 	watchlist := getWatchlist(redis, address)
 	return watchlist
@@ -742,11 +752,6 @@ func HandleAddWatchlist(redis *redis.Client, address string, salt string, signat
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 
 	return "success"
-}
-
-func getFavorites(redis *redis.Client, address string) []schema.Favorite {
-	user := getUser(redis, address)
-	return user.Favorites
 }
 
 func HandleRemoveWatchlist(redis *redis.Client, address string, salt string, signature string, body []byte) string {
@@ -866,4 +871,17 @@ func HandleGetSalt(redis *redis.Client, address string) string {
 		fmt.Println("Error:", err)
 	}
 	return salt
+}
+
+func HandleVerify(redis *redis.Client, address string, signature string) string {
+	user := getUser(redis, address)
+	if user.Salt == "" {
+		return "No salt for this address found."
+	}
+	authorized := authorize(redis, address, user.Salt, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+	return "success"
 }

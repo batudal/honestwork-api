@@ -121,5 +121,9 @@ func main() {
 		return c.JSON(HandleGetSalt(redis, c.Params("address")))
 	})
 
+	app.Get("api/v1/verify/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleVerify(redis, c.Params("address"), c.Params("signature")))
+	})
+
 	app.Listen(":" + conf.API.Port)
 }
