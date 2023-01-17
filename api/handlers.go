@@ -585,14 +585,30 @@ func HandleGetJobsFeed(redis *redisearch.Client) []schema.Job {
 	return jobs
 }
 
-func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
-	if !authorized {
+func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, signature string, body []byte) string {
+	fmt.Println("Address:", address)
+	fmt.Println("Signature:", signature)
+
+	salt_id := "salt:" + address
+	salt, err := redis.Get(redis.Context(), salt_id).Result()
+	if err != nil {
+		return "No salt for this address found."
+	}
+	fmt.Println("Salt:", salt)
+
+	err = redis.Del(redis.Context(), salt_id).Err()
+	if err != nil {
+		return "Failed to delete salt."
+	}
+
+	result := crypto.VerifySignature(salt, address, signature)
+
+	if !result {
 		return "Wrong signature."
 	}
 
 	var job schema.Job
-	err := json.Unmarshal(body, &job)
+	err = json.Unmarshal(body, &job)
 	if err != nil {
 		return err.Error()
 	}

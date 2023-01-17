@@ -85,8 +85,8 @@ func main() {
 	app.Get("/api/v1/jobs/feed", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetJobsFeed(redis_job_index))
 	})
-	app.Post("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleAddJob(redis, redis_job_index, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Post("/api/v1/jobs/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddJob(redis, redis_job_index, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	app.Patch("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
