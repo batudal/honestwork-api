@@ -34,7 +34,7 @@ func GenerateID(salt string, address string) string {
 
 func GenerateSalt() string {
 	salt := RandomString(128)
-	intro := "HonestWork Login:\n\n"
+	intro := ""
 	result := intro + salt
 	return result
 }
