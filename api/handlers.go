@@ -31,7 +31,7 @@ func getUser(redis *redis.Client, address string) schema.User {
 }
 
 func getSkill(redis *redis.Client, slot string, address string) schema.Skill {
-	record_id := "skill:" + slot + ":" + address
+	record_id := "skill:" + address + ":" + slot
 	var skill schema.Skill
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
@@ -48,11 +48,11 @@ func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 	sort_field := "created_at"
 	infield := "user_address"
 	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, true))
-
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
+	// only return published skills?
 	var skills []schema.Skill
 	for _, d := range data {
 		translationKeys := make([]string, 0, len(d.Properties))
@@ -428,7 +428,7 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	}
 
 	slot := strconv.Itoa(len(all_skills))
-	record_id := "skill:" + slot + ":" + address
+	record_id := "skill:" + address + ":" + slot
 
 	new_data, err := json.Marshal(skill)
 	if err != nil {
@@ -492,7 +492,7 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	record_id := "skill:" + slot + ":" + address
+	record_id := "skill:" + address + ":" + slot
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
@@ -898,6 +898,49 @@ func HandleVerify(redis *redis.Client, address string, signature string) string 
 	if !authorized {
 		return "Wrong signature."
 	}
+
+	return "success"
+}
+
+func getTags(redis *redis.Client) schema.Tags {
+	var tags schema.Tags
+	data, err := redis.Do(redis.Context(), "JSON.GET", "tags").Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &tags)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return tags
+}
+
+func HandleGetTags(redis *redis.Client) schema.Tags {
+	tags := getTags(redis)
+	return tags
+}
+
+func HandleAddTag(redis *redis.Client, tag string) string {
+	// authorized := authorize(redis, address, salt, signature)
+	// if !authorized {
+	// 	return "Wrong signature."
+	// }
+
+	tags := getTags(redis)
+
+	for _, t := range tags.Tags {
+		if t == tag {
+			return "This tag already exists."
+		}
+	}
+	tags.Tags = append(tags.Tags, tag)
+
+	new_data, err := json.Marshal(tags)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	redis.Do(redis.Context(), "JSON.SET", "tags", "$", new_data)
 
 	return "success"
 }

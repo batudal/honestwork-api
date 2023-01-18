@@ -96,3 +96,7 @@ type Token struct {
 type Whitelist struct {
 	Tokens []Token `json:"tokens"`
 }
+
+type Tags struct {
+	Tags []string `json:"tags"`
+}

@@ -125,5 +125,12 @@ func main() {
 		return c.JSON(HandleVerify(redis, c.Params("address"), c.Params("signature")))
 	})
 
+	app.Get("api/v1/tags", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetTags(redis))
+	})
+	app.Post("api/v1/tags/:tag", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddTag(redis, c.Params("tag")))
+	})
+
 	app.Listen(":" + conf.API.Port)
 }
