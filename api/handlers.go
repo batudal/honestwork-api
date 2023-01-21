@@ -8,11 +8,27 @@ import (
 
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
+	"github.com/mailazy/mailazy-go"
 	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/crypto"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
+
+func sendNewApplicantMail(redis *redis.Client, recruiter_address string, slot string, applicant_address string) {
+	job := getJob(redis, recruiter_address, slot)
+
+	fmt.Println("Sending mail to", job.Email)
+
+	senderClient := mailazy.NewSenderClient("cf47bm9qhmo2e3ahvo20YVMSOKJdes", "rrqatNaEnmGESOipuwwyHkvWtnU.8EBPTcAJBvJAW96dKRFP85")
+	from := "Job Alert! <no-reply@honestwork.app>"
+	subject := fmt.Sprintf("New Applicant for '%s'", job.Title)
+	textContent := "You've received a new application for your job listing."
+	htmlContent := fmt.Sprintf("<p>Hello <b>%s</b>!</p><br/><br/><p>You've received a new application for your <a href='https://honestwork.app/job/%s/%s'>job listing</a> on HonestWork.<br /><br />It might be the candidate you're looking for!</p><br/><br/><p><a href='https://honestwork.app/creator/%s'>Check their profile now</a></p>", job.Username, recruiter_address, slot, applicant_address)
+	req := mailazy.NewSendMailRequest(job.Email, from, subject, textContent, htmlContent)
+
+	senderClient.Send(req)
+}
 
 // todo: move validation to package
 // todo: create data extractor (for query results)
@@ -247,30 +263,42 @@ func getAllowedSkillAmount(tier int) int {
 	}
 }
 
-// todo: implement all validators
-func validateUserInput(redis *redis.Client, user schema.User) bool {
-	if ValidateUsername(user.Username) &&
-		ValidateTitle(user.Title) &&
-		ValidateBio(user.Bio) {
+func authorizeSignature(redis *redis.Client, address string, signature string) bool {
+	record_id := "user:" + address
+	var user_db schema.User
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user_db)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	if user_db.Signature == signature {
 		return true
 	}
 	return false
 }
 
-func authorize(redis *redis.Client, address string, salt string, signature string) bool {
+func authorize(redis *redis.Client, address string, signature string) bool {
+	salt_id := "salt:" + address
+	salt, err := redis.Get(redis.Context(), salt_id).Result()
+	if err != nil {
+		return false
+	}
 	result := crypto.VerifySignature(salt, address, signature)
 	if result {
-		return AuthorizeSignature(redis, address, salt, signature)
+		return authorizeSignature(redis, address, signature)
 	}
 	return false
 }
 
-func getWatchlist(redis *redis.Client, address string) []schema.Watchlist {
+func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
 	user := getUser(redis, address)
 	return user.Watchlist
 }
 
-func getFavorites(redis *redis.Client, address string) []schema.Favorite {
+func getFavorites(redis *redis.Client, address string) []*schema.Favorite {
 	user := getUser(redis, address)
 	return user.Favorites
 }
@@ -280,11 +308,6 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 	salt, err := redis.Get(redis.Context(), salt_id).Result()
 	if err != nil {
 		return "No salt for this address found."
-	}
-
-	err = redis.Del(redis.Context(), salt_id).Err()
-	if err != nil {
-		return "Failed to delete salt."
 	}
 
 	result := crypto.VerifySignature(salt, address, signature)
@@ -300,8 +323,11 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 		return "User doesn't have NFT."
 	}
 
-	user.Salt = salt
 	user.Signature = signature
+	val := ValidateUserInput(redis, &user)
+	if !val {
+		return "Invalid input."
+	}
 
 	new_data, err := json.Marshal(user)
 	if err != nil {
@@ -321,8 +347,8 @@ func HandleGetUser(redis *redis.Client, address string) schema.User {
 	return user
 }
 
-func HandleUserUpdate(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleUserUpdate(redis *redis.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -342,7 +368,10 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 		fmt.Println("Error:", err)
 	}
 
-	if !validateUserInput(redis, user) {
+	user.Signature = signature
+
+	val := ValidateUserInput(redis, &user)
+	if !val {
 		return "Invalid input."
 	}
 
@@ -350,7 +379,6 @@ func HandleUserUpdate(redis *redis.Client, address string, salt string, signatur
 	user_db := getUser(redis, address)
 
 	// filter
-	user.Salt = user_db.Salt
 	user.Signature = user_db.Signature
 	if user.ImageUrl == "" {
 		user.ImageUrl = user_db.ImageUrl
@@ -395,8 +423,8 @@ func HandleGetSkillsTotal(redis *redisearch.Client) int {
 	return data
 }
 
-func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -427,6 +455,11 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 		fmt.Println("Error:", err)
 	}
 
+	val := ValidateSkillInput(redis, &skill)
+	if !val {
+		return "Invalid input."
+	}
+
 	slot := strconv.Itoa(len(all_skills))
 	record_id := "skill:" + address + ":" + slot
 
@@ -442,8 +475,8 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	return "success"
 }
 
-func HandleUpdateSkill(redis *redis.Client, address string, salt string, signature string, slot string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleUpdateSkill(redis *redis.Client, address string, signature string, slot string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -487,6 +520,11 @@ func HandleUpdateSkill(redis *redis.Client, address string, salt string, signatu
 
 	skill.CreatedAt = current_skill.CreatedAt
 	skill.UserAddress = current_skill.UserAddress
+
+	val := ValidateSkillInput(redis, &skill)
+	if !val {
+		return "Invalid input."
+	}
 
 	new_data, err := json.Marshal(skill)
 	if err != nil {
@@ -586,15 +624,11 @@ func HandleGetJobsFeed(redis *redisearch.Client) []schema.Job {
 }
 
 func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, signature string, body []byte) string {
-	fmt.Println("Address:", address)
-	fmt.Println("Signature:", signature)
-
 	salt_id := "salt:" + address
 	salt, err := redis.Get(redis.Context(), salt_id).Result()
 	if err != nil {
 		return "No salt for this address found."
 	}
-	fmt.Println("Salt:", salt)
 
 	err = redis.Del(redis.Context(), salt_id).Err()
 	if err != nil {
@@ -602,7 +636,6 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 	}
 
 	result := crypto.VerifySignature(salt, address, signature)
-
 	if !result {
 		return "Wrong signature."
 	}
@@ -613,7 +646,21 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 		return err.Error()
 	}
 
-	// todo: check if tx has been consumed
+	tx_record_id := "tx:" + job.TxHash
+	_, err = redis.Get(redis.Context(), tx_record_id).Result()
+	if err == nil {
+		return "Transaction already consumed."
+	}
+
+	err = redis.Set(redis.Context(), tx_record_id, job.UserAddress, 0).Err()
+	if err != nil {
+		return "Failed to set transaction."
+	}
+
+	val := ValidateJobInput(redis, &job)
+	if !val {
+		return "Invalid input."
+	}
 
 	job.Applications = make([]schema.Application, 0)
 	job.Slot = len(getJobs(redisearch, address))
@@ -644,8 +691,8 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 	return "success"
 }
 
-func HandleUpdateJob(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleUpdateJob(redis *redis.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -656,15 +703,22 @@ func HandleUpdateJob(redis *redis.Client, address string, salt string, signature
 		fmt.Println("Error:", err)
 	}
 
-	// check if a deal has started on this job
+	// todo: check if a deal has started on this job
+	// todo: return error if jobs doesnt exist
 
 	s := strconv.Itoa(job.Slot)
 	existing_job := getJob(redis, address, s)
 	job.Applications = existing_job.Applications
 	job.CreatedAt = existing_job.CreatedAt
 	job.TokenPaid = existing_job.TokenPaid
+	if job.ImageUrl == "" {
+		job.ImageUrl = existing_job.ImageUrl
+	}
 
-	// return if job doesnt exist
+	val := ValidateJobInput(redis, &job)
+	if !val {
+		return "Invalid input."
+	}
 
 	new_data, err := json.Marshal(job)
 	if err != nil {
@@ -680,13 +734,13 @@ func HandleUpdateJob(redis *redis.Client, address string, salt string, signature
 	return "success"
 }
 
-func HandleApplyJob(redis *redis.Client, address string, salt string, signature string, recruiter_address string, slot string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleApplyJob(redis *redis.Client, applicant_address string, signature string, recruiter_address string, slot string, body []byte) string {
+	authorized := authorize(redis, applicant_address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
 
-	state := web3.FetchUserState(address)
+	state := web3.FetchUserState(applicant_address)
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
@@ -702,9 +756,9 @@ func HandleApplyJob(redis *redis.Client, address string, salt string, signature 
 
 	// check if a deal has started on this job
 
-	existing_job := getJob(redis, address, slot)
+	existing_job := getJob(redis, recruiter_address, slot)
 	for _, app := range existing_job.Applications {
-		if app.UserAddress == address {
+		if app.UserAddress == applicant_address {
 			return "You have already applied to this job."
 		}
 	}
@@ -721,16 +775,18 @@ func HandleApplyJob(redis *redis.Client, address string, salt string, signature 
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+
+	sendNewApplicantMail(redis, recruiter_address, slot, applicant_address)
 	return "success"
 }
 
-func HandleGetWatchlist(redis *redis.Client, address string) []schema.Watchlist {
+func HandleGetWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
 	watchlist := getWatchlist(redis, address)
 	return watchlist
 }
 
-func HandleAddWatchlist(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleAddWatchlist(redis *redis.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -744,7 +800,7 @@ func HandleAddWatchlist(redis *redis.Client, address string, salt string, signat
 	job := getJob(redis, watchlist_input.Address, strconv.Itoa(watchlist_input.Slot))
 
 	watchlist := schema.Watchlist{
-		Input:    watchlist_input,
+		Input:    &watchlist_input,
 		Username: job.Username,
 		Title:    job.Title,
 		ImageUrl: job.ImageUrl,
@@ -756,7 +812,7 @@ func HandleAddWatchlist(redis *redis.Client, address string, salt string, signat
 			return "You have already added this job to watchlist."
 		}
 	}
-	user.Watchlist = append(user.Watchlist, watchlist)
+	user.Watchlist = append(user.Watchlist, &watchlist)
 
 	new_data, err := json.Marshal(user)
 	if err != nil {
@@ -770,8 +826,8 @@ func HandleAddWatchlist(redis *redis.Client, address string, salt string, signat
 	return "success"
 }
 
-func HandleRemoveWatchlist(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleRemoveWatchlist(redis *redis.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -801,13 +857,13 @@ func HandleRemoveWatchlist(redis *redis.Client, address string, salt string, sig
 	return "success"
 }
 
-func HandleGetFavorites(redis *redis.Client, address string) []schema.Favorite {
+func HandleGetFavorites(redis *redis.Client, address string) []*schema.Favorite {
 	favorites := getFavorites(redis, address)
 	return favorites
 }
 
-func HandleAddFavorite(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleAddFavorite(redis *redis.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -821,7 +877,7 @@ func HandleAddFavorite(redis *redis.Client, address string, salt string, signatu
 	skill := getSkill(redis, strconv.Itoa(favorite_input.Slot), favorite_input.Address)
 	skill_user := getUser(redis, skill.UserAddress)
 	favorite := schema.Favorite{
-		Input:    favorite_input,
+		Input:    &favorite_input,
 		Username: skill_user.Username,
 		Title:    skill.Title,
 		ImageUrl: skill.ImageUrls[0],
@@ -833,7 +889,7 @@ func HandleAddFavorite(redis *redis.Client, address string, salt string, signatu
 			return "You have already added this job to favorites."
 		}
 	}
-	user.Favorites = append(user.Favorites, favorite)
+	user.Favorites = append(user.Favorites, &favorite)
 
 	new_data, err := json.Marshal(user)
 	if err != nil {
@@ -847,8 +903,8 @@ func HandleAddFavorite(redis *redis.Client, address string, salt string, signatu
 	return "success"
 }
 
-func HandleRemoveFavorite(redis *redis.Client, address string, salt string, signature string, body []byte) string {
-	authorized := authorize(redis, address, salt, signature)
+func HandleRemoveFavorite(redis *redis.Client, address string, signature string, body []byte) string {
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
@@ -890,15 +946,10 @@ func HandleGetSalt(redis *redis.Client, address string) string {
 }
 
 func HandleVerify(redis *redis.Client, address string, signature string) string {
-	user := getUser(redis, address)
-	if user.Salt == "" {
-		return "No salt for this address found."
-	}
-	authorized := authorize(redis, address, user.Salt, signature)
+	authorized := authorize(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
-
 	return "success"
 }
 
@@ -920,11 +971,11 @@ func HandleGetTags(redis *redis.Client) schema.Tags {
 	return tags
 }
 
-func HandleAddTag(redis *redis.Client, tag string) string {
-	// authorized := authorize(redis, address, salt, signature)
-	// if !authorized {
-	// 	return "Wrong signature."
-	// }
+func HandleAddTag(redis *redis.Client, address string, signature string, tag string) string {
+	authorized := authorize(redis, address, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
 
 	tags := getTags(redis)
 

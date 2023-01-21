@@ -33,8 +33,8 @@ func main() {
 	app.Get("/api/v1/users/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetUser(redis, c.Params("address")))
 	})
-	app.Patch("/api/v1/users/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleUserUpdate(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Patch("/api/v1/users/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleUserUpdate(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 
 	// skill routes
@@ -56,11 +56,11 @@ func main() {
 	app.Get("/api/v1/skill/:address/:slot", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetSkill(redis, c.Params("address"), c.Params("slot")))
 	})
-	app.Post("/api/v1/skills/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleAddSkill(redis, redis_skill_index, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Post("/api/v1/skills/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddSkill(redis, redis_skill_index, c.Params("address"), c.Params("signature"), c.Body()))
 	})
-	app.Patch("/api/v1/skills/:address/:salt/:signature/:slot", func(c *fiber.Ctx) error {
-		return c.JSON(HandleUpdateSkill(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("slot"), c.Body()))
+	app.Patch("/api/v1/skills/:address/:signature/:slot", func(c *fiber.Ctx) error {
+		return c.JSON(HandleUpdateSkill(redis, c.Params("address"), c.Params("signature"), c.Params("slot"), c.Body()))
 	})
 
 	// job routes
@@ -88,30 +88,30 @@ func main() {
 	app.Post("/api/v1/jobs/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleAddJob(redis, redis_job_index, c.Params("address"), c.Params("signature"), c.Body()))
 	})
-	app.Patch("/api/v1/jobs/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Patch("/api/v1/jobs/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleUpdateJob(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
-	app.Post("/api/v1/jobs/apply/:address/:salt/:signature/:recruiter_address/:slot/", func(c *fiber.Ctx) error {
-		return c.JSON(HandleApplyJob(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Params("recruiter_address"), c.Params("slot"), c.Body()))
+	app.Post("/api/v1/jobs/apply/:address/:signature/:recruiter_address/:slot/", func(c *fiber.Ctx) error {
+		return c.JSON(HandleApplyJob(redis, c.Params("address"), c.Params("signature"), c.Params("recruiter_address"), c.Params("slot"), c.Body()))
 	})
 
 	// watchlist (for jobs listings)
-	app.Post("/api/v1/watchlist/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleAddWatchlist(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Post("/api/v1/watchlist/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddWatchlist(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
-	app.Delete("/api/v1/watchlist/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleRemoveWatchlist(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Delete("/api/v1/watchlist/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleRemoveWatchlist(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	app.Get("/api/v1/watchlist/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetWatchlist(redis, c.Params("address")))
 	})
 
 	// favorites (for skills)
-	app.Post("/api/v1/favorites/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleAddFavorite(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Post("/api/v1/favorites/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddFavorite(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
-	app.Delete("/api/v1/favorites/:address/:salt/:signature", func(c *fiber.Ctx) error {
-		return c.JSON(HandleRemoveFavorite(redis, c.Params("address"), c.Params("salt"), c.Params("signature"), c.Body()))
+	app.Delete("/api/v1/favorites/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleRemoveFavorite(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	app.Get("/api/v1/favorites/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetFavorites(redis, c.Params("address")))
@@ -128,8 +128,8 @@ func main() {
 	app.Get("api/v1/tags", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetTags(redis))
 	})
-	app.Post("api/v1/tags/:tag", func(c *fiber.Ctx) error {
-		return c.JSON(HandleAddTag(redis, c.Params("tag")))
+	app.Post("api/v1/tags/:address/:signature/:tag", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddTag(redis, c.Params("address"), c.Params("signature"), c.Params("tag")))
 	})
 
 	app.Listen(":" + conf.API.Port)

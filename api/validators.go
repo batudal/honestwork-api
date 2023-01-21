@@ -1,75 +1,46 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/go-redis/redis/v8"
-	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
-func AuthorizeSignature(redis *redis.Client, address string, salt string, signature string) bool {
-	record_id := "user:" + address
-	var user_db schema.User
-	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+func ValidateUserInput(redis *redis.Client, user *schema.User) bool {
+	validate := validator.New()
+	err := validate.StructExcept(user, "watchlist", "favorites", "rating")
 	if err != nil {
-		fmt.Println("Error:", err)
+		for _, err := range err.(validator.ValidationErrors) {
+			fmt.Println("Error:", err)
+		}
+		return false
 	}
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user_db)
+	return true
+}
+
+func ValidateSkillInput(redis *redis.Client, skill *schema.Skill) bool {
+	validate := validator.New()
+	err := validate.StructExcept(skill, "created_at", "user_address")
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	if (user_db.Salt == salt) && (user_db.Signature == signature) {
-		return true
-	}
-	return false
-}
-
-func ValidateUsername(username string) bool {
-	conf, err := config.ParseConfig()
-	if len(username) > conf.Settings.CharLimits.Profile.Username || err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			fmt.Println("Error:", err)
+		}
 		return false
 	}
 	return true
 }
 
-func ValidateShowEns(address string) bool {
-	return true
-}
-
-func ValidateTitle(title string) bool {
-	conf, err := config.ParseConfig()
-	if len(title) > conf.Settings.CharLimits.Profile.Title || err != nil {
+func ValidateJobInput(redis *redis.Client, job *schema.Job) bool {
+	validate := validator.New()
+	err := validate.StructExcept(job, "created_at", "application", "slot")
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			fmt.Println("Error:", err)
+		}
 		return false
 	}
-	return true
-}
-
-func ValidateImageUrl(url string) bool {
-	return true
-}
-
-func ValidateNFT(address string, id int) bool {
-	return true
-}
-
-func ValidateEmail(email string) bool {
-	return true
-}
-
-func ValidateTimezone(timezone string) bool {
-	return true
-}
-
-func ValidateBio(bio string) bool {
-	conf, err := config.ParseConfig()
-	if len(bio) > conf.Settings.CharLimits.Profile.Bio || err != nil {
-		return false
-	}
-	return true
-}
-
-func ValidateLinks(links []string) bool {
 	return true
 }

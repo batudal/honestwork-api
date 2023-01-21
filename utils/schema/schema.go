@@ -1,24 +1,24 @@
 package schema
 
+// todo: abstract go-playground/validator/v10 props to have clean schema
 type User struct {
-	Salt       string      `json:"salt"`
-	Signature  string      `json:"signature"`
-	Username   string      `json:"username"`
-	ShowEns    bool        `json:"show_ens"`
-	EnsName    string      `json:"ens_name"`
-	Title      string      `json:"title"`
-	ImageUrl   string      `json:"image_url"`
-	ShowNFT    bool        `json:"show_nft"`
-	NFTUrl     string      `json:"nft_url"`
-	NFTAddress string      `json:"nft_address"`
-	NFTId      string      `json:"nft_id"`
-	Email      string      `json:"email"`
-	Timezone   string      `json:"timezone"`
-	Bio        string      `json:"bio"`
-	Links      []string    `json:"links"`
-	Rating     int64       `json:"rating"`
-	Watchlist  []Watchlist `json:"watchlist"`
-	Favorites  []Favorite  `json:"favorites"`
+	Signature  string       `json:"signature" validate:"required"`
+	Username   string       `json:"username" validate:"required,min=5,max=50"`
+	ShowEns    *bool        `json:"show_ens" validate:"boolean"`
+	EnsName    string       `json:"ens_name"`
+	Title      string       `json:"title" validate:"required,min=5,max=50"`
+	ImageUrl   string       `json:"image_url" validate:"omitempty,url"`
+	ShowNFT    *bool        `json:"show_nft" validate:"boolean"`
+	NFTUrl     string       `json:"nft_url" validate:"omitempty,url"`
+	NFTAddress string       `json:"nft_address" validate:"eth_addr"`
+	NFTId      string       `json:"nft_id"` // todo: custom owner check
+	Email      string       `json:"email" validate:"email"`
+	Timezone   string       `json:"timezone"` // todo: figure out timezone check
+	Bio        string       `json:"bio" validate:"required,min=200,max=2000"`
+	Links      []string     `json:"links" validate:"required,min=1,max=3,dive,url"`
+	Rating     int64        `json:"rating"`
+	Watchlist  []*Watchlist `json:"watchlist"`
+	Favorites  []*Favorite  `json:"favorites"`
 }
 
 type FavoriteInput struct {
@@ -27,17 +27,17 @@ type FavoriteInput struct {
 }
 
 type Favorite struct {
-	Input    FavoriteInput `json:"input"`
-	Username string        `json:"username"`
-	Title    string        `json:"title"`
-	ImageUrl string        `json:"image_url"`
-}
-
-type Watchlist struct {
-	Input    WatchlistInput `json:"input"`
+	Input    *FavoriteInput `json:"input"`
 	Username string         `json:"username"`
 	Title    string         `json:"title"`
 	ImageUrl string         `json:"image_url"`
+}
+
+type Watchlist struct {
+	Input    *WatchlistInput `json:"input"`
+	Username string          `json:"username"`
+	Title    string          `json:"title"`
+	ImageUrl string          `json:"image_url"`
 }
 
 type WatchlistInput struct {
@@ -46,43 +46,43 @@ type WatchlistInput struct {
 }
 
 type Skill struct {
-	UserAddress  string   `json:"user_address"`
-	Title        string   `json:"title"`
-	Description  string   `json:"description"`
-	Tags         []string `json:"tags"`
-	Links        []string `json:"links"`
-	ImageUrls    []string `json:"image_urls"`
-	MinimumPrice int      `json:"minimum_price"`
-	Publish      bool     `json:"publish"`
+	UserAddress  string   `json:"user_address" validate:"required,eth_addr"`
+	Title        string   `json:"title" validate:"required,min=5,max=50"`
+	Description  string   `json:"description" validate:"required,min=200,max=2000"`
+	Tags         []string `json:"tags" validate:"required,min=1,max=3,dive,min=3,max=20"`
+	Links        []string `json:"links" validate:"required,min=1,max=3,dive,url"`
+	ImageUrls    []string `json:"image_urls" validate:"required,min=1,max=8,dive,omitempty,url"`
+	MinimumPrice int      `json:"minimum_price" validate:"required,min=1000,max=1000000"`
+	Publish      bool     `json:"publish" validate:"required,boolean"`
 	CreatedAt    int64    `json:"created_at"`
 }
 
 type Job struct {
-	Email          string        `json:"email"`
+	Email          string        `json:"email" validate:"required,email"`
 	Slot           int           `json:"slot"`
-	UserAddress    string        `json:"user_address"`
-	Username       string        `json:"username"`
-	TokenPaid      string        `json:"token_paid"`
-	Title          string        `json:"title"`
-	Description    string        `json:"description"`
-	Tags           []string      `json:"tags"`
-	Links          []string      `json:"links"`
-	Budget         int           `json:"budget"`
-	Installments   int64         `json:"installments"`
-	TimeZone       string        `json:"timezone"`
-	TokensAccepted []Network     `json:"tokens_accepted"`
-	StickyDuration int64         `json:"sticky_duration"`
+	UserAddress    string        `json:"user_address" validate:"required,eth_addr"`
+	Username       string        `json:"username" validate:"required,min=5,max=50"`
+	TokenPaid      string        `json:"token_paid" validate:"required,eth_addr"`
+	Title          string        `json:"title" validate:"required,min=5,max=50"`
+	Description    string        `json:"description" validate:"required,min=200,max=2000"`
+	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=3,max=20"`
+	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
+	Budget         int           `json:"budget" validate:"required,min=1000,max=1000000"`
+	Installments   int64         `json:"installments" validate:"required,min=1,max=12"`
+	TimeZone       string        `json:"timezone"` // todo: figure out timezone check
+	TokensAccepted []Network     `json:"tokens_accepted" validate:"required,min=1"`
+	StickyDuration int64         `json:"sticky_duration" validate:"omitempty,lte=30"`
 	CreatedAt      int64         `json:"created_at"`
-	TxHash         string        `json:"tx_hash"`
-	ImageUrl       string        `json:"image_url"`
+	TxHash         string        `json:"tx_hash" validate:"required"`
+	ImageUrl       string        `json:"image_url" validate:"url"`
 	Applications   []Application `json:"application"`
 }
 
 type Application struct {
-	UserAddress string `json:"user_address"`
-	JobId       string `json:"job_id"`
-	CoverLetter string `json:"cover_letter"`
-	Date        int64  `json:"date"`
+	UserAddress string `json:"user_address" validate:"required"`
+	JobId       string `json:"job_id" validate:"required"`
+	CoverLetter string `json:"cover_letter" validate:"required"`
+	Date        int64  `json:"date" validate:"required"`
 }
 
 type Network struct {
