@@ -946,7 +946,7 @@ func HandleGetSalt(redis *redis.Client, address string) string {
 }
 
 func HandleVerify(redis *redis.Client, address string, signature string) string {
-	authorized := authorize(redis, address, signature)
+	authorized := authorizeSignature(redis, address, signature)
 	if !authorized {
 		return "Wrong signature."
 	}
