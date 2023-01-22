@@ -280,7 +280,7 @@ func authorizeSignature(redis *redis.Client, address string, signature string) b
 	return false
 }
 
-func authorize(redis *redis.Client, address string, signature string) bool {
+func authorizeVerifyWithSalt(redis *redis.Client, address string, signature string) bool {
 	salt_id := "salt:" + address
 	salt, err := redis.Get(redis.Context(), salt_id).Result()
 	if err != nil {
@@ -348,8 +348,8 @@ func HandleGetUser(redis *redis.Client, address string) schema.User {
 }
 
 func HandleUserUpdate(redis *redis.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -424,8 +424,8 @@ func HandleGetSkillsTotal(redis *redisearch.Client) int {
 }
 
 func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -476,8 +476,8 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 }
 
 func HandleUpdateSkill(redis *redis.Client, address string, signature string, slot string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -624,24 +624,10 @@ func HandleGetJobsFeed(redis *redisearch.Client) []schema.Job {
 }
 
 func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, signature string, body []byte) string {
-	salt_id := "salt:" + address
-	salt, err := redis.Get(redis.Context(), salt_id).Result()
-	if err != nil {
-		return "No salt for this address found."
-	}
-
-	err = redis.Del(redis.Context(), salt_id).Err()
-	if err != nil {
-		return "Failed to delete salt."
-	}
-
-	result := crypto.VerifySignature(salt, address, signature)
-	if !result {
-		return "Wrong signature."
-	}
+	authorizeVerifyWithSalt(redis, address, signature)
 
 	var job schema.Job
-	err = json.Unmarshal(body, &job)
+	err := json.Unmarshal(body, &job)
 	if err != nil {
 		return err.Error()
 	}
@@ -692,8 +678,8 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 }
 
 func HandleUpdateJob(redis *redis.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -735,8 +721,8 @@ func HandleUpdateJob(redis *redis.Client, address string, signature string, body
 }
 
 func HandleApplyJob(redis *redis.Client, applicant_address string, signature string, recruiter_address string, slot string, body []byte) string {
-	authorized := authorize(redis, applicant_address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, applicant_address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -786,8 +772,8 @@ func HandleGetWatchlist(redis *redis.Client, address string) []*schema.Watchlist
 }
 
 func HandleAddWatchlist(redis *redis.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -827,8 +813,8 @@ func HandleAddWatchlist(redis *redis.Client, address string, signature string, b
 }
 
 func HandleRemoveWatchlist(redis *redis.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -863,8 +849,8 @@ func HandleGetFavorites(redis *redis.Client, address string) []*schema.Favorite 
 }
 
 func HandleAddFavorite(redis *redis.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -904,8 +890,8 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 }
 
 func HandleRemoveFavorite(redis *redis.Client, address string, signature string, body []byte) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
@@ -946,8 +932,8 @@ func HandleGetSalt(redis *redis.Client, address string) string {
 }
 
 func HandleVerify(redis *redis.Client, address string, signature string) string {
-	authorized := authorizeSignature(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 	return "success"
@@ -972,8 +958,8 @@ func HandleGetTags(redis *redis.Client) schema.Tags {
 }
 
 func HandleAddTag(redis *redis.Client, address string, signature string, tag string) string {
-	authorized := authorize(redis, address, signature)
-	if !authorized {
+	authorizeSignatured := authorizeSignature(redis, address, signature)
+	if !authorizeSignatured {
 		return "Wrong signature."
 	}
 
