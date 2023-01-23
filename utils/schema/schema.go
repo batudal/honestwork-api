@@ -4,18 +4,18 @@ package schema
 type User struct {
 	Signature  string       `json:"signature" validate:"required"`
 	Username   string       `json:"username" validate:"required,min=5,max=50"`
-	ShowEns    *bool        `json:"show_ens" validate:"boolean"`
-	EnsName    string       `json:"ens_name"`
+	ShowEns    *bool        `json:"show_ens" validate:"required,boolean"`
+	EnsName    string       `json:"ens_name"` // todo: custom ens ownership check
 	Title      string       `json:"title" validate:"required,min=5,max=50"`
 	ImageUrl   string       `json:"image_url" validate:"omitempty,url"`
 	ShowNFT    *bool        `json:"show_nft" validate:"boolean"`
 	NFTUrl     string       `json:"nft_url" validate:"omitempty,url"`
-	NFTAddress string       `json:"nft_address" validate:"eth_addr"`
+	NFTAddress string       `json:"nft_address" validate:"omitempty,eth_addr"`
 	NFTId      string       `json:"nft_id"` // todo: custom owner check
-	Email      string       `json:"email" validate:"email"`
+	Email      string       `json:"email" validate:"omitempty,email"`
 	Timezone   string       `json:"timezone"` // todo: figure out timezone check
 	Bio        string       `json:"bio" validate:"required,min=200,max=2000"`
-	Links      []string     `json:"links" validate:"required,min=1,max=3,dive,url"`
+	Links      []string     `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Rating     int64        `json:"rating"`
 	Watchlist  []*Watchlist `json:"watchlist"`
 	Favorites  []*Favorite  `json:"favorites"`
@@ -59,12 +59,12 @@ type Skill struct {
 
 type Job struct {
 	Email          string        `json:"email" validate:"required,email"`
-	Slot           int           `json:"slot"`
+	Slot           int           `json:"slot"` // todo: custom slot check
 	UserAddress    string        `json:"user_address" validate:"required,eth_addr"`
 	Username       string        `json:"username" validate:"required,min=5,max=50"`
 	TokenPaid      string        `json:"token_paid" validate:"required,eth_addr"`
 	Title          string        `json:"title" validate:"required,min=5,max=50"`
-	Description    string        `json:"description" validate:"required,min=200,max=2000"`
+	Description    string        `json:"description" validate:"required"` // todo: custom parser
 	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=3,max=20"`
 	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Budget         int           `json:"budget" validate:"required,min=1000,max=1000000"`
