@@ -65,7 +65,7 @@ type Job struct {
 	TokenPaid      string        `json:"token_paid" validate:"required,eth_addr"`
 	Title          string        `json:"title" validate:"required,min=5,max=50"`
 	Description    string        `json:"description" validate:"required"` // todo: custom parser
-	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=3,max=20"`
+	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Budget         int           `json:"budget" validate:"required,min=1000,max=1000000"`
 	Installments   int64         `json:"installments" validate:"required,min=1,max=12"`
