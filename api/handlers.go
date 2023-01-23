@@ -697,6 +697,7 @@ func HandleUpdateJob(redis *redis.Client, address string, signature string, body
 	job.Applications = existing_job.Applications
 	job.CreatedAt = existing_job.CreatedAt
 	job.TokenPaid = existing_job.TokenPaid
+	job.TxHash = existing_job.TxHash
 	if job.ImageUrl == "" {
 		job.ImageUrl = existing_job.ImageUrl
 	}
