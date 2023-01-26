@@ -1,14 +1,19 @@
 package parser
 
-import "strings"
+import (
+	"strings"
+)
 
 func ParseContent(content string) string {
 	ps := strings.Split(content, "<p>")
 	h4s := strings.Split(content, "<h4>")
 
+	ps_ := make([]string, 0)
+	h4s_ := make([]string, 0)
+
 	for i, p := range ps {
 		if strings.Contains(p, "</p>") {
-			ps[i] = strings.Split(ps[i], "</p>")[0]
+			ps_ = append(ps_, strings.Split(ps[i], "</p>")[0])
 		}
 		ps[i] = strings.ReplaceAll(p, "<em>", "")
 		ps[i] = strings.ReplaceAll(p, "</em>", "")
@@ -17,7 +22,7 @@ func ParseContent(content string) string {
 	}
 	for j, h4 := range h4s {
 		if strings.Contains(h4, "</h4>") {
-			h4s[j] = strings.Split(h4s[j], "</h4>")[0]
+			h4s_ = append(h4s_, strings.Split(h4s[j], "</h4>")[0])
 		}
 		h4s[j] = strings.ReplaceAll(h4, "<em>", "")
 		h4s[j] = strings.ReplaceAll(h4, "</em>", "")
@@ -26,10 +31,10 @@ func ParseContent(content string) string {
 	}
 	var flat_ps string
 	var flat_h4s string
-	for _, h4 := range h4s {
+	for _, h4 := range h4s_ {
 		flat_h4s += h4
 	}
-	for _, p := range ps {
+	for _, p := range ps_ {
 		flat_ps += p
 	}
 	return flat_h4s + flat_ps

@@ -45,7 +45,7 @@ func ValidateSkillInput(redis *redis.Client, skill *schema.Skill) bool {
 		return false
 	}
 	description_length := len(parser.ParseContent(skill.Description))
-	if description_length > 200 || description_length < 2000 {
+	if description_length < 200 || description_length > 2000 {
 		return false
 	}
 	return true
