@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/wealdtech/go-ens/v3"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/takez0o/honestwork-api/utils/abi/genesis"
@@ -42,7 +43,7 @@ func FetchUserState(address string) int {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	client.Close()
 	return int(state.Int64())
 }
 
@@ -157,4 +158,55 @@ func CalculatePayment(opts *schema.Job) (*big.Int, error) {
 	total_fee.Add(highlight_fee, service_fee)
 
 	return total_fee, nil
+}
+
+func CheckNFTOwner(user_address string, token_address string, token_id int) bool {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nft_address_hex := common.HexToAddress(token_address)
+
+	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	user_address_hex := common.HexToAddress(user_address)
+	owner, err := instance.OwnerOf(nil, big.NewInt(int64(token_id)))
+	if err != nil {
+		return false
+	}
+
+	if owner.Hex() != user_address_hex.Hex() {
+		return false
+	}
+	return true
+}
+
+func CheckENSOwner(user_address string, ens_name string) bool {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	address, err := ens.Resolve(client, ens_name)
+	if err != nil {
+		return false
+	}
+	if address.String() != user_address {
+		return false
+	}
+	return true
 }

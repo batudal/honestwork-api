@@ -5,16 +5,16 @@ type User struct {
 	Signature  string       `json:"signature" validate:"required"`
 	Username   string       `json:"username" validate:"required,min=5,max=50"`
 	ShowEns    *bool        `json:"show_ens" validate:"required,boolean"`
-	EnsName    string       `json:"ens_name"` // todo: custom ens ownership check
+	EnsName    string       `json:"ens_name"` // custom
 	Title      string       `json:"title" validate:"required,min=5,max=50"`
 	ImageUrl   string       `json:"image_url" validate:"omitempty,url"`
 	ShowNFT    *bool        `json:"show_nft" validate:"boolean"`
 	NFTUrl     string       `json:"nft_url" validate:"omitempty,url"`
 	NFTAddress string       `json:"nft_address" validate:"omitempty,eth_addr"`
-	NFTId      string       `json:"nft_id"` // todo: custom owner check
+	NFTId      string       `json:"nft_id"` // custom
 	Email      string       `json:"email" validate:"omitempty,email"`
-	Timezone   string       `json:"timezone"` // todo: figure out timezone check
-	Bio        string       `json:"bio"`      // todo: custom parser
+	Timezone   string       `json:"timezone" validate:"oneof='UTC-12' 'UTC-11' 'UTC-10' 'UTC-9' 'UTC-8' 'UTC-7' 'UTC-6' 'UTC-5' 'UTC-4' 'UTC-3' 'UTC-2' 'UTC-1' 'UTC' 'UTC+1' 'UTC+2' 'UTC+3' 'UTC+4' 'UTC+5' 'UTC+6' 'UTC+7' 'UTC+8' 'UTC+9' 'UTC+10' 'UTC+11' 'UTC+12' 'UTC+13' 'UTC+14'"`
+	Bio        string       `json:"bio"` // custom
 	Links      []string     `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Rating     int64        `json:"rating"`
 	Watchlist  []*Watchlist `json:"watchlist"`
@@ -48,11 +48,11 @@ type WatchlistInput struct {
 type Skill struct {
 	UserAddress  string   `json:"user_address" validate:"required,eth_addr"`
 	Title        string   `json:"title" validate:"required,min=5,max=50"`
-	Description  string   `json:"description"` // todo: custom parser
+	Description  string   `json:"description"` // custom
 	Tags         []string `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links        []string `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	ImageUrls    []string `json:"image_urls" validate:"required,min=1,max=8,dive,omitempty,url"`
-	MinimumPrice int      `json:"minimum_price" validate:"required,min=1000,max=1000000"`
+	MinimumPrice int      `json:"minimum_price" validate:"required,min=500,max=1000000"`
 	Publish      bool     `json:"publish" validate:"boolean"`
 	CreatedAt    int64    `json:"created_at"`
 }

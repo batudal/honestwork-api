@@ -322,7 +322,7 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 	}
 
 	user.Signature = signature
-	val := ValidateUserInput(redis, &user)
+	val := ValidateUserInput(redis, &user, address)
 	if !val {
 		return "Invalid input."
 	}
@@ -368,7 +368,7 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 
 	user.Signature = signature
 
-	val := ValidateUserInput(redis, &user)
+	val := ValidateUserInput(redis, &user, address)
 	if !val {
 		return "Invalid input."
 	}
@@ -452,6 +452,8 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+
+	skill.CreatedAt = time.Now().Unix()
 
 	val := ValidateSkillInput(redis, &skill)
 	if !val {
