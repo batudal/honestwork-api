@@ -68,7 +68,7 @@ type Job struct {
 	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Budget         int           `json:"budget" validate:"required,min=1000,max=1000000"`
-	Installments   int64         `json:"installments" validate:"required,min=1,max=12"`
+	Installments   int64         `json:"installments" validate:"required,min=2,max=5"`
 	TimeZone       string        `json:"timezone"` // todo: figure out timezone check
 	TokensAccepted []Network     `json:"tokens_accepted" validate:"required,min=1"`
 	StickyDuration int64         `json:"sticky_duration" validate:"omitempty,lte=30"`
