@@ -82,9 +82,7 @@ func getSkills(redis *redisearch.Client, address string) []schema.Skill {
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
-		if skill.Publish {
-			skills = append(skills, skill)
-		}
+		skills = append(skills, skill)
 	}
 	return skills
 }

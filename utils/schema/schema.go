@@ -14,7 +14,7 @@ type User struct {
 	NFTId      string       `json:"nft_id"` // todo: custom owner check
 	Email      string       `json:"email" validate:"omitempty,email"`
 	Timezone   string       `json:"timezone"` // todo: figure out timezone check
-	Bio        string       `json:"bio" validate:"required,min=200,max=2000"`
+	Bio        string       `json:"bio"`      // todo: custom parser
 	Links      []string     `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Rating     int64        `json:"rating"`
 	Watchlist  []*Watchlist `json:"watchlist"`
@@ -48,12 +48,12 @@ type WatchlistInput struct {
 type Skill struct {
 	UserAddress  string   `json:"user_address" validate:"required,eth_addr"`
 	Title        string   `json:"title" validate:"required,min=5,max=50"`
-	Description  string   `json:"description" validate:"required,min=200,max=2000"`
-	Tags         []string `json:"tags" validate:"required,min=1,max=3,dive,min=3,max=20"`
-	Links        []string `json:"links" validate:"required,min=1,max=3,dive,url"`
+	Description  string   `json:"description"` // todo: custom parser
+	Tags         []string `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
+	Links        []string `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	ImageUrls    []string `json:"image_urls" validate:"required,min=1,max=8,dive,omitempty,url"`
 	MinimumPrice int      `json:"minimum_price" validate:"required,min=1000,max=1000000"`
-	Publish      bool     `json:"publish" validate:"required,boolean"`
+	Publish      bool     `json:"publish" validate:"boolean"`
 	CreatedAt    int64    `json:"created_at"`
 }
 

@@ -39,7 +39,7 @@ settings:
   #   skill:
   #     title: 50
 contract_addresses:
-  membership_nft: 0x610907faEb17Db469fDFcd2b7355c2094cCD1bAF
+  membership_nft: 0x49A50AC4253421923276C0619116B5c4c719819A
   job_payments: 0x22aEC6F7172a3823ef45d11aB64Bde6558502013
 network:
   polygon:
