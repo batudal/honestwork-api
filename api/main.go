@@ -132,5 +132,13 @@ func main() {
 		return c.JSON(HandleAddTag(redis, c.Params("address"), c.Params("signature"), c.Params("tag")))
 	})
 
+	// conversations
+	app.Get("/api/v1/conversations/:address", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetConversations(redis, c.Params("address")))
+	})
+	// app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
+	// 	return c.JSON(HandleAddConversation(redis, c.Params("address"), c.Params("signature"), c.Body()))
+	// })
+
 	app.Listen(":" + conf.API.Port)
 }

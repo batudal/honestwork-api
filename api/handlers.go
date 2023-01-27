@@ -453,6 +453,7 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 		fmt.Println("Error:", err)
 	}
 
+	skill.Slot = len(all_skills)
 	skill.CreatedAt = time.Now().Unix()
 
 	val := ValidateSkillInput(redis, &skill)
@@ -982,3 +983,58 @@ func HandleAddTag(redis *redis.Client, address string, signature string, tag str
 
 	return "success"
 }
+
+func getConversations(redis *redis.Client, address string) []*schema.Conversation {
+	var conversations []*schema.Conversation
+	record_id := "conversations:" + address
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &conversations)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return conversations
+}
+
+func HandleGetConversations(redis *redis.Client, address string) []*schema.Conversation {
+	conversations := getConversations(redis, address)
+	return conversations
+}
+
+// func HandleAddConversation(redis *redis.Client, address string, signature string, body []byte) string {
+// 	authorizeSignatured := authorizeSignature(redis, address, signature)
+// 	if !authorizeSignatured {
+// 		return "Wrong signature."
+// 	}
+
+// 	var conversation_input schema.ConversationInput
+// 	err := json.Unmarshal(body, &conversation_input)
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 	}
+
+// 	conversation := schema.Conversation{
+// 		Input: &conversation_input,
+// 	}
+
+// 	conversations := getConversations(redis, address)
+// 	for _, c := range conversations {
+// 		if c.Input.Address == conversation.Input.Address && c.Input.Slot == conversation.Input.Slot {
+// 			return "You have already added this job to conversations."
+// 		}
+// 	}
+// 	conversations = append(conversations, &conversation)
+
+// 	new_data, err := json.Marshal(conversations)
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 	}
+
+// 	record_id := "conversations:" + address
+
+// 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+
+// 	return "success"
+// }
