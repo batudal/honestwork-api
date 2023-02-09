@@ -45,9 +45,9 @@ network:
   polygon:
     id: 137
     rpc_url: https://polygon-mainnet.g.alchemy.com/v2/aJlJqiSUmkCk2_PUK5ooLjOQiZLb0uUs
-  devm:
-    id: 1453
-    rpc_url: https://decoded.wtf
+  eth:
+    id: 1
+    rpc_url: https://eth-mainnet.g.alchemy.com/v2/6S77iu4XWkdCm3lztMIZql9JOLMW_adQ
   binance:
     id: 56
     rpc_url: https://skilled-patient-butterfly.bsc.quiknode.pro/89efe93217115973b4681365c2e7a1e2abc0c29b/

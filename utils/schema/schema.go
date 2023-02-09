@@ -19,6 +19,8 @@ type User struct {
 	Rating     int64        `json:"rating"`
 	Watchlist  []*Watchlist `json:"watchlist"`
 	Favorites  []*Favorite  `json:"favorites"`
+	DmsOpen    *bool        `json:"dms_open" validate:"required,boolean"`
+  Applications []Application `json:"application"` 
 }
 
 type FavoriteInput struct {

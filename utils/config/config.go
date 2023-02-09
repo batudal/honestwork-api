@@ -62,10 +62,10 @@ type Config struct {
 		JobPayments   string `yaml:"job_payments"`
 	} `yaml:"contract_addresses"`
 	Network struct {
-		Devm struct {
+		Eth struct {
 			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
-		} `yaml:"devm"`
+		} `yaml:"eth"`
 		Polygon struct {
 			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`

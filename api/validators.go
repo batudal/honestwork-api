@@ -23,13 +23,15 @@ func ValidateUserInput(redis *redis.Client, user *schema.User, address string) b
 	}
 	token_id, _ := strconv.Atoi(user.NFTId)
 	if !web3.CheckNFTOwner(address, user.NFTAddress, token_id) {
+		fmt.Println("NFT Error")
 		return false
 	}
 	if web3.CheckENSOwner(address, user.EnsName) {
+		fmt.Println("ENS Error")
 		return false
 	}
 	bio_length := len(parser.ParseContent(user.Bio))
-	if bio_length > 200 || bio_length < 2000 {
+	if bio_length < 200 || bio_length > 2000 {
 		return false
 	}
 	return true

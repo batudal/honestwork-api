@@ -1,9 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
 	"strconv"
+	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -14,9 +17,19 @@ import (
 func main() {
 	app := fiber.New()
 
+	dsn := os.Getenv("SENTRY_DSN")
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:              dsn,
+		TracesSampleRate: 1.0, // todo: adjust in production (0.1max)
+	})
+	if err != nil {
+		log.Fatalf("sentry.Init: %s", err)
+	}
+	defer sentry.Flush(2 * time.Second)
+
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		sentry.CaptureMessage("Error: " + err.Error())
 	}
 
 	redis := client.NewClient(conf.DB.ID)

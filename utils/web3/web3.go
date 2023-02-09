@@ -47,6 +47,24 @@ func FetchUserState(address string) int {
 	return int(state.Int64())
 }
 
+// func FetchNFTRevenue(network_id int, token_id int) int {
+//   conf, err := config.ParseConfig()
+//   if err != nil {
+//     fmt.Println("Error:", err)
+//   }
+
+//   var client *ethclient.Client
+//   if (network_id == 56) {
+//     client, err = ethclient.Dial(conf.Network.Binance.RPCURL)
+//     if err != nil {
+//       log.Fatal(err)
+//     }
+//   }
+
+//   registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
+//   return 0
+// }
+
 func CheckOutstandingPayment(user_address string, token_address string, amount *big.Int, tx_hash string) error {
 	conf, err := config.ParseConfig()
 	if err != nil {
@@ -166,7 +184,7 @@ func CheckNFTOwner(user_address string, token_address string, token_id int) bool
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}

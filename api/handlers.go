@@ -43,6 +43,7 @@ func getUser(redis *redis.Client, address string) schema.User {
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+
 	return user
 }
 
@@ -301,17 +302,39 @@ func getFavorites(redis *redis.Client, address string) []*schema.Favorite {
 	return user.Favorites
 }
 
-func HandleSignup(redis *redis.Client, address string, signature string) string {
-	salt_id := "salt:" + address
-	salt, err := redis.Get(redis.Context(), salt_id).Result()
+func getTags(redis *redis.Client) schema.Tags {
+	var tags schema.Tags
+	data, err := redis.Do(redis.Context(), "JSON.GET", "tags").Result()
 	if err != nil {
-		return "No salt for this address found."
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &tags)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return tags
+}
+
+func getConversations(redis *redis.Client, address string) []*schema.Conversation {
+	var conversations []*schema.Conversation
+	record_id := "conversations:" + address
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &conversations)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return conversations
+}
+
+func HandleSignup(redis *redis.Client, address string, signature string) string {
+	authorized := authorizeVerifyWithSalt(redis, address, signature)
+	if !authorized {
+		return "Authorization failed."
 	}
 
-	result := crypto.VerifySignature(salt, address, signature)
-	if !result {
-		return "Wrong signature."
-	}
 	// new user
 	user := getUser(redis, address)
 
@@ -355,8 +378,6 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
-	case 1:
-		return "User didn't bind NFT yet."
 	}
 
 	// new user
@@ -625,7 +646,10 @@ func HandleGetJobsFeed(redis *redisearch.Client) []schema.Job {
 }
 
 func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, signature string, body []byte) string {
-	authorizeVerifyWithSalt(redis, address, signature)
+	authorized := authorizeVerifyWithSalt(redis, address, signature)
+	if !authorized {
+		return "Authorization failed."
+	}
 
 	var job schema.Job
 	err := json.Unmarshal(body, &job)
@@ -758,6 +782,15 @@ func HandleApplyJob(redis *redis.Client, applicant_address string, signature str
 	}
 
 	record_id := "job:" + recruiter_address + ":" + slot
+
+	existing_user := getUser(redis, applicant_address)
+	existing_user.Applications = append(existing_user.Applications, application)
+	new_applicant, err := json.Marshal(existing_user)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	applicant_id := "user:" + applicant_address
+	redis.Do(redis.Context(), "JSON.SET", applicant_id, "$", new_applicant)
 
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
@@ -941,19 +974,6 @@ func HandleVerify(redis *redis.Client, address string, signature string) string 
 	return "success"
 }
 
-func getTags(redis *redis.Client) schema.Tags {
-	var tags schema.Tags
-	data, err := redis.Do(redis.Context(), "JSON.GET", "tags").Result()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &tags)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	return tags
-}
-
 func HandleGetTags(redis *redis.Client) schema.Tags {
 	tags := getTags(redis)
 	return tags
@@ -982,20 +1002,6 @@ func HandleAddTag(redis *redis.Client, address string, signature string, tag str
 	redis.Do(redis.Context(), "JSON.SET", "tags", "$", new_data)
 
 	return "success"
-}
-
-func getConversations(redis *redis.Client, address string) []*schema.Conversation {
-	var conversations []*schema.Conversation
-	record_id := "conversations:" + address
-	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &conversations)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	return conversations
 }
 
 func HandleGetConversations(redis *redis.Client, address string) []*schema.Conversation {
