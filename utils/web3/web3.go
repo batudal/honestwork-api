@@ -14,9 +14,9 @@ import (
 	"github.com/wealdtech/go-ens/v3"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	registry "github.com/takez0o/honestwork-api/utils/abi/Registry"
 	"github.com/takez0o/honestwork-api/utils/abi/genesis"
 	"github.com/takez0o/honestwork-api/utils/abi/job_listing"
+	"github.com/takez0o/honestwork-api/utils/abi/registry"
 	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
