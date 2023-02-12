@@ -17,6 +17,8 @@ import (
 func main() {
 	app := fiber.New()
 
+	app.Static("/", "./static")
+
 	dsn := os.Getenv("SENTRY_DSN")
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,

@@ -60,6 +60,7 @@ type Config struct {
 	ContractAddresses struct {
 		MembershipNFT string `yaml:"membership_nft"`
 		JobPayments   string `yaml:"job_payments"`
+		Registry      string `yaml:"registry"`
 	} `yaml:"contract_addresses"`
 	Network struct {
 		Eth struct {

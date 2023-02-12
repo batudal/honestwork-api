@@ -41,6 +41,7 @@ settings:
 contract_addresses:
   membership_nft: 0x49A50AC4253421923276C0619116B5c4c719819A
   job_payments: 0x22aEC6F7172a3823ef45d11aB64Bde6558502013
+  registry: 0x22aEC6F7172a3823ef45d11aB64Bde6558502013
 network:
   polygon:
     id: 137

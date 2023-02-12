@@ -62,6 +62,7 @@ func FetchUserState(address string) int {
 //   }
 
 //   registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
+
 //   return 0
 // }
 
