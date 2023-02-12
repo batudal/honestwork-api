@@ -106,6 +106,31 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 	return int(revenue_normalized.Int64())
 }
 
+func FetchTotalSupply() int {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
+	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	total_supply, err := instance.TotalSupply(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client.Close()
+	return int(total_supply.Int64())
+}
+
 func CheckOutstandingPayment(user_address string, token_address string, amount *big.Int, tx_hash string) error {
 	conf, err := config.ParseConfig()
 	if err != nil {

@@ -41,27 +41,24 @@ type Revenue struct {
 	RevenueTier string `json:"revenue_tier"`
 }
 
-// func fetchAllRevenues() []Revenue {
-// 	// get total supply
-// 	// scan through revenues with routines
-
-// 	return []Revenue{}
-// }
+func fetchAllRevenues() {
+	total_supply := web3.FetchTotalSupply()
+	for i := 1; i <= total_supply; i++ {
+		revenue := fetchRevenue(137, i)
+		writeJSON(revenue)
+	}
+}
 
 func fetchRevenue(network_id int, token_id int) Revenue {
-
 	amount := web3.FetchNFTRevenue(network_id, token_id)
-	fmt.Println("Amount:", amount)
 	tier := web3.FetchTokenTier(token_id)
 	revenue_tier := getRevenueTier(amount)
-	fmt.Println("RevTier:", revenue_tier)
-
-	revenue := Revenue{}
-	revenue.NetworkId = network_id
-	revenue.TokenId = token_id
-	revenue.Amount = amount
-	revenue.Tier = tier
-	revenue.RevenueTier = revenue_tier
+	revenue := Revenue{
+		NetworkId:   network_id,
+		TokenId:     token_id,
+		Amount:      amount,
+		Tier:        tier,
+		RevenueTier: revenue_tier}
 	return revenue
 }
 
@@ -84,12 +81,7 @@ func getRevenueTier(amount int) string {
 }
 
 func main() {
-	revenue := fetchRevenue(137, 1)
-	fmt.Println("Revenue amount: ", revenue.Amount)
-	fmt.Println("Revenue tier: ", revenue.Tier)
-	fmt.Println("Revenue tier: ", revenue.RevenueTier)
-
-	writeJSON(revenue)
+	fetchAllRevenues()
 }
 
 func writeJSON(revenue Revenue) {
