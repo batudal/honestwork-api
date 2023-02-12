@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/takez0o/honestwork-api/api/metadata"
 	"github.com/takez0o/honestwork-api/utils/client"
 	"github.com/takez0o/honestwork-api/utils/config"
 )
@@ -33,6 +34,8 @@ func main() {
 	if err != nil {
 		sentry.CaptureMessage("Error: " + err.Error())
 	}
+
+	go metadata.WatchRevenues()
 
 	redis := client.NewClient(conf.DB.ID)
 	redis_skill_index := client.NewSearchClient("skillIndex")

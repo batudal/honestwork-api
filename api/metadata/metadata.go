@@ -1,10 +1,11 @@
-package main
+package metadata
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"time"
 
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
@@ -80,8 +81,11 @@ func getRevenueTier(amount int) string {
 	}
 }
 
-func main() {
-	fetchAllRevenues()
+func WatchRevenues() {
+	for {
+		fetchAllRevenues()
+		time.Sleep(time.Duration(30) * time.Minute)
+	}
 }
 
 func writeJSON(revenue Revenue) {
