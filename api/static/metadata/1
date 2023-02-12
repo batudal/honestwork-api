@@ -11,11 +11,11 @@
   },
   {
    "trait_type": "Gross Revenue",
-   "value": 1000
+   "value": 0
   },
   {
    "trait_type": "Revenue Tier",
-   "value": "HonestChad"
+   "value": "\u003c $1000"
   }
  ]
 }

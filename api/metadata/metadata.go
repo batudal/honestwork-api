@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+
+	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
 type Metadata struct {
@@ -39,22 +41,28 @@ type Revenue struct {
 	RevenueTier string `json:"revenue_tier"`
 }
 
-func fetchAllRevenues() []Revenue {
-	// get total supply
-	// scan through revenues with routines
+// func fetchAllRevenues() []Revenue {
+// 	// get total supply
+// 	// scan through revenues with routines
 
-	return []Revenue{}
-}
+// 	return []Revenue{}
+// }
 
 func fetchRevenue(network_id int, token_id int) Revenue {
-	// get revenue from contract
+
+	amount := web3.FetchNFTRevenue(network_id, token_id)
+	fmt.Println("Amount:", amount)
+	tier := web3.FetchTokenTier(token_id)
+	revenue_tier := getRevenueTier(amount)
+	fmt.Println("RevTier:", revenue_tier)
+
 	revenue := Revenue{}
 	revenue.NetworkId = network_id
 	revenue.TokenId = token_id
-	revenue.Amount = 1000
-	revenue.Tier = 1
-	revenue.RevenueTier = getRevenueTier(revenue.Amount)
-	return Revenue{}
+	revenue.Amount = amount
+	revenue.Tier = tier
+	revenue.RevenueTier = revenue_tier
+	return revenue
 }
 
 func getRevenueTier(amount int) string {
@@ -76,7 +84,12 @@ func getRevenueTier(amount int) string {
 }
 
 func main() {
-	writeJSON(Revenue{NetworkId: 56, TokenId: 1, Amount: 1000, Tier: 1, RevenueTier: "HonestChad"})
+	revenue := fetchRevenue(137, 1)
+	fmt.Println("Revenue amount: ", revenue.Amount)
+	fmt.Println("Revenue tier: ", revenue.Tier)
+	fmt.Println("Revenue tier: ", revenue.RevenueTier)
+
+	writeJSON(revenue)
 }
 
 func writeJSON(revenue Revenue) {
@@ -102,5 +115,5 @@ func writeJSON(revenue Revenue) {
 
 	file, _ := json.MarshalIndent(data, "", " ")
 
-	_ = ioutil.WriteFile(fmt.Sprintf("../static/metadata/%v", revenue.TokenId), file, 0644)
+	_ = ioutil.WriteFile(fmt.Sprintf("./static/metadata/%v", revenue.TokenId), file, 0644)
 }

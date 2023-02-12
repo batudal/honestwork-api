@@ -14,6 +14,7 @@ import (
 	"github.com/wealdtech/go-ens/v3"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	registry "github.com/takez0o/honestwork-api/utils/abi/Registry"
 	"github.com/takez0o/honestwork-api/utils/abi/genesis"
 	"github.com/takez0o/honestwork-api/utils/abi/job_listing"
 	"github.com/takez0o/honestwork-api/utils/config"
@@ -26,7 +27,7 @@ func FetchUserState(address string) int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +40,7 @@ func FetchUserState(address string) int {
 	}
 
 	user_address_hex := common.HexToAddress(address)
-	state, err := instance.GetUserState(nil, user_address_hex)
+	state, err := instance.GetUserTier(nil, user_address_hex)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,31 +48,70 @@ func FetchUserState(address string) int {
 	return int(state.Int64())
 }
 
-// func FetchNFTRevenue(network_id int, token_id int) int {
-//   conf, err := config.ParseConfig()
-//   if err != nil {
-//     fmt.Println("Error:", err)
-//   }
+func FetchTokenTier(token_id int) int {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 
-//   var client *ethclient.Client
-//   if (network_id == 56) {
-//     client, err = ethclient.Dial(conf.Network.Binance.RPCURL)
-//     if err != nil {
-//       log.Fatal(err)
-//     }
-//   }
+	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-//   registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
+	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
-//   return 0
-// }
+	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	token_id_big := big.NewInt(int64(token_id))
+	state, err := instance.GetTokenTier(nil, token_id_big)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client.Close()
+	return int(state.Int64())
+}
+
+func FetchNFTRevenue(network_id int, token_id int) int {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var client *ethclient.Client
+	if network_id == 137 {
+		client, err = ethclient.Dial(conf.Network.Polygon.RPCURL) //todo: binance
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	defer client.Close()
+
+	registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
+	instance, err := registry.NewRegistry(registry_address_hex, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	revenue, err := instance.GetNFTGrossRevenue(nil, big.NewInt(int64(token_id)))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	revenue_normalized := new(big.Int)
+	revenue_normalized.Div(revenue, big.NewInt(1000000000000000000))
+	return int(revenue_normalized.Int64())
+}
 
 func CheckOutstandingPayment(user_address string, token_address string, amount *big.Int, tx_hash string) error {
 	conf, err := config.ParseConfig()
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
 	if err != nil {
 		return err
 	}
