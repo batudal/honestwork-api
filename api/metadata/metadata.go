@@ -76,7 +76,7 @@ func getRevenueTier(amount int) string {
 }
 
 func main() {
-	writeJSON(Revenue{})
+	writeJSON(Revenue{NetworkId: 56, TokenId: 1, Amount: 1000, Tier: 1, RevenueTier: "HonestChad"})
 }
 
 func writeJSON(revenue Revenue) {

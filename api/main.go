@@ -154,6 +154,5 @@ func main() {
 	// app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
 	// 	return c.JSON(HandleAddConversation(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	// })
-
 	app.Listen(":" + conf.API.Port)
 }

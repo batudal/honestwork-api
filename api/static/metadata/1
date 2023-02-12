@@ -1,0 +1,21 @@
+{
+ "name": "HonestWork #1",
+ "description": "HonestWork Genesis NFTs are the gateway to HonestWork ecosystem.",
+ "image": "https://honestwork-userfiles.fra1.cdn.digitaloceanspaces.com/genesis-nft/1.png",
+ "external_url": "https://honestwork.app",
+ "attributes": [
+  {
+   "trait_type": "Tier",
+   "value": 1,
+   "max_value": 3
+  },
+  {
+   "trait_type": "Gross Revenue",
+   "value": 1000
+  },
+  {
+   "trait_type": "Revenue Tier",
+   "value": "HonestChad"
+  }
+ ]
+}
