@@ -953,7 +953,7 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
   }
 	for _, app := range user.Favorites {
 		if app.Input.Address == favorite.Input.Address && app.Input.Slot == favorite.Input.Slot {
-			return "You have already added this job to favorites."
+			return "You have already added this skill to favorites."
 		}
 	}
 	user.Favorites = append(user.Favorites, &favorite)
