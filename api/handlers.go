@@ -341,31 +341,24 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 		return "Invalid signature."
 	}
 
-	// new user
-	user := getUser(redis, address)
-
 	state := web3.FetchUserState(address)
 	switch state {
 	case 0:
 		return "User doesn't have NFT."
 	}
 
+  var user schema.User
 	user.Salt = salt
-	val := ValidateUserInput(redis, &user, address)
-	if !val {
-		return "Invalid input."
-	}
-
 	new_data, err := json.Marshal(user)
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	  return err.Error()
+  }
 
 	record_id := "user:" + address
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	  return err.Error()
+  }
 	return "success"
 }
 
