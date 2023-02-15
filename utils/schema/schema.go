@@ -2,25 +2,25 @@ package schema
 
 // todo: abstract go-playground/validator/v10 props to have clean schema
 type User struct {
-	Signature  string       `json:"signature" validate:"required"`
-	Username   string       `json:"username" validate:"required,min=5,max=50"`
-	ShowEns    *bool        `json:"show_ens" validate:"required,boolean"`
-	EnsName    string       `json:"ens_name"` // custom
-	Title      string       `json:"title" validate:"required,min=5,max=50"`
-	ImageUrl   string       `json:"image_url" validate:"omitempty,url"`
-	ShowNFT    *bool        `json:"show_nft" validate:"boolean"`
-	NFTUrl     string       `json:"nft_url" validate:"omitempty,url"`
-	NFTAddress string       `json:"nft_address" validate:"omitempty,eth_addr"`
-	NFTId      string       `json:"nft_id"` // custom
-	Email      string       `json:"email" validate:"omitempty,email"`
-	Timezone   string       `json:"timezone" validate:"oneof='UTC-12' 'UTC-11' 'UTC-10' 'UTC-9' 'UTC-8' 'UTC-7' 'UTC-6' 'UTC-5' 'UTC-4' 'UTC-3' 'UTC-2' 'UTC-1' 'UTC' 'UTC+1' 'UTC+2' 'UTC+3' 'UTC+4' 'UTC+5' 'UTC+6' 'UTC+7' 'UTC+8' 'UTC+9' 'UTC+10' 'UTC+11' 'UTC+12' 'UTC+13' 'UTC+14'"`
-	Bio        string       `json:"bio"` // custom
-	Links      []string     `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
-	Rating     int64        `json:"rating"`
-	Watchlist  []*Watchlist `json:"watchlist"`
-	Favorites  []*Favorite  `json:"favorites"`
-	DmsOpen    *bool        `json:"dms_open" validate:"required,boolean"`
-  Applications []Application `json:"application"` 
+	Salt         string        `json:"salt" validate:"required"`
+	Username     string        `json:"username" validate:"required,min=5,max=50"`
+	ShowEns      *bool         `json:"show_ens" validate:"required,boolean"`
+	EnsName      string        `json:"ens_name"` // custom
+	Title        string        `json:"title" validate:"required,min=5,max=50"`
+	ImageUrl     string        `json:"image_url" validate:"omitempty,url"`
+	ShowNFT      *bool         `json:"show_nft" validate:"boolean"`
+	NFTUrl       string        `json:"nft_url" validate:"omitempty,url"`
+	NFTAddress   string        `json:"nft_address" validate:"omitempty,eth_addr"`
+	NFTId        string        `json:"nft_id"` // custom
+	Email        string        `json:"email" validate:"omitempty,email"`
+	Timezone     string        `json:"timezone" validate:"oneof='UTC-12' 'UTC-11' 'UTC-10' 'UTC-9' 'UTC-8' 'UTC-7' 'UTC-6' 'UTC-5' 'UTC-4' 'UTC-3' 'UTC-2' 'UTC-1' 'UTC' 'UTC+1' 'UTC+2' 'UTC+3' 'UTC+4' 'UTC+5' 'UTC+6' 'UTC+7' 'UTC+8' 'UTC+9' 'UTC+10' 'UTC+11' 'UTC+12' 'UTC+13' 'UTC+14'"`
+	Bio          string        `json:"bio"` // custom
+	Links        []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
+	Rating       int64         `json:"rating"`
+	Watchlist    []*Watchlist  `json:"watchlist"`
+	Favorites    []*Favorite   `json:"favorites"`
+	DmsOpen      *bool         `json:"dms_open" validate:"required,boolean"`
+	Applications []Application `json:"application"`
 }
 
 type FavoriteInput struct {

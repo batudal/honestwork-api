@@ -5,10 +5,14 @@ import (
 	"os"
 	"strconv"
 	"time"
+  "fmt"
 
+  "github.com/joho/godotenv" 
+  "github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+  "github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/takez0o/honestwork-api/api/metadata"
 	"github.com/takez0o/honestwork-api/utils/client"
@@ -19,9 +23,28 @@ func main() {
 	app := fiber.New()
 
 	app.Static("/", "./static")
+  
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error:", err)
+		log.Fatal("Error loading .env file")
+	}
+
+	client_key := os.Getenv("CLIENT_KEY")
+	client_password := os.Getenv("CLIENT_PASSWORD")
+  
+  app.Use(basicauth.New(basicauth.Config{
+    Users: map[string]string{
+      client_key : client_password,
+    },
+  }))
+
+  app.Use(
+  logger.New(), // add Logger middleware
+)
 
 	dsn := os.Getenv("SENTRY_DSN")
-	err := sentry.Init(sentry.ClientOptions{
+	err = sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
 		TracesSampleRate: 1.0, // todo: adjust in production (0.1max)
 	})

@@ -262,7 +262,7 @@ func getAllowedSkillAmount(tier int) int {
 	}
 }
 
-func authorizeSignature(redis *redis.Client, address string, signature string) bool {
+func authorizeVerify(redis *redis.Client, address string, signature string) bool {
 	record_id := "user:" + address
 	var user_db schema.User
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
@@ -273,23 +273,29 @@ func authorizeSignature(redis *redis.Client, address string, signature string) b
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	if user_db.Signature == signature {
-		return true
+
+	result := crypto.VerifySignature(user_db.Salt, address, signature)
+	if !result {
+		return false
 	}
-	return false
+	return true
 }
 
-func authorizeVerifyWithSalt(redis *redis.Client, address string, signature string) bool {
+func authorizeVerifyWithSalt(redis *redis.Client, address string, signature string) (string, error) {
 	salt_id := "salt:" + address
 	salt, err := redis.Get(redis.Context(), salt_id).Result()
 	if err != nil {
-		return false
+		return "", err
 	}
 	result := crypto.VerifySignature(salt, address, signature)
-	if result {
-		return authorizeSignature(redis, address, signature)
+	if !result {
+		return "", err
 	}
-	return false
+	_, err = redis.Del(redis.Context(), salt_id).Result()
+	if err != nil {
+		return "", err
+	}
+	return salt, nil
 }
 
 func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
@@ -330,9 +336,9 @@ func getConversations(redis *redis.Client, address string) []*schema.Conversatio
 }
 
 func HandleSignup(redis *redis.Client, address string, signature string) string {
-	authorized := authorizeVerifyWithSalt(redis, address, signature)
-	if !authorized {
-		return "Authorization failed."
+	salt, err := authorizeVerifyWithSalt(redis, address, signature)
+	if err != nil {
+		return "Invalid signature."
 	}
 
 	// new user
@@ -344,7 +350,7 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 		return "User doesn't have NFT."
 	}
 
-	user.Signature = signature
+	user.Salt = salt
 	val := ValidateUserInput(redis, &user, address)
 	if !val {
 		return "Invalid input."
@@ -369,8 +375,8 @@ func HandleGetUser(redis *redis.Client, address string) schema.User {
 }
 
 func HandleUserUpdate(redis *redis.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -387,8 +393,6 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 		fmt.Println("Error:", err)
 	}
 
-	user.Signature = signature
-
 	val := ValidateUserInput(redis, &user, address)
 	if !val {
 		return "Invalid input."
@@ -398,7 +402,6 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	user_db := getUser(redis, address)
 
 	// filter
-	user.Signature = user_db.Signature
 	if user.ImageUrl == "" {
 		user.ImageUrl = user_db.ImageUrl
 	}
@@ -443,8 +446,8 @@ func HandleGetSkillsTotal(redis *redisearch.Client) int {
 }
 
 func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -498,8 +501,8 @@ func HandleAddSkill(redis *redis.Client, redis_search *redisearch.Client, addres
 }
 
 func HandleUpdateSkill(redis *redis.Client, address string, signature string, slot string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -646,13 +649,13 @@ func HandleGetJobsFeed(redis *redisearch.Client) []schema.Job {
 }
 
 func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address string, signature string, body []byte) string {
-	authorized := authorizeVerifyWithSalt(redis, address, signature)
-	if !authorized {
-		return "Authorization failed."
+	_, err := authorizeVerifyWithSalt(redis, address, signature)
+	if err != nil {
+		return "Wrong signature."
 	}
 
 	var job schema.Job
-	err := json.Unmarshal(body, &job)
+	err = json.Unmarshal(body, &job)
 	if err != nil {
 		return err.Error()
 	}
@@ -703,8 +706,8 @@ func HandleAddJob(redis *redis.Client, redisearch *redisearch.Client, address st
 }
 
 func HandleUpdateJob(redis *redis.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -747,8 +750,8 @@ func HandleUpdateJob(redis *redis.Client, address string, signature string, body
 }
 
 func HandleApplyJob(redis *redis.Client, applicant_address string, signature string, recruiter_address string, slot string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, applicant_address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, applicant_address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -789,15 +792,33 @@ func HandleApplyJob(redis *redis.Client, applicant_address string, signature str
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	applicant_id := "user:" + applicant_address
+	
+  user_applications := existing_user.Applications
+  filtered_application_dates := make([]int64, 0) 
+  for _,app := range user_applications {
+    if application.Date - app.Date < int64(time.Hour * 24) {
+      filtered_application_dates = append(filtered_application_dates, app.Date)
+    } 
+  }
+
+ switch state {
+  case 1:
+    if (len(filtered_application_dates) > 1) {
+      return "Application limit reached for tier 1"
+    }
+  case 2:
+    if (len(filtered_application_dates) > 2) {
+      return "Application limit reached for tier 2"
+    }
+  case 3:
+    if (len(filtered_application_dates) > 4) {
+      return "Application limit reached for tier 3"
+    }
+}
+
+  applicant_id := "user:" + applicant_address
 	redis.Do(redis.Context(), "JSON.SET", applicant_id, "$", new_applicant)
-
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	sendNewApplicantMail(redis, recruiter_address, slot, applicant_address)
 	return "success"
 }
 
@@ -807,8 +828,8 @@ func HandleGetWatchlist(redis *redis.Client, address string) []*schema.Watchlist
 }
 
 func HandleAddWatchlist(redis *redis.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -848,8 +869,8 @@ func HandleAddWatchlist(redis *redis.Client, address string, signature string, b
 }
 
 func HandleRemoveWatchlist(redis *redis.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -884,8 +905,8 @@ func HandleGetFavorites(redis *redis.Client, address string) []*schema.Favorite 
 }
 
 func HandleAddFavorite(redis *redis.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -925,8 +946,8 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 }
 
 func HandleRemoveFavorite(redis *redis.Client, address string, signature string, body []byte) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -967,8 +988,8 @@ func HandleGetSalt(redis *redis.Client, address string) string {
 }
 
 func HandleVerify(redis *redis.Client, address string, signature string) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 	return "success"
@@ -980,8 +1001,8 @@ func HandleGetTags(redis *redis.Client) schema.Tags {
 }
 
 func HandleAddTag(redis *redis.Client, address string, signature string, tag string) string {
-	authorizeSignatured := authorizeSignature(redis, address, signature)
-	if !authorizeSignatured {
+	authorizeVerifyd := authorizeVerify(redis, address, signature)
+	if !authorizeVerifyd {
 		return "Wrong signature."
 	}
 
@@ -1010,8 +1031,8 @@ func HandleGetConversations(redis *redis.Client, address string) []*schema.Conve
 }
 
 // func HandleAddConversation(redis *redis.Client, address string, signature string, body []byte) string {
-// 	authorizeSignatured := authorizeSignature(redis, address, signature)
-// 	if !authorizeSignatured {
+// 	authorizeVerifyd := authorizeVerify(redis, address, signature)
+// 	if !authorizeVerifyd {
 // 		return "Wrong signature."
 // 	}
 
