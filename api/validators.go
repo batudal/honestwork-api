@@ -12,6 +12,11 @@ import (
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
+func boolAddr(b bool) *bool {
+    boolVar := b
+    return &boolVar
+}
+
 func ValidateUserInput(redis *redis.Client, user *schema.User, address string) bool {
 	validate := validator.New()
 	err := validate.StructExcept(user, "watchlist", "favorites", "rating")
@@ -22,11 +27,11 @@ func ValidateUserInput(redis *redis.Client, user *schema.User, address string) b
 		return false
 	}
 	token_id, _ := strconv.Atoi(user.NFTId)
-	if !web3.CheckNFTOwner(address, user.NFTAddress, token_id) {
+	if user.ShowNFT == boolAddr(true) && !web3.CheckNFTOwner(address, user.NFTAddress, token_id) {
 		fmt.Println("NFT Error")
 		return false
 	}
-	if web3.CheckENSOwner(address, user.EnsName) {
+	if user.ShowEns == boolAddr(true) && !web3.CheckENSOwner(address, user.EnsName) {
 		fmt.Println("ENS Error")
 		return false
 	}

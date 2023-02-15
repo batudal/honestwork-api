@@ -32,19 +32,18 @@ func sendNewApplicantMail(redis *redis.Client, recruiter_address string, slot st
 
 // todo: move validation to package
 // todo: create data extractor (for query results)
-func getUser(redis *redis.Client, address string) schema.User {
+func getUser(redis *redis.Client, address string) (schema.User, error) {
 	record_id := "user:" + address
 	var user schema.User
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
+    return schema.User{}, err	
+  }
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	return user
+	  return schema.User{}, err
+  }
+	return user, nil
 }
 
 func getSkill(redis *redis.Client, slot string, address string) schema.Skill {
@@ -299,12 +298,18 @@ func authorizeVerifyWithSalt(redis *redis.Client, address string, signature stri
 }
 
 func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+  if err != nil {
+    return []*schema.Watchlist{}
+  }
 	return user.Watchlist
 }
 
 func getFavorites(redis *redis.Client, address string) []*schema.Favorite {
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+  if err != nil {
+    return []*schema.Favorite{}
+  }
 	return user.Favorites
 }
 
@@ -348,6 +353,10 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 	}
 
   var user schema.User
+  existing_user, err := getUser(redis, address)
+  if err == nil {
+    user = existing_user 
+  }
 	user.Salt = salt
 	new_data, err := json.Marshal(user)
 	if err != nil {
@@ -363,7 +372,10 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 }
 
 func HandleGetUser(redis *redis.Client, address string) schema.User {
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+	if err != nil {
+	  return schema.User{}
+  }
 	return user
 }
 
@@ -392,12 +404,17 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	}
 
 	// current user in db
-	user_db := getUser(redis, address)
+	user_db,err := getUser(redis, address)
+	if err != nil {
+	  return "User not found."
+  }
 
 	// filter
-	if user.ImageUrl == "" {
+	user.Salt = user_db.Salt
+  if user.ImageUrl == "" {
 		user.ImageUrl = user_db.ImageUrl
 	}
+
 
 	new_data, err := json.Marshal(user)
 	if err != nil {
@@ -779,7 +796,10 @@ func HandleApplyJob(redis *redis.Client, applicant_address string, signature str
 
 	record_id := "job:" + recruiter_address + ":" + slot
 
-	existing_user := getUser(redis, applicant_address)
+	existing_user, err := getUser(redis, applicant_address)
+  if err != nil {
+    return "User not found."
+  }
 	existing_user.Applications = append(existing_user.Applications, application)
 	new_applicant, err := json.Marshal(existing_user)
 	if err != nil {
@@ -841,7 +861,10 @@ func HandleAddWatchlist(redis *redis.Client, address string, signature string, b
 		ImageUrl: job.ImageUrl,
 	}
 
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+  if err != nil {
+    return "User not found."
+  }
 	for _, app := range user.Watchlist {
 		if app.Input.Address == watchlist.Input.Address && app.Input.Slot == watchlist.Input.Slot {
 			return "You have already added this job to watchlist."
@@ -873,7 +896,10 @@ func HandleRemoveWatchlist(redis *redis.Client, address string, signature string
 		fmt.Println("Error:", err)
 	}
 
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+  if err != nil {
+    return "User not found."
+  }
 	for i, app := range user.Watchlist {
 		if app.Input.Address == watchlist_input.Address && app.Input.Slot == watchlist_input.Slot {
 			user.Watchlist = append(user.Watchlist[:i], user.Watchlist[i+1:]...)
@@ -910,7 +936,10 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 	}
 
 	skill := getSkill(redis, strconv.Itoa(favorite_input.Slot), favorite_input.Address)
-	skill_user := getUser(redis, skill.UserAddress)
+	skill_user,err := getUser(redis, skill.UserAddress)
+  if err != nil {
+    return "User not found."
+  }
 	favorite := schema.Favorite{
 		Input:    &favorite_input,
 		Username: skill_user.Username,
@@ -918,7 +947,10 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 		ImageUrl: skill.ImageUrls[0],
 	}
 
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+  if err != nil {
+    return "User not found."
+  }
 	for _, app := range user.Favorites {
 		if app.Input.Address == favorite.Input.Address && app.Input.Slot == favorite.Input.Slot {
 			return "You have already added this job to favorites."
@@ -950,7 +982,10 @@ func HandleRemoveFavorite(redis *redis.Client, address string, signature string,
 		fmt.Println("Error:", err)
 	}
 
-	user := getUser(redis, address)
+	user,err := getUser(redis, address)
+  if err != nil {
+    return "User not found."
+  }
 	for i, app := range user.Favorites {
 		if app.Input.Address == favorite_input.Address && app.Input.Slot == favorite_input.Slot {
 			user.Favorites = append(user.Favorites[:i], user.Favorites[i+1:]...)

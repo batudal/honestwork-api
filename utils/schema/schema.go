@@ -2,7 +2,7 @@ package schema
 
 // todo: abstract go-playground/validator/v10 props to have clean schema
 type User struct {
-	Salt         string        `json:"salt" validate:"required"`
+	Salt         string        `json:"salt"`
 	Username     string        `json:"username" validate:"required,min=5,max=50"`
 	ShowEns      *bool         `json:"show_ens" validate:"required,boolean"`
 	EnsName      string        `json:"ens_name"` // custom
