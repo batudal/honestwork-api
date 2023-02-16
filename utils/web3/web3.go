@@ -54,7 +54,7 @@ func FetchTokenTier(token_id int) int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func FetchTotalSupply() int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
