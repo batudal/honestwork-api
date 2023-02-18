@@ -1053,43 +1053,112 @@ func HandleAddTag(redis *redis.Client, address string, signature string, tag str
 	return "success"
 }
 
+func isMember (redis *redis.Client, address string) bool {
+  record_id := "user:" + address
+	_, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+  if err != nil {
+    return false
+  } else {
+    return true
+  }
+}
+
+func isApplicantOf (redis *redis.Client, recruiter string, applicant string) bool {
+  return true
+}
+
 func HandleGetConversations(redis *redis.Client, address string) []*schema.Conversation {
 	conversations := getConversations(redis, address)
 	return conversations
 }
 
-// func HandleAddConversation(redis *redis.Client, address string, signature string, body []byte) string {
-// 	authorizeVerifyd := authorizeVerify(redis, address, signature)
-// 	if !authorizeVerifyd {
-// 		return "Wrong signature."
-// 	}
+ func HandleAddConversation(redis *redis.Client, redis_search *redisearch.Client, address string, signature string, body []byte) string {
+ 	// move to authorization module
+  if isMember(redis,address) {
+    authorized := authorizeVerify(redis, address, signature)
+ 	  if !authorized {
+ 		  return "Wrong signature."
+ 	  }
+  } else {
+    _,err := authorizeVerifyWithSalt(redis, address, signature)
+ 	  if err != nil {
+ 		  return "Wrong signature."
+ 	  }
+  }
 
-// 	var conversation_input schema.ConversationInput
-// 	err := json.Unmarshal(body, &conversation_input)
-// 	if err != nil {
-// 		fmt.Println("Error:", err)
-// 	}
+  type input_address struct {
+    MatchedUser string `json:"matched_user"`
+  }
+  target_user := input_address{}
+  err := json.Unmarshal(body, &target_user)
+  if err != nil {
+    return err.Error()
+  }
+  target_address := target_user.MatchedUser
+  if (address == target_address) {
+    return "Can't start conversation with self."
+  }
 
-// 	conversation := schema.Conversation{
-// 		Input: &conversation_input,
-// 	}
+  if isMember(redis,target_address) {
+    target_user_db,err := getUser(redis,target_address)
+    if err != nil {
+      return "Db read failed."
+    }
+    if !*target_user_db.DmsOpen {
+      user_jobs := getJobs(redis_search, address)
+      target_applied := false
+      for _,job := range user_jobs {
+        for _, application := range job.Applications {
+          if application.UserAddress == target_address {
+            target_applied = true
+          }
+        }
+      }
+      if !target_applied {
+        return "User doesn't accept dms right now."
+      }
+    } 
+  }
 
-// 	conversations := getConversations(redis, address)
-// 	for _, c := range conversations {
-// 		if c.Input.Address == conversation.Input.Address && c.Input.Slot == conversation.Input.Slot {
-// 			return "You have already added this job to conversations."
-// 		}
-// 	}
-// 	conversations = append(conversations, &conversation)
+ 	conversation := schema.Conversation{
+    MatchedUser: target_user.MatchedUser,
+    CreatedAt: time.Now().Unix(),
+    LastMessageAt: 0,
+    Muted: false,
+  }
 
-// 	new_data, err := json.Marshal(conversations)
-// 	if err != nil {
-// 		fmt.Println("Error:", err)
-// 	}
+  target_conversation := schema.Conversation{
+    MatchedUser: address,
+    CreatedAt: time.Now().Unix(),
+    LastMessageAt: 0,
+    Muted: false,
+  }
 
-// 	record_id := "conversations:" + address
+ 	conversations := getConversations(redis, address)
+ 	for _, c := range conversations {
+ 		if c.MatchedUser == conversation.MatchedUser{
+ 		  return "Conversation exists already."
+    }
+ 	}
+ 	conversations = append(conversations, &conversation)
 
-// 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+ 	target_conversations := getConversations(redis, target_user.MatchedUser)
+ 	target_conversations = append(target_conversations, &target_conversation)
+ 	
+  new_data, err := json.Marshal(conversations)
+ 	if err != nil {
+ 		fmt.Println("Error:", err)
+ 	}
+  target_new_data, err := json.Marshal(target_conversations)
+  if err != nil {
+    fmt.Println("Error:",err)
+  }
 
-// 	return "success"
-// }
+ 	record_id := "conversations:" + address
+  target_record_id := "conversations" + target_user.MatchedUser
+
+ 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+ 	redis.Do(redis.Context(), "JSON.SET", target_record_id, "$", target_new_data)
+
+ 	return "success"
+ }

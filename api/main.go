@@ -157,15 +157,12 @@ func main() {
 	app.Get("/api/v1/favorites/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetFavorites(redis, c.Params("address")))
 	})
-
 	app.Get("api/v1/salt/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetSalt(redis, c.Params("address")))
 	})
-
 	app.Get("api/v1/verify/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleVerify(redis, c.Params("address"), c.Params("signature")))
 	})
-
 	app.Get("api/v1/tags", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetTags(redis))
 	})
@@ -177,8 +174,9 @@ func main() {
 	app.Get("/api/v1/conversations/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetConversations(redis, c.Params("address")))
 	})
-	// app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
-	// 	return c.JSON(HandleAddConversation(redis, c.Params("address"), c.Params("signature"), c.Body()))
-	// })
-	app.Listen(":" + conf.API.Port)
+  app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
+ 	  return c.JSON(HandleAddConversation(redis, redis_job_index, c.Params("address"), c.Params("signature"), c.Body()))
+  })
+  
+  app.Listen(":" + conf.API.Port)
 }

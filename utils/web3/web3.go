@@ -27,7 +27,7 @@ func FetchUserState(address string) int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
