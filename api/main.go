@@ -177,6 +177,19 @@ func main() {
   app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
  	  return c.JSON(HandleAddConversation(redis, redis_job_index, c.Params("address"), c.Params("signature"), c.Body()))
   })
-  
+
+  app.Get("/api/v1/deals/:recruiter/:creator", func(c *fiber.Ctx) error {
+    return c.JSON(HandleGetDeals(redis, c.Params("recruiter"), c.Params("creator")))
+  })
+  app.Post("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
+    return c.JSON(HandleAddDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
+  })
+  app.Patch("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
+    return c.JSON(HandleSignDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
+  })
+  // todo: remove record 
+  app.Delete("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
+    return c.JSON(HandleExecuteDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
+  })
   app.Listen(":" + conf.API.Port)
 }

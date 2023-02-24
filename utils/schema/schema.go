@@ -110,3 +110,12 @@ type Conversation struct {
 	LastMessageAt int64  `json:"last_message_at"`
 	Muted         bool   `json:"muted"`
 }
+
+type Deal struct {
+  Status string `json:"status"`
+  Signature string `json:"signature"`
+  Network string `json:"network"`
+  TokenAddress string `json:"token_address"`
+  TotalAmount string `json:"total_amount"`
+  DownPayment string `json:"downpayment"`
+}

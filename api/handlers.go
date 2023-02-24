@@ -261,6 +261,24 @@ func getAllowedSkillAmount(tier int) int {
 	}
 }
 
+func getDeals(redis *redis.Client, recruiter string, creator string) ([]schema.Deal,error) {
+  record_id := "deals:" + recruiter + ":" + creator
+	var deals []schema.Deal
+	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
+	if err != nil {
+    fmt.Println("Cant read from redis")
+    return []schema.Deal{}, err	
+  }
+	err = json.Unmarshal([]byte(fmt.Sprint(data)), &deals)
+	if err != nil {
+    fmt.Println("Cant unmarshal")
+	  return []schema.Deal{}, err
+  }
+  fmt.Println("Deals length:", len(deals))
+	return deals, nil
+}
+
+
 func authorizeVerify(redis *redis.Client, address string, signature string) bool {
 	record_id := "user:" + address
 	var user_db schema.User
@@ -331,12 +349,12 @@ func getConversations(redis *redis.Client, address string) []*schema.Conversatio
 	record_id := "conversations:" + address
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	  return []*schema.Conversation{}
+  }
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &conversations)
 	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	  return []*schema.Conversation{}
+  }
 	return conversations
 }
 
@@ -1098,6 +1116,8 @@ func HandleGetConversations(redis *redis.Client, address string) []*schema.Conve
   if (address == target_address) {
     return "Can't start conversation with self."
   }
+  fmt.Println("User:", address)
+  fmt.Println("Target user:", target_address)
 
   if isMember(redis,target_address) {
     target_user_db,err := getUser(redis,target_address)
@@ -1121,7 +1141,7 @@ func HandleGetConversations(redis *redis.Client, address string) []*schema.Conve
   }
 
  	conversation := schema.Conversation{
-    MatchedUser: target_user.MatchedUser,
+    MatchedUser: target_address,
     CreatedAt: time.Now().Unix(),
     LastMessageAt: 0,
     Muted: false,
@@ -1142,23 +1162,146 @@ func HandleGetConversations(redis *redis.Client, address string) []*schema.Conve
  	}
  	conversations = append(conversations, &conversation)
 
- 	target_conversations := getConversations(redis, target_user.MatchedUser)
+ 	target_conversations := getConversations(redis, target_address)
  	target_conversations = append(target_conversations, &target_conversation)
  	
   new_data, err := json.Marshal(conversations)
  	if err != nil {
- 		fmt.Println("Error:", err)
- 	}
+ 	  return err.Error()
+  }
   target_new_data, err := json.Marshal(target_conversations)
   if err != nil {
-    fmt.Println("Error:",err)
+    return err.Error()
   }
 
  	record_id := "conversations:" + address
-  target_record_id := "conversations" + target_user.MatchedUser
+  target_record_id := "conversations:" + target_address
+
+  fmt.Println("Record id:", record_id)
+  fmt.Println("Target id:", target_record_id)
 
  	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
  	redis.Do(redis.Context(), "JSON.SET", target_record_id, "$", target_new_data)
 
  	return "success"
  }
+  
+func HandleGetDeals(redis *redis.Client, recruiter string, creator string) []schema.Deal {
+  deals,err := getDeals(redis,recruiter,creator)
+  if err != nil {
+    return []schema.Deal{}
+  }
+  return deals
+}
+ 
+func HandleAddDeal(redis *redis.Client, recruiter string, creator string, signature string, body []byte) string {
+	_, err := authorizeVerifyWithSalt(redis, recruiter, signature)
+	if err != nil {
+		return "Invalid signature."
+	}
+  
+  deals, err := getDeals(redis, recruiter, creator)
+  if err != nil {
+    deals = []schema.Deal{} 
+  }
+
+	var deal schema.Deal
+	err = json.Unmarshal(body, &deal)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+  
+  deal.Status = "offered"
+  deals = append(deals, deal)
+
+	new_data, err := json.Marshal(deals)
+	if err != nil {
+	  return err.Error()
+  }
+
+  record_id := "deals:" + recruiter + ":" + creator
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	if err != nil {
+	  return err.Error()
+  }
+	return "success"
+}
+
+func HandleSignDeal(redis *redis.Client, recruiter string, creator string, signature string, body []byte) string {
+	authorized := authorizeVerify(redis, creator, signature)
+	if !authorized {
+		return "Wrong signature."
+	}
+
+  deals, err := getDeals(redis, recruiter, creator)
+  if err != nil {
+    return err.Error()
+  }
+
+  type DealSignature struct {
+    Slot int `json:"slot"`
+    Signature string `json:"signature"`
+  }
+
+  var dealSignature DealSignature
+  err = json.Unmarshal(body, &dealSignature)
+  if err != nil {
+    return err.Error()
+  }
+
+  if (dealSignature.Slot > len(deals)) {
+    return "Wrong slot."
+  }
+
+  deals[dealSignature.Slot].Signature = dealSignature.Signature
+  deals[dealSignature.Slot].Status = "accepted" 
+
+	new_data, err := json.Marshal(deals)
+	if err != nil {
+	  return err.Error()
+  }
+
+  record_id := "deals:" + recruiter + ":" + creator
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	if err != nil {
+	  return err.Error()
+  }
+	return "success"
+}
+
+func HandleExecuteDeal (redis *redis.Client, recruiter string, creator string, signature string, body []byte ) string {
+	_, err := authorizeVerifyWithSalt(redis, recruiter, signature)
+	if err != nil {
+		return "Invalid signature."
+	}
+  
+  deals, err := getDeals(redis, recruiter, creator)
+  if err != nil {
+    return err.Error()
+  }
+
+  type DealExecution struct {
+    Slot int `json:"slot"`
+  }
+
+  var dealExecution DealExecution
+  err = json.Unmarshal(body, &dealExecution)
+  if err != nil {
+    return err.Error()
+  }
+  
+  if (dealExecution.Slot > len(deals)) {
+    return "Wrong slot."
+  }
+
+  deals[dealExecution.Slot].Status = "executed"
+
+  new_data, err := json.Marshal(deals)
+  if err != nil {
+    return err.Error()
+  }
+
+  record_id := "deals:" + recruiter + ":" + creator
+  redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+  return "success"
+}
