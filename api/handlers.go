@@ -1316,3 +1316,20 @@ func HandleConfig() config.Config {
 	}
 	return *conf
 }
+
+func getRating(redis *redis.Client, address string) (string, error) {
+	record_id := "rating:" + address
+	rating, err := redis.Do(redis.Context(), "GET", record_id).Result()
+	if err != nil {
+		return "", err
+	}
+	return rating.(string), nil
+}
+
+func HandleGetRating(redis *redis.Client, address string) string {
+	rating, err := getRating(redis, address)
+	if err != nil {
+		return "Db read failed."
+	}
+	return rating
+}

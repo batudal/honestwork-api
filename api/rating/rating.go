@@ -6,29 +6,28 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v8"
+
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
-func WatchRatings(rs_job *redisearch.Client, rs_user *redisearch.Client) {
+func WatchRatings(rs_job *redisearch.Client, rs_user *redisearch.Client, redis *redis.Client) {
 	for {
-		fetchAllRatings(rs_job, rs_user)
+		fetchAllRatings(rs_job, rs_user, redis)
 		time.Sleep(time.Duration(30) * time.Minute)
 	}
 }
 
-func fetchAllRatings(rs_job *redisearch.Client, rs_user *redisearch.Client) {
+func fetchAllRatings(rs_job *redisearch.Client, rs_user *redisearch.Client, redis *redis.Client) {
 	listers := fetchAllListers(rs_job)
 	members := fetchAllMembers(rs_user)
-	fmt.Println("Members -> ", members)
 	for _, lister := range listers {
-		fmt.Println("Fetching lister rating...")
-		updateRating(lister)
+		updateRating(lister, redis)
 	}
 	for _, member := range members {
-		fmt.Println("Fetching member rating...")
-		updateRating(member)
+		updateRating(member, redis)
 	}
 }
 
@@ -83,8 +82,8 @@ func fetchAllMembers(redis *redisearch.Client) []string {
 	return members
 }
 
-func updateRating(address string) float64 {
+func updateRating(address string, redis *redis.Client) {
 	rating := web3.FetchAggregatedRating(address)
-	fmt.Println("Rating for " + address + " is " + fmt.Sprint(rating))
-	return rating
+	record_id := fmt.Sprintf("rating:%s", address)
+	redis.Do(redis.Context(), "SET", record_id, rating)
 }

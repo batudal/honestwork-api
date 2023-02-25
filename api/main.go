@@ -65,7 +65,7 @@ func main() {
 	redis_user_index := client.NewSearchClient("userIndex")
 
 	go metadata.WatchRevenues()
-	go rating.WatchRatings(redis_job_index, redis_user_index)
+	go rating.WatchRatings(redis_job_index, redis_user_index, redis)
 
 	app.Use(cors.New())
 	app.Use(recover.New())
@@ -199,6 +199,11 @@ func main() {
 	// config
 	app.Get("/api/v1/config", func(c *fiber.Ctx) error {
 		return c.JSON(HandleConfig())
+	})
+
+	// rating
+	app.Get("/api/v1/rating/:address", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetRating(redis, c.Params("address")))
 	})
 
 	app.Listen(":" + conf.API.Port)
