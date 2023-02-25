@@ -13,8 +13,8 @@ import (
 )
 
 func boolAddr(b bool) *bool {
-    boolVar := b
-    return &boolVar
+	boolVar := b
+	return &boolVar
 }
 
 func ValidateUserInput(redis *redis.Client, user *schema.User, address string) bool {

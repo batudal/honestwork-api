@@ -14,12 +14,41 @@ import (
 	"github.com/wealdtech/go-ens/v3"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/takez0o/honestwork-api/utils/abi/genesis"
-	"github.com/takez0o/honestwork-api/utils/abi/job_listing"
-	"github.com/takez0o/honestwork-api/utils/abi/registry"
+	"github.com/takez0o/honestwork-api/utils/abi/honestworknft"
+	"github.com/takez0o/honestwork-api/utils/abi/hwescrow"
+	"github.com/takez0o/honestwork-api/utils/abi/hwlisting"
+	"github.com/takez0o/honestwork-api/utils/abi/hwregistry"
 	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
+
+func FetchUserNFT(address string) int {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
+
+	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	user_address_hex := common.HexToAddress(address)
+	index := big.NewInt(0)
+	token_id, err := instance.TokenOfOwnerByIndex(nil, user_address_hex, index)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client.Close()
+	return int(token_id.Int64())
+}
 
 func FetchUserState(address string) int {
 	conf, err := config.ParseConfig()
@@ -34,7 +63,7 @@ func FetchUserState(address string) int {
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
-	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,7 +90,7 @@ func FetchTokenTier(token_id int) int {
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
-	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,8 +111,8 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 	}
 
 	var client *ethclient.Client
-	if network_id == 137 {
-		client, err = ethclient.Dial(conf.Network.Polygon.RPCURL) //todo: binance
+	if network_id == 56 {
+		client, err = ethclient.Dial(conf.Network.Binance.RPCURL)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -91,7 +120,7 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 	defer client.Close()
 
 	registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
-	instance, err := registry.NewRegistry(registry_address_hex, client)
+	instance, err := hwregistry.NewHwregistry(registry_address_hex, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -118,7 +147,7 @@ func FetchTotalSupply() int {
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
-	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,7 +165,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(conf.Network.Polygon.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
 	if err != nil {
 		return err
 	}
@@ -155,7 +184,6 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 		return fmt.Errorf("tx to address mismatch")
 	}
 
-	//todo: implement multichain payments (currently only binance)
 	if tx.ChainId().Int64() != conf.Network.Binance.ID {
 		return fmt.Errorf("tx chain id mismatch")
 	}
@@ -191,7 +219,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 		return fmt.Errorf("no logs found")
 	}
 
-	contract_abi, err := abi.JSON(strings.NewReader(string(job_listing.JobListingABI)))
+	contract_abi, err := abi.JSON(strings.NewReader(string(hwlisting.HwlistingABI)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -257,7 +285,7 @@ func CheckNFTOwner(user_address string, token_address string, token_id int) bool
 
 	nft_address_hex := common.HexToAddress(token_address)
 
-	instance, err := genesis.NewGenesis(nft_address_hex, client)
+	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -293,4 +321,37 @@ func CheckENSOwner(user_address string, ens_name string) bool {
 		return false
 	}
 	return true
+}
+
+func FetchAggregatedRating(user_address string) float64 {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	var client *ethclient.Client
+	client, err = ethclient.Dial(conf.Network.Binance.RPCURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	escrow_address_hex := common.HexToAddress(conf.ContractAddresses.Escrow)
+	instance, err := hwescrow.NewHwescrow(escrow_address_hex, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	user_address_hex := common.HexToAddress(user_address)
+	rating, err := instance.GetAggregatedRating(nil, user_address_hex)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	precision, err := instance.GetPrecision(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rating_normalized := float64(rating.Int64()) / float64(precision.Int64())
+	return rating_normalized
 }

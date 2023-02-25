@@ -1,20 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"time"
-  "fmt"
 
-  "github.com/joho/godotenv" 
-  "github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-  "github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/joho/godotenv"
 	"github.com/takez0o/honestwork-api/api/metadata"
+	"github.com/takez0o/honestwork-api/api/rating"
 	"github.com/takez0o/honestwork-api/utils/client"
 	"github.com/takez0o/honestwork-api/utils/config"
 )
@@ -23,7 +24,7 @@ func main() {
 	app := fiber.New()
 
 	app.Static("/", "./static")
-  
+
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -32,16 +33,16 @@ func main() {
 
 	client_key := os.Getenv("CLIENT_KEY")
 	client_password := os.Getenv("CLIENT_PASSWORD")
-  
-  app.Use(basicauth.New(basicauth.Config{
-    Users: map[string]string{
-      client_key : client_password,
-    },
-  }))
 
-  app.Use(
-  logger.New(), // add Logger middleware
-)
+	app.Use(basicauth.New(basicauth.Config{
+		Users: map[string]string{
+			client_key: client_password,
+		},
+	}))
+
+	app.Use(
+		logger.New(), // add Logger middleware
+	)
 
 	dsn := os.Getenv("SENTRY_DSN")
 	err = sentry.Init(sentry.ClientOptions{
@@ -58,11 +59,13 @@ func main() {
 		sentry.CaptureMessage("Error: " + err.Error())
 	}
 
-	go metadata.WatchRevenues()
-
 	redis := client.NewClient(conf.DB.ID)
 	redis_skill_index := client.NewSearchClient("skillIndex")
 	redis_job_index := client.NewSearchClient("jobIndex")
+	redis_user_index := client.NewSearchClient("userIndex")
+
+	go metadata.WatchRevenues()
+	go rating.WatchRatings(redis_job_index, redis_user_index)
 
 	app.Use(cors.New())
 	app.Use(recover.New())
@@ -174,22 +177,29 @@ func main() {
 	app.Get("/api/v1/conversations/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetConversations(redis, c.Params("address")))
 	})
-  app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
- 	  return c.JSON(HandleAddConversation(redis, redis_job_index, c.Params("address"), c.Params("signature"), c.Body()))
-  })
+	app.Post("/api/v1/conversations/:address/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddConversation(redis, redis_job_index, c.Params("address"), c.Params("signature"), c.Body()))
+	})
 
-  app.Get("/api/v1/deals/:recruiter/:creator", func(c *fiber.Ctx) error {
-    return c.JSON(HandleGetDeals(redis, c.Params("recruiter"), c.Params("creator")))
-  })
-  app.Post("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
-    return c.JSON(HandleAddDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
-  })
-  app.Patch("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
-    return c.JSON(HandleSignDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
-  })
-  // todo: remove record 
-  app.Delete("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
-    return c.JSON(HandleExecuteDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
-  })
-  app.Listen(":" + conf.API.Port)
+	// deals
+	app.Get("/api/v1/deals/:recruiter/:creator", func(c *fiber.Ctx) error {
+		return c.JSON(HandleGetDeals(redis, c.Params("recruiter"), c.Params("creator")))
+	})
+	app.Post("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleAddDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
+	})
+	app.Patch("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleSignDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
+	})
+	// todo: remove record
+	app.Delete("/api/v1/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
+		return c.JSON(HandleExecuteDeal(redis, c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
+	})
+
+	// config
+	app.Get("/api/v1/config", func(c *fiber.Ctx) error {
+		return c.JSON(HandleConfig())
+	})
+
+	app.Listen(":" + conf.API.Port)
 }

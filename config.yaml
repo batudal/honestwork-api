@@ -39,9 +39,10 @@ settings:
   #   skill:
   #     title: 50
 contract_addresses:
-  membership_nft: 0xAa4837866FFF4AE5EfB043491Eb7Ff1d26f1319B 
-  job_payments: 0xc12aaa6bcA443CFa33f291877ac62aDf48Dfa5c4
-  registry: 0x1d4Fb7cD64D7CD5375f3c176d4a4A3D0fFD5dA10
+  membership_nft: 0xAa4837866FFF4AE5EfB043491Eb7Ff1d26f1319B
+  job_payments: 0x22aEC6F7172a3823ef45d11aB64Bde6558502013
+  registry: 0x8d72A78B1F13FB73Cf6dfd30C94f15364E9A5163
+  escrow: 0xC2fBDD2884c182F92649cB3cF7CE6E87f894A659
 network:
   polygon:
     id: 137
@@ -51,4 +52,4 @@ network:
     rpc_url: https://eth-mainnet.g.alchemy.com/v2/6S77iu4XWkdCm3lztMIZql9JOLMW_adQ
   binance:
     id: 56
-    rpc_url: https://skilled-patient-butterfly.bsc.quiknode.pro/89efe93217115973b4681365c2e7a1e2abc0c29b/
+    rpc_url: https://serene-polished-card.bsc.quiknode.pro/3941a3976867222d76d6826c7dac6eda0e2be602/

@@ -30,19 +30,17 @@ func sendNewApplicantMail(redis *redis.Client, recruiter_address string, slot st
 	senderClient.Send(req)
 }
 
-// todo: move validation to package
-// todo: create data extractor (for query results)
 func getUser(redis *redis.Client, address string) (schema.User, error) {
 	record_id := "user:" + address
 	var user schema.User
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
-    return schema.User{}, err	
-  }
+		return schema.User{}, err
+	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
 	if err != nil {
-	  return schema.User{}, err
-  }
+		return schema.User{}, err
+	}
 	return user, nil
 }
 
@@ -146,6 +144,7 @@ func getJobsLimit(redis *redisearch.Client, offset int, size int) []schema.Job {
 		fmt.Println("Error:", err)
 	}
 
+	// todo: cleanup unmarshaling
 	var jobs []schema.Job
 	for _, d := range data {
 		translationKeys := make([]string, 0, len(d.Properties))
@@ -261,23 +260,22 @@ func getAllowedSkillAmount(tier int) int {
 	}
 }
 
-func getDeals(redis *redis.Client, recruiter string, creator string) ([]schema.Deal,error) {
-  record_id := "deals:" + recruiter + ":" + creator
+func getDeals(redis *redis.Client, recruiter string, creator string) ([]schema.Deal, error) {
+	record_id := "deals:" + recruiter + ":" + creator
 	var deals []schema.Deal
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
-    fmt.Println("Cant read from redis")
-    return []schema.Deal{}, err	
-  }
+		fmt.Println("Cant read from redis")
+		return []schema.Deal{}, err
+	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &deals)
 	if err != nil {
-    fmt.Println("Cant unmarshal")
-	  return []schema.Deal{}, err
-  }
-  fmt.Println("Deals length:", len(deals))
+		fmt.Println("Cant unmarshal")
+		return []schema.Deal{}, err
+	}
+	fmt.Println("Deals length:", len(deals))
 	return deals, nil
 }
-
 
 func authorizeVerify(redis *redis.Client, address string, signature string) bool {
 	record_id := "user:" + address
@@ -316,18 +314,18 @@ func authorizeVerifyWithSalt(redis *redis.Client, address string, signature stri
 }
 
 func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
-	user,err := getUser(redis, address)
-  if err != nil {
-    return []*schema.Watchlist{}
-  }
+	user, err := getUser(redis, address)
+	if err != nil {
+		return []*schema.Watchlist{}
+	}
 	return user.Watchlist
 }
 
 func getFavorites(redis *redis.Client, address string) []*schema.Favorite {
-	user,err := getUser(redis, address)
-  if err != nil {
-    return []*schema.Favorite{}
-  }
+	user, err := getUser(redis, address)
+	if err != nil {
+		return []*schema.Favorite{}
+	}
 	return user.Favorites
 }
 
@@ -349,12 +347,12 @@ func getConversations(redis *redis.Client, address string) []*schema.Conversatio
 	record_id := "conversations:" + address
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
-	  return []*schema.Conversation{}
-  }
+		return []*schema.Conversation{}
+	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &conversations)
 	if err != nil {
-	  return []*schema.Conversation{}
-  }
+		return []*schema.Conversation{}
+	}
 	return conversations
 }
 
@@ -370,30 +368,41 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 		return "User doesn't have NFT."
 	}
 
-  var user schema.User
-  existing_user, err := getUser(redis, address)
-  if err == nil {
-    user = existing_user 
-  }
+	var user schema.User
+	existing_user, err := getUser(redis, address)
+	if err == nil {
+		user = existing_user
+	} else {
+		conf, err := config.ParseConfig()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+		nft_address_hex := conf.ContractAddresses.MembershipNFT
+		show_nft := boolAddr(true)
+		token_id := web3.FetchUserNFT(address)
+		user.ShowNFT = show_nft
+		user.NFTId = strconv.Itoa(token_id)
+		user.NFTAddress = nft_address_hex
+	}
 	user.Salt = salt
 	new_data, err := json.Marshal(user)
 	if err != nil {
-	  return err.Error()
-  }
+		return err.Error()
+	}
 
 	record_id := "user:" + address
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
-	  return err.Error()
-  }
+		return err.Error()
+	}
 	return "success"
 }
 
 func HandleGetUser(redis *redis.Client, address string) schema.User {
-	user,err := getUser(redis, address)
+	user, err := getUser(redis, address)
 	if err != nil {
-	  return schema.User{}
-  }
+		return schema.User{}
+	}
 	return user
 }
 
@@ -422,17 +431,16 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	}
 
 	// current user in db
-	user_db,err := getUser(redis, address)
+	user_db, err := getUser(redis, address)
 	if err != nil {
-	  return "User not found."
-  }
+		return "User not found."
+	}
 
 	// filter
 	user.Salt = user_db.Salt
-  if user.ImageUrl == "" {
+	if user.ImageUrl == "" {
 		user.ImageUrl = user_db.ImageUrl
 	}
-
 
 	new_data, err := json.Marshal(user)
 	if err != nil {
@@ -815,39 +823,39 @@ func HandleApplyJob(redis *redis.Client, applicant_address string, signature str
 	record_id := "job:" + recruiter_address + ":" + slot
 
 	existing_user, err := getUser(redis, applicant_address)
-  if err != nil {
-    return "User not found."
-  }
+	if err != nil {
+		return "User not found."
+	}
 	existing_user.Applications = append(existing_user.Applications, application)
 	new_applicant, err := json.Marshal(existing_user)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	
-  user_applications := existing_user.Applications
-  filtered_application_dates := make([]int64, 0) 
-  for _,app := range user_applications {
-    if application.Date - app.Date < int64(time.Hour * 24) {
-      filtered_application_dates = append(filtered_application_dates, app.Date)
-    } 
-  }
 
- switch state {
-  case 1:
-    if (len(filtered_application_dates) > 1) {
-      return "Application limit reached for tier 1"
-    }
-  case 2:
-    if (len(filtered_application_dates) > 2) {
-      return "Application limit reached for tier 2"
-    }
-  case 3:
-    if (len(filtered_application_dates) > 4) {
-      return "Application limit reached for tier 3"
-    }
-}
+	user_applications := existing_user.Applications
+	filtered_application_dates := make([]int64, 0)
+	for _, app := range user_applications {
+		if application.Date-app.Date < int64(time.Hour*24) {
+			filtered_application_dates = append(filtered_application_dates, app.Date)
+		}
+	}
 
-  applicant_id := "user:" + applicant_address
+	switch state {
+	case 1:
+		if len(filtered_application_dates) > 1 {
+			return "Application limit reached for tier 1"
+		}
+	case 2:
+		if len(filtered_application_dates) > 2 {
+			return "Application limit reached for tier 2"
+		}
+	case 3:
+		if len(filtered_application_dates) > 4 {
+			return "Application limit reached for tier 3"
+		}
+	}
+
+	applicant_id := "user:" + applicant_address
 	redis.Do(redis.Context(), "JSON.SET", applicant_id, "$", new_applicant)
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	return "success"
@@ -879,10 +887,10 @@ func HandleAddWatchlist(redis *redis.Client, address string, signature string, b
 		ImageUrl: job.ImageUrl,
 	}
 
-	user,err := getUser(redis, address)
-  if err != nil {
-    return "User not found."
-  }
+	user, err := getUser(redis, address)
+	if err != nil {
+		return "User not found."
+	}
 	for _, app := range user.Watchlist {
 		if app.Input.Address == watchlist.Input.Address && app.Input.Slot == watchlist.Input.Slot {
 			return "You have already added this job to watchlist."
@@ -914,10 +922,10 @@ func HandleRemoveWatchlist(redis *redis.Client, address string, signature string
 		fmt.Println("Error:", err)
 	}
 
-	user,err := getUser(redis, address)
-  if err != nil {
-    return "User not found."
-  }
+	user, err := getUser(redis, address)
+	if err != nil {
+		return "User not found."
+	}
 	for i, app := range user.Watchlist {
 		if app.Input.Address == watchlist_input.Address && app.Input.Slot == watchlist_input.Slot {
 			user.Watchlist = append(user.Watchlist[:i], user.Watchlist[i+1:]...)
@@ -954,10 +962,10 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 	}
 
 	skill := getSkill(redis, strconv.Itoa(favorite_input.Slot), favorite_input.Address)
-	skill_user,err := getUser(redis, skill.UserAddress)
-  if err != nil {
-    return "User not found."
-  }
+	skill_user, err := getUser(redis, skill.UserAddress)
+	if err != nil {
+		return "User not found."
+	}
 	favorite := schema.Favorite{
 		Input:    &favorite_input,
 		Username: skill_user.Username,
@@ -965,10 +973,10 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 		ImageUrl: skill.ImageUrls[0],
 	}
 
-	user,err := getUser(redis, address)
-  if err != nil {
-    return "User not found."
-  }
+	user, err := getUser(redis, address)
+	if err != nil {
+		return "User not found."
+	}
 	for _, app := range user.Favorites {
 		if app.Input.Address == favorite.Input.Address && app.Input.Slot == favorite.Input.Slot {
 			return "You have already added this skill to favorites."
@@ -1000,10 +1008,10 @@ func HandleRemoveFavorite(redis *redis.Client, address string, signature string,
 		fmt.Println("Error:", err)
 	}
 
-	user,err := getUser(redis, address)
-  if err != nil {
-    return "User not found."
-  }
+	user, err := getUser(redis, address)
+	if err != nil {
+		return "User not found."
+	}
 	for i, app := range user.Favorites {
 		if app.Input.Address == favorite_input.Address && app.Input.Slot == favorite_input.Slot {
 			user.Favorites = append(user.Favorites[:i], user.Favorites[i+1:]...)
@@ -1071,18 +1079,18 @@ func HandleAddTag(redis *redis.Client, address string, signature string, tag str
 	return "success"
 }
 
-func isMember (redis *redis.Client, address string) bool {
-  record_id := "user:" + address
+func isMember(redis *redis.Client, address string) bool {
+	record_id := "user:" + address
 	_, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
-  if err != nil {
-    return false
-  } else {
-    return true
-  }
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
 }
 
-func isApplicantOf (redis *redis.Client, recruiter string, applicant string) bool {
-  return true
+func isApplicantOf(redis *redis.Client, recruiter string, applicant string) bool {
+	return true
 }
 
 func HandleGetConversations(redis *redis.Client, address string) []*schema.Conversation {
@@ -1090,140 +1098,135 @@ func HandleGetConversations(redis *redis.Client, address string) []*schema.Conve
 	return conversations
 }
 
- func HandleAddConversation(redis *redis.Client, redis_search *redisearch.Client, address string, signature string, body []byte) string {
- 	// move to authorization module
-  if isMember(redis,address) {
-    authorized := authorizeVerify(redis, address, signature)
- 	  if !authorized {
- 		  return "Wrong signature."
- 	  }
-  } else {
-    _,err := authorizeVerifyWithSalt(redis, address, signature)
- 	  if err != nil {
- 		  return "Wrong signature."
- 	  }
-  }
+func HandleAddConversation(redis *redis.Client, redis_search *redisearch.Client, address string, signature string, body []byte) string {
+	// move to authorization module
+	if isMember(redis, address) {
+		authorized := authorizeVerify(redis, address, signature)
+		if !authorized {
+			return "Wrong signature."
+		}
+	} else {
+		_, err := authorizeVerifyWithSalt(redis, address, signature)
+		if err != nil {
+			return "Wrong signature."
+		}
+	}
 
-  type input_address struct {
-    MatchedUser string `json:"matched_user"`
-  }
-  target_user := input_address{}
-  err := json.Unmarshal(body, &target_user)
-  if err != nil {
-    return err.Error()
-  }
-  target_address := target_user.MatchedUser
-  if (address == target_address) {
-    return "Can't start conversation with self."
-  }
-  fmt.Println("User:", address)
-  fmt.Println("Target user:", target_address)
+	type input_address struct {
+		MatchedUser string `json:"matched_user"`
+	}
+	target_user := input_address{}
+	err := json.Unmarshal(body, &target_user)
+	if err != nil {
+		return err.Error()
+	}
+	target_address := target_user.MatchedUser
+	if address == target_address {
+		return "Can't start conversation with self."
+	}
 
-  if isMember(redis,target_address) {
-    target_user_db,err := getUser(redis,target_address)
-    if err != nil {
-      return "Db read failed."
-    }
-    if !*target_user_db.DmsOpen {
-      user_jobs := getJobs(redis_search, address)
-      target_applied := false
-      for _,job := range user_jobs {
-        for _, application := range job.Applications {
-          if application.UserAddress == target_address {
-            target_applied = true
-          }
-        }
-      }
-      if !target_applied {
-        return "User doesn't accept dms right now."
-      }
-    } 
-  }
+	if isMember(redis, target_address) {
+		target_user_db, err := getUser(redis, target_address)
+		if err != nil {
+			return "Db read failed."
+		}
+		if !*target_user_db.DmsOpen {
+			user_jobs := getJobs(redis_search, address)
+			target_applied := false
+			for _, job := range user_jobs {
+				for _, application := range job.Applications {
+					if application.UserAddress == target_address {
+						target_applied = true
+					}
+				}
+			}
+			if !target_applied {
+				return "User doesn't accept dms right now."
+			}
+		}
+	}
 
- 	conversation := schema.Conversation{
-    MatchedUser: target_address,
-    CreatedAt: time.Now().Unix(),
-    LastMessageAt: 0,
-    Muted: false,
-  }
+	conversation := schema.Conversation{
+		MatchedUser:   target_address,
+		CreatedAt:     time.Now().Unix(),
+		LastMessageAt: 0,
+		Muted:         false,
+	}
 
-  target_conversation := schema.Conversation{
-    MatchedUser: address,
-    CreatedAt: time.Now().Unix(),
-    LastMessageAt: 0,
-    Muted: false,
-  }
+	target_conversation := schema.Conversation{
+		MatchedUser:   address,
+		CreatedAt:     time.Now().Unix(),
+		LastMessageAt: 0,
+		Muted:         false,
+	}
 
- 	conversations := getConversations(redis, address)
- 	for _, c := range conversations {
- 		if c.MatchedUser == conversation.MatchedUser{
- 		  return "Conversation exists already."
-    }
- 	}
- 	conversations = append(conversations, &conversation)
+	conversations := getConversations(redis, address)
+	for _, c := range conversations {
+		if c.MatchedUser == conversation.MatchedUser {
+			return "Conversation exists already."
+		}
+	}
+	conversations = append(conversations, &conversation)
 
- 	target_conversations := getConversations(redis, target_address)
- 	target_conversations = append(target_conversations, &target_conversation)
- 	
-  new_data, err := json.Marshal(conversations)
- 	if err != nil {
- 	  return err.Error()
-  }
-  target_new_data, err := json.Marshal(target_conversations)
-  if err != nil {
-    return err.Error()
-  }
+	target_conversations := getConversations(redis, target_address)
+	target_conversations = append(target_conversations, &target_conversation)
 
- 	record_id := "conversations:" + address
-  target_record_id := "conversations:" + target_address
+	new_data, err := json.Marshal(conversations)
+	if err != nil {
+		return err.Error()
+	}
+	target_new_data, err := json.Marshal(target_conversations)
+	if err != nil {
+		return err.Error()
+	}
 
-  fmt.Println("Record id:", record_id)
-  fmt.Println("Target id:", target_record_id)
+	record_id := "conversations:" + address
+	target_record_id := "conversations:" + target_address
 
- 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
- 	redis.Do(redis.Context(), "JSON.SET", target_record_id, "$", target_new_data)
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	redis.Do(redis.Context(), "JSON.SET", target_record_id, "$", target_new_data)
 
- 	return "success"
- }
-  
-func HandleGetDeals(redis *redis.Client, recruiter string, creator string) []schema.Deal {
-  deals,err := getDeals(redis,recruiter,creator)
-  if err != nil {
-    return []schema.Deal{}
-  }
-  return deals
+	return "success"
 }
- 
+
+func HandleGetDeals(redis *redis.Client, recruiter string, creator string) []schema.Deal {
+	deals, err := getDeals(redis, recruiter, creator)
+	if err != nil {
+		return []schema.Deal{}
+	}
+	return deals
+}
+
 func HandleAddDeal(redis *redis.Client, recruiter string, creator string, signature string, body []byte) string {
 	_, err := authorizeVerifyWithSalt(redis, recruiter, signature)
 	if err != nil {
 		return "Invalid signature."
 	}
-  
-  deals, err := getDeals(redis, recruiter, creator)
-  if err != nil {
-    deals = []schema.Deal{} 
-  }
+
+	deals, err := getDeals(redis, recruiter, creator)
+	if err != nil {
+		deals = []schema.Deal{}
+	}
 
 	var deal schema.Deal
 	err = json.Unmarshal(body, &deal)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-  
-  deal.Status = "offered"
-  deals = append(deals, deal)
+
+	deal.Status = "offered"
+	deals = append(deals, deal)
 
 	new_data, err := json.Marshal(deals)
 	if err != nil {
-	  return err.Error()
-  }
+		return err.Error()
+	}
 
-  record_id := "deals:" + recruiter + ":" + creator
+	record_id := "deals:" + recruiter + ":" + creator
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
-	  return err.Error()
-  }
+		return err.Error()
+	}
 	return "success"
 }
 
@@ -1233,75 +1236,83 @@ func HandleSignDeal(redis *redis.Client, recruiter string, creator string, signa
 		return "Wrong signature."
 	}
 
-  deals, err := getDeals(redis, recruiter, creator)
-  if err != nil {
-    return err.Error()
-  }
+	deals, err := getDeals(redis, recruiter, creator)
+	if err != nil {
+		return err.Error()
+	}
 
-  type DealSignature struct {
-    Slot int `json:"slot"`
-    Signature string `json:"signature"`
-  }
+	type DealSignature struct {
+		Slot      int    `json:"slot"`
+		Signature string `json:"signature"`
+	}
 
-  var dealSignature DealSignature
-  err = json.Unmarshal(body, &dealSignature)
-  if err != nil {
-    return err.Error()
-  }
+	var dealSignature DealSignature
+	err = json.Unmarshal(body, &dealSignature)
+	if err != nil {
+		return err.Error()
+	}
 
-  if (dealSignature.Slot > len(deals)) {
-    return "Wrong slot."
-  }
+	if dealSignature.Slot > len(deals) {
+		return "Wrong slot."
+	}
 
-  deals[dealSignature.Slot].Signature = dealSignature.Signature
-  deals[dealSignature.Slot].Status = "accepted" 
+	deals[dealSignature.Slot].Signature = dealSignature.Signature
+	deals[dealSignature.Slot].Status = "accepted"
 
 	new_data, err := json.Marshal(deals)
 	if err != nil {
-	  return err.Error()
-  }
+		return err.Error()
+	}
 
-  record_id := "deals:" + recruiter + ":" + creator
+	record_id := "deals:" + recruiter + ":" + creator
 	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
 	if err != nil {
-	  return err.Error()
-  }
+		return err.Error()
+	}
 	return "success"
 }
 
-func HandleExecuteDeal (redis *redis.Client, recruiter string, creator string, signature string, body []byte ) string {
+func HandleExecuteDeal(redis *redis.Client, recruiter string, creator string, signature string, body []byte) string {
 	_, err := authorizeVerifyWithSalt(redis, recruiter, signature)
 	if err != nil {
 		return "Invalid signature."
 	}
-  
-  deals, err := getDeals(redis, recruiter, creator)
-  if err != nil {
-    return err.Error()
-  }
 
-  type DealExecution struct {
-    Slot int `json:"slot"`
-  }
+	deals, err := getDeals(redis, recruiter, creator)
+	if err != nil {
+		return err.Error()
+	}
 
-  var dealExecution DealExecution
-  err = json.Unmarshal(body, &dealExecution)
-  if err != nil {
-    return err.Error()
-  }
-  
-  if (dealExecution.Slot > len(deals)) {
-    return "Wrong slot."
-  }
+	type DealExecution struct {
+		Slot int `json:"slot"`
+	}
 
-  deals[dealExecution.Slot].Status = "executed"
+	var dealExecution DealExecution
+	err = json.Unmarshal(body, &dealExecution)
+	if err != nil {
+		return err.Error()
+	}
 
-  new_data, err := json.Marshal(deals)
-  if err != nil {
-    return err.Error()
-  }
+	if dealExecution.Slot > len(deals) {
+		return "Wrong slot."
+	}
 
-  record_id := "deals:" + recruiter + ":" + creator
-  redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
-  return "success"
+	deals[dealExecution.Slot].Status = "executed"
+
+	new_data, err := json.Marshal(deals)
+	if err != nil {
+		return err.Error()
+	}
+
+	record_id := "deals:" + recruiter + ":" + creator
+	redis.Do(redis.Context(), "JSON.SET", record_id, "$", new_data)
+	return "success"
+}
+
+func HandleConfig() config.Config {
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	return *conf
 }

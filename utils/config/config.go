@@ -61,6 +61,7 @@ type Config struct {
 		MembershipNFT string `yaml:"membership_nft"`
 		JobPayments   string `yaml:"job_payments"`
 		Registry      string `yaml:"registry"`
+		Escrow        string `yaml:"escrow"`
 	} `yaml:"contract_addresses"`
 	Network struct {
 		Eth struct {
