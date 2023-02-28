@@ -91,7 +91,7 @@ func WatchRevenues() {
 func writeJSON(revenue Revenue) {
 	data := Metadata{
 		Name:        "HonestWork #" + strconv.Itoa(revenue.TokenId),
-		Description: "HonestWork Genesis NFTs are the gateway to HonestWork ecosystem.",
+		Description: "Introducing HonestWork Genesis NFT - the ultimate freelancer membership to our platform. AI-generated visuals and 3 tiers to choose from make your NFT a unique key to unlock access to HonestWork features and benefits. What's more, HonestWork Genesis also records your revenue on the blockchain, enabling you to earn future airdrops based on your performance. Join HonestWork today and take your freelancing career to the next level!",
 		Image:       "https://honestwork-userfiles.fra1.cdn.digitaloceanspaces.com/genesis-nft/" + strconv.Itoa(revenue.TokenId) + ".png",
 		ExternalUrl: "https://honestwork.app",
 		Attributes: []interface{}{
