@@ -5,31 +5,15 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-  
-  "github.com/takez0o/honestwork-api/api/controller"
+
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
-	"github.com/mailazy/mailazy-go"
+	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/crypto"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
-
-func sendNewApplicantMail(redis *redis.Client, recruiter_address string, slot string, applicant_address string) {
-	job := getJob(redis, recruiter_address, slot)
-
-	fmt.Println("Sending mail to", job.Email)
-
-	senderClient := mailazy.NewSenderClient("cf47bm9qhmo2e3ahvo20YVMSOKJdes", "rrqatNaEnmGESOipuwwyHkvWtnU.8EBPTcAJBvJAW96dKRFP85")
-	from := "Job Alert! <no-reply@honestwork.app>"
-	subject := fmt.Sprintf("New Applicant for '%s'", job.Title)
-	textContent := "You've received a new application for your job listing."
-	htmlContent := fmt.Sprintf("<p>Hello <b>%s</b>!</p><br/><br/><p>You've received a new application for your <a href='https://honestwork.app/job/%s/%s'>job listing</a> on HonestWork.<br /><br />It might be the candidate you're looking for!</p><br/><br/><p><a href='https://honestwork.app/creator/%s'>Check their profile now</a></p>", job.Username, recruiter_address, slot, applicant_address)
-	req := mailazy.NewSendMailRequest(job.Email, from, subject, textContent, htmlContent)
-
-	senderClient.Send(req)
-}
 
 func getSkill(redis *redis.Client, slot string, address string) schema.Skill {
 	record_id := "skill:" + address + ":" + slot
@@ -301,7 +285,7 @@ func authorizeVerifyWithSalt(redis *redis.Client, address string, signature stri
 }
 
 func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
-  user_controller := controller.NewUserController(address)
+	user_controller := controller.NewUserController(address)
 	user, err := user_controller.Get()
 	if err != nil {
 		return []*schema.Watchlist{}
@@ -310,7 +294,7 @@ func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
 }
 
 func getFavorites(redis *redis.Client, address string) []*schema.Favorite {
-  user_controller := controller.NewUserController(address)
+	user_controller := controller.NewUserController(address)
 	user, err := user_controller.Get()
 	if err != nil {
 		return []*schema.Favorite{}
@@ -357,7 +341,7 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 		return "User doesn't have NFT."
 	}
 
-  user_controller := controller.NewUserController(address)
+	user_controller := controller.NewUserController(address)
 	existing_user, err := user_controller.Get()
 	var user schema.User
 	if err == nil {
@@ -389,7 +373,7 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 }
 
 func HandleGetUser(redis *redis.Client, address string) schema.User {
-  user_controller := controller.NewUserController(address)
+	user_controller := controller.NewUserController(address)
 	user, err := user_controller.Get()
 	if err != nil {
 		return schema.User{}
@@ -422,7 +406,7 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	}
 
 	// current user in db
-  user_controller := controller.NewUserController(address)
+	user_controller := controller.NewUserController(address)
 	existing_user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
@@ -814,8 +798,8 @@ func HandleApplyJob(redis *redis.Client, applicant_address string, signature str
 
 	record_id := "job:" + recruiter_address + ":" + slot
 
-  user_controller := controller.NewUserController(applicant_address)
-  existing_user, err := user_controller.Get()
+	user_controller := controller.NewUserController(applicant_address)
+	existing_user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -880,8 +864,8 @@ func HandleAddWatchlist(redis *redis.Client, address string, signature string, b
 		ImageUrl: job.ImageUrl,
 	}
 
-  user_controller := controller.NewUserController(address)
-  user, err := user_controller.Get()
+	user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -916,9 +900,8 @@ func HandleRemoveWatchlist(redis *redis.Client, address string, signature string
 		fmt.Println("Error:", err)
 	}
 
-
-  user_controller := controller.NewUserController(address)
-  user, err := user_controller.Get()
+	user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -958,8 +941,8 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 	}
 
 	skill := getSkill(redis, strconv.Itoa(favorite_input.Slot), favorite_input.Address)
-  skill_user_controller := controller.NewUserController(skill.UserAddress)
-  skill_user, err := skill_user_controller.Get()
+	skill_user_controller := controller.NewUserController(skill.UserAddress)
+	skill_user, err := skill_user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -970,8 +953,8 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 		ImageUrl: skill.ImageUrls[0],
 	}
 
-  user_controller := controller.NewUserController(address)
-  user, err := user_controller.Get()
+	user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -1006,8 +989,8 @@ func HandleRemoveFavorite(redis *redis.Client, address string, signature string,
 		fmt.Println("Error:", err)
 	}
 
-  user_controller := controller.NewUserController(address)
-  user, err := user_controller.Get()
+	user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -1125,8 +1108,8 @@ func HandleAddConversation(redis *redis.Client, redis_search *redisearch.Client,
 	}
 
 	if isMember(redis, target_address) {
-    user_controller := controller.NewUserController(target_address)
-    target_user_db, err := user_controller.Get()
+		user_controller := controller.NewUserController(target_address)
+		target_user_db, err := user_controller.Get()
 		if err != nil {
 			return "Db read failed."
 		}
