@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -14,8 +13,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
-	"github.com/takez0o/honestwork-api/api/metadata"
-	"github.com/takez0o/honestwork-api/api/rating"
+	"github.com/takez0o/honestwork-api/api/middleware"
+	"github.com/takez0o/honestwork-api/api/worker"
+
 	"github.com/takez0o/honestwork-api/utils/client"
 	"github.com/takez0o/honestwork-api/utils/config"
 )
@@ -27,7 +27,6 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error:", err)
 		log.Fatal("Error loading .env file")
 	}
 
@@ -41,7 +40,7 @@ func main() {
 	}))
 
 	app.Use(
-		logger.New(), // add Logger middleware
+		logger.New(),
 	)
 
 	dsn := os.Getenv("SENTRY_DSN")
@@ -64,20 +63,32 @@ func main() {
 	redis_job_index := client.NewSearchClient("jobIndex")
 	redis_user_index := client.NewSearchClient("userIndex")
 
-	go metadata.WatchRevenues()
-	go rating.WatchRatings(redis_job_index, redis_user_index, redis)
+	go worker.WatchRevenues()
+	go worker.WatchRatings(redis_job_index, redis_user_index, redis)
 
 	app.Use(cors.New())
 	app.Use(recover.New())
 
+	public_api := app.Group("/api/v1")
+	auth_api := app.Group("/api/v1", func(c *fiber.Ctx) error {
+		middleware.Authorize(c.Params("address"), c.Params("signature"))
+		return c.Next()
+	},
+	)
+	guest_api := app.Group("/api/v1", func(c *fiber.Ctx) error {
+		middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
+		return c.Next()
+	},
+	)
+
 	// user routes
-	app.Post("/api/v1/users/:address/:signature", func(c *fiber.Ctx) error {
+	guest_api.Post("/users/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleSignup(redis, c.Params("address"), c.Params("signature")))
 	})
-	app.Get("/api/v1/users/:address", func(c *fiber.Ctx) error {
+	public_api.Get("/users/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetUser(redis, c.Params("address")))
 	})
-	app.Patch("/api/v1/users/:address/:signature", func(c *fiber.Ctx) error {
+	auth_api.Patch("/users/:address/:signature", func(c *fiber.Ctx) error {
 		return c.JSON(HandleUserUpdate(redis, c.Params("address"), c.Params("signature"), c.Body()))
 	})
 
@@ -121,7 +132,7 @@ func main() {
 		return c.JSON(HandleGetAllJobs(redis_job_index, c.Params("sort"), asc))
 	})
 	app.Get("/api/v1/job/:address/:slot", func(c *fiber.Ctx) error {
-		return c.JSON(HandleGetJob(redis, c.Params("address"), c.Params("slot")))
+		return c.JSON(HandleGetJob(c.Params("address"), c.Params("slot")))
 	})
 	app.Get("/api/v1/jobs/:address", func(c *fiber.Ctx) error {
 		return c.JSON(HandleGetJobs(redis_job_index, c.Params("address")))

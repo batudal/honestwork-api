@@ -1,4 +1,4 @@
-package metadata
+package worker
 
 import (
 	"encoding/json"
