@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-
+  
+  "github.com/takez0o/honestwork-api/api/controller"
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
 	"github.com/mailazy/mailazy-go"
@@ -314,7 +315,8 @@ func authorizeVerifyWithSalt(redis *redis.Client, address string, signature stri
 }
 
 func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
-	user, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return []*schema.Watchlist{}
 	}
@@ -399,7 +401,8 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 }
 
 func HandleGetUser(redis *redis.Client, address string) schema.User {
-	user, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return schema.User{}
 	}
