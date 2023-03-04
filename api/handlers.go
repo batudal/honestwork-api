@@ -31,20 +31,6 @@ func sendNewApplicantMail(redis *redis.Client, recruiter_address string, slot st
 	senderClient.Send(req)
 }
 
-func getUser(redis *redis.Client, address string) (schema.User, error) {
-	record_id := "user:" + address
-	var user schema.User
-	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
-	if err != nil {
-		return schema.User{}, err
-	}
-	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
-	if err != nil {
-		return schema.User{}, err
-	}
-	return user, nil
-}
-
 func getSkill(redis *redis.Client, slot string, address string) schema.Skill {
 	record_id := "skill:" + address + ":" + slot
 	var skill schema.Skill
@@ -324,7 +310,8 @@ func getWatchlist(redis *redis.Client, address string) []*schema.Watchlist {
 }
 
 func getFavorites(redis *redis.Client, address string) []*schema.Favorite {
-	user, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+	user, err := user_controller.Get()
 	if err != nil {
 		return []*schema.Favorite{}
 	}
@@ -370,8 +357,9 @@ func HandleSignup(redis *redis.Client, address string, signature string) string 
 		return "User doesn't have NFT."
 	}
 
+  user_controller := controller.NewUserController(address)
+	existing_user, err := user_controller.Get()
 	var user schema.User
-	existing_user, err := getUser(redis, address)
 	if err == nil {
 		user = existing_user
 	} else {
@@ -434,15 +422,16 @@ func HandleUserUpdate(redis *redis.Client, address string, signature string, bod
 	}
 
 	// current user in db
-	user_db, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+	existing_user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
 
 	// filter
-	user.Salt = user_db.Salt
+	user.Salt = existing_user.Salt
 	if user.ImageUrl == "" {
-		user.ImageUrl = user_db.ImageUrl
+		user.ImageUrl = existing_user.ImageUrl
 	}
 
 	new_data, err := json.Marshal(user)
@@ -825,7 +814,8 @@ func HandleApplyJob(redis *redis.Client, applicant_address string, signature str
 
 	record_id := "job:" + recruiter_address + ":" + slot
 
-	existing_user, err := getUser(redis, applicant_address)
+  user_controller := controller.NewUserController(applicant_address)
+  existing_user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -890,7 +880,8 @@ func HandleAddWatchlist(redis *redis.Client, address string, signature string, b
 		ImageUrl: job.ImageUrl,
 	}
 
-	user, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+  user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -925,7 +916,9 @@ func HandleRemoveWatchlist(redis *redis.Client, address string, signature string
 		fmt.Println("Error:", err)
 	}
 
-	user, err := getUser(redis, address)
+
+  user_controller := controller.NewUserController(address)
+  user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -965,7 +958,8 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 	}
 
 	skill := getSkill(redis, strconv.Itoa(favorite_input.Slot), favorite_input.Address)
-	skill_user, err := getUser(redis, skill.UserAddress)
+  skill_user_controller := controller.NewUserController(skill.UserAddress)
+  skill_user, err := skill_user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -976,7 +970,8 @@ func HandleAddFavorite(redis *redis.Client, address string, signature string, bo
 		ImageUrl: skill.ImageUrls[0],
 	}
 
-	user, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+  user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -1011,7 +1006,8 @@ func HandleRemoveFavorite(redis *redis.Client, address string, signature string,
 		fmt.Println("Error:", err)
 	}
 
-	user, err := getUser(redis, address)
+  user_controller := controller.NewUserController(address)
+  user, err := user_controller.Get()
 	if err != nil {
 		return "User not found."
 	}
@@ -1129,7 +1125,8 @@ func HandleAddConversation(redis *redis.Client, redis_search *redisearch.Client,
 	}
 
 	if isMember(redis, target_address) {
-		target_user_db, err := getUser(redis, target_address)
+    user_controller := controller.NewUserController(target_address)
+    target_user_db, err := user_controller.Get()
 		if err != nil {
 			return "Db read failed."
 		}
