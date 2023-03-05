@@ -58,8 +58,20 @@ func (s *SkillController) SetSkill(skill *schema.Skill) error {
 	return nil
 }
 
+func (s *SkillIndexer) GetSkills(address string) ([]schema.Skill, error) {
+	return getSkills(address, "created_at", false, 0, 10000)
+}
+
+func (s *SkillIndexer) GetAllSkills() ([]schema.Skill, error) {
+	return getSkills("*", "created_at", false, 0, 10000)
+}
+
+func (s *SkillIndexer) GetAllSkillsLimit(offset int, size int) ([]schema.Skill, error) {
+	return getSkills("*", "created_at", false, offset, size)
+}
+
 func getSkills(address string, sort_field string, ascending bool, offset int, size int) ([]schema.Skill, error) {
-	redis := client.NewSearchClient("skill_index")
+	redis := client.NewSearchClient("skillIndex")
 	infield := "user_address"
 	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, ascending).Limit(0, size))
 	if err != nil {
@@ -82,16 +94,4 @@ func getSkills(address string, sort_field string, ascending bool, offset int, si
 		skills = append(skills, skill)
 	}
 	return skills, nil
-}
-
-func (s *SkillIndexer) GetSkills(address string) ([]schema.Skill, error) {
-	return getSkills(address, "created_at", false, 0, 10000)
-}
-
-func (s *SkillIndexer) GetAllSkills() ([]schema.Skill, error) {
-	return getSkills("*", "created_at", false, 0, 10000)
-}
-
-func (s *SkillIndexer) GetAllSkillsLimit(offset int, size int) ([]schema.Skill, error) {
-	return getSkills("*", "created_at", false, offset, size)
 }

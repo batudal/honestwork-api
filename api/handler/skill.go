@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -31,6 +32,7 @@ func HandleGetSkills(address string) []schema.Skill {
 	if err != nil {
 		return []schema.Skill{}
 	}
+	fmt.Println("Skills:", skills)
 	return skills
 }
 

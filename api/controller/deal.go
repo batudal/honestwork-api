@@ -24,12 +24,6 @@ func NewDealController(recruiter_address string, creator_address string) *DealCo
 	}
 }
 
-func NewDealIndexer(index_name string) *DealIndexer {
-	return &DealIndexer{
-		IndexName: index_name,
-	}
-}
-
 func (s *DealController) GetDeals() ([]*schema.Deal, error) {
 	var deals []*schema.Deal
 	deal, err := repository.JSONRead("deals:" + s.RecruiterAddress + ":" + s.CreatorAddress)

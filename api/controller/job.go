@@ -68,7 +68,7 @@ func (j *JobController) DeleteJob() error {
 }
 
 func getJobs(address string, sort_field string, ascending bool, offset int, size int) ([]schema.Job, error) {
-	redis := client.NewSearchClient("job_index")
+	redis := client.NewSearchClient("jobIndex")
 	data, _, err := redis.Search(redisearch.NewQuery(address).SetSortBy(sort_field, ascending).Limit(0, size))
 	if err != nil {
 		return []schema.Job{}, err
@@ -93,7 +93,7 @@ func getJobs(address string, sort_field string, ascending bool, offset int, size
 }
 
 func getJobsFilter(sort_field string, ascending bool, filter_field string, filter_value float64) ([]schema.Job, error) {
-	redis := client.NewSearchClient("job_index")
+	redis := client.NewSearchClient("jobIndex")
 	var f redisearch.Filter
 	f.Field = filter_field
 	f.Options = redisearch.NumericFilterOptions{

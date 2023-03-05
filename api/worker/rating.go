@@ -6,16 +6,30 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
-
 	"github.com/RediSearch/redisearch-go/redisearch"
+	"github.com/go-redis/redis/v8"
+	"github.com/takez0o/honestwork-api/utils/client"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
-func WatchRatings(rs_job *redisearch.Client, rs_user *redisearch.Client, redis *redis.Client) {
+type RatingWatcher struct {
+	redis            *redis.Client
+	redis_job_index  *redisearch.Client
+	redis_user_index *redisearch.Client
+}
+
+func NewRatingWatcher() *RatingWatcher {
+	return &RatingWatcher{
+		redis:            client.NewClient(),
+		redis_job_index:  client.NewSearchClient("jobIndex"),
+		redis_user_index: client.NewSearchClient("userIndex"),
+	}
+}
+
+func (r *RatingWatcher) WatchRatings() {
 	for {
-		fetchAllRatings(rs_job, rs_user, redis)
+		fetchAllRatings(r.redis_job_index, r.redis_user_index, r.redis)
 		time.Sleep(time.Duration(30) * time.Minute)
 	}
 }

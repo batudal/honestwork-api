@@ -42,6 +42,20 @@ type Revenue struct {
 	RevenueTier string `json:"revenue_tier"`
 }
 
+type RevenueWatcher struct {
+}
+
+func NewRevenueWatcher() *RevenueWatcher {
+	return &RevenueWatcher{}
+}
+
+func (r *RevenueWatcher) WatchRevenues() {
+	for {
+		fetchAllRevenues()
+		time.Sleep(time.Duration(30) * time.Minute)
+	}
+}
+
 func fetchAllRevenues() {
 	total_supply := web3.FetchTotalSupply()
 	for i := 1; i <= total_supply; i++ {
@@ -78,13 +92,6 @@ func getRevenueTier(amount int) string {
 		return revenueTiers[2]
 	} else {
 		return revenueTiers[3]
-	}
-}
-
-func WatchRevenues() {
-	for {
-		fetchAllRevenues()
-		time.Sleep(time.Duration(30) * time.Minute)
 	}
 }
 
