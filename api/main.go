@@ -20,16 +20,20 @@ import (
 )
 
 func main() {
-	app := fiber.New()
-
-	// serve static files
-	app.Static("/", "../static")
-
-	// core middleware
-	err := godotenv.Load()
+	// config/env setup
+	conf, err := config.ParseConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	app := fiber.New()
+	app.Static("/", "../static")
+
+	// core middleware
 	client_key := os.Getenv("CLIENT_KEY")
 	client_password := os.Getenv("CLIENT_PASSWORD")
 	app.Use(basicauth.New(basicauth.Config{
@@ -42,12 +46,6 @@ func main() {
 	)
 	app.Use(cors.New())
 	app.Use(recover.New())
-
-	// load config
-	conf, err := config.ParseConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// start workers
 	rating_watcher := worker.NewRatingWatcher()
