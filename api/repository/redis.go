@@ -7,7 +7,7 @@ import (
 )
 
 func JSONRead(record_id string) (interface{}, error) {
-	redis := client.NewClient()
+	redis := client.NewRedisClient()
 	defer redis.Close()
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
@@ -17,7 +17,7 @@ func JSONRead(record_id string) (interface{}, error) {
 }
 
 func JSONWrite(record_id string, data []byte, ttl time.Duration) error {
-	redis := client.NewClient()
+	redis := client.NewRedisClient()
 	defer redis.Close()
 	err := redis.Do(redis.Context(), "JSON.SET", record_id, ".", string(data)).Err()
 	if err != nil {
@@ -27,7 +27,7 @@ func JSONWrite(record_id string, data []byte, ttl time.Duration) error {
 }
 
 func JSONDelete(record_id string) error {
-	redis := client.NewClient()
+	redis := client.NewRedisClient()
 	defer redis.Close()
 	err := redis.Do(redis.Context(), "JSON.DEL", record_id).Err()
 	if err != nil {
@@ -37,7 +37,7 @@ func JSONDelete(record_id string) error {
 }
 
 func StringRead(record_id string) (string, error) {
-	redis := client.NewClient()
+	redis := client.NewRedisClient()
 	defer redis.Close()
 	data, err := redis.Get(redis.Context(), record_id).Result()
 	if err != nil {
@@ -47,7 +47,7 @@ func StringRead(record_id string) (string, error) {
 }
 
 func StringWrite(record_id string, data string, ttl time.Duration) error {
-	redis := client.NewClient()
+	redis := client.NewRedisClient()
 	defer redis.Close()
 	err := redis.Set(redis.Context(), record_id, data, ttl).Err()
 	if err != nil {
@@ -57,7 +57,7 @@ func StringWrite(record_id string, data string, ttl time.Duration) error {
 }
 
 func StringDelete(record_id string) error {
-	redis := client.NewClient()
+	redis := client.NewRedisClient()
 	defer redis.Close()
 	err := redis.Del(redis.Context(), record_id).Err()
 	if err != nil {

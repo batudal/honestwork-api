@@ -71,7 +71,7 @@ func (s *SkillIndexer) GetAllSkillsLimit(offset int, size int) ([]schema.Skill, 
 }
 
 func getSkills(address string, sort_field string, ascending bool, offset int, size int) ([]schema.Skill, error) {
-	redis := client.NewSearchClient("skillIndex")
+	redis := client.NewRedisSearchClient("skillIndex")
 	infield := "user_address"
 	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, ascending).Limit(0, size))
 	if err != nil {

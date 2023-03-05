@@ -21,9 +21,9 @@ type RatingWatcher struct {
 
 func NewRatingWatcher() *RatingWatcher {
 	return &RatingWatcher{
-		redis:            client.NewClient(),
-		redis_job_index:  client.NewSearchClient("jobIndex"),
-		redis_user_index: client.NewSearchClient("userIndex"),
+		redis:            client.NewRedisClient(),
+		redis_job_index:  client.NewRedisSearchClient("jobIndex"),
+		redis_user_index: client.NewRedisSearchClient("userIndex"),
 	}
 }
 

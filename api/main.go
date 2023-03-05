@@ -5,9 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"time"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -45,21 +43,9 @@ func main() {
 	app.Use(cors.New())
 	app.Use(recover.New())
 
-	// sentry setup
-	dsn := os.Getenv("SENTRY_DSN")
-	err = sentry.Init(sentry.ClientOptions{
-		Dsn:              dsn,
-		TracesSampleRate: 1.0, // todo: adjust in production (0.1max)
-	})
-	if err != nil {
-		log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-
 	// load config
 	conf, err := config.ParseConfig()
 	if err != nil {
-		// sentry.CaptureMessage("Error: " + err.Error())
 		log.Fatal(err)
 	}
 
