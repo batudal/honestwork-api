@@ -1,6 +1,10 @@
 package controller
 
-import "github.com/takez0o/honestwork-api/api/repository"
+import (
+	"time"
+
+	"github.com/takez0o/honestwork-api/api/repository"
+)
 
 type SaltController struct {
 	Address string
@@ -20,12 +24,15 @@ func (u *SaltController) GetSalt() (string, error) {
 	return salt, nil
 }
 
-func (u *SaltController) AddSalt(salt string) error {
-	err := repository.StringWrite("salt:"+u.Address, salt)
+// todo: remove hardcoded ttl
+func (u *SaltController) AddSalt(salt string) (string, error) {
+	salt_id := "salt:" + u.Address
+	ttl := time.Duration(24*30) * time.Hour
+	err := repository.StringWrite(salt_id, salt, ttl)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return salt, nil
 }
 
 func (u *SaltController) DeleteSalt() error {

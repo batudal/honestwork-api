@@ -9,13 +9,18 @@ import (
 	"github.com/go-redis/redis/v8"
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+	"github.com/takez0o/honestwork-api/utils/config"
 )
 
-func NewClient(id int) *redis.Client {
+func NewClient() *redis.Client {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error:", err)
 		log.Fatal("Error loading .env file")
+	}
+
+	conf, err := config.ParseConfig()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	password := os.Getenv("REDIS_PASSWORD")
@@ -24,7 +29,7 @@ func NewClient(id int) *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     host,
 		Password: password,
-		DB:       id,
+		DB:       conf.DB.ID,
 	})
 	return client
 }

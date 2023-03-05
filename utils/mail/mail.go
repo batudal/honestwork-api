@@ -21,7 +21,7 @@ func NewMailClient(key string, secret string) *MailClient {
 
 func (mc *MailClient) sendNewApplicantMail(recruiter_address string, slot int, applicant_address string) {
 	job_controller := controller.NewJobController(recruiter_address, slot)
-	job, err := job_controller.Get()
+	job, err := job_controller.GetJob()
 	if err != nil {
 		fmt.Println(err)
 	}

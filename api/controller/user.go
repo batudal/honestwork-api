@@ -31,12 +31,13 @@ func (u *UserController) GetUser() (schema.User, error) {
 	return user, nil
 }
 
-func (u *UserController) AddUser(user schema.User) error {
+// todo: remove hardcoded ttl
+func (u *UserController) SetUser(user *schema.User) error {
 	data, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
-	err = repository.JSONWrite("user:"+u.Address, data)
+	err = repository.JSONWrite("user:"+u.Address, data, 0)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package main
+package validator
 
 import (
 	"fmt"
@@ -6,13 +6,12 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/takez0o/honestwork-api/utils/parser"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
 
-func ValidateUserInput(redis *redis.Client, user *schema.User, address string) bool {
+func ValidateUserInput(user *schema.User, address string) bool {
 	validate := validator.New()
 	err := validate.StructExcept(user, "watchlist", "favorites", "rating")
 	if err != nil {
@@ -22,11 +21,11 @@ func ValidateUserInput(redis *redis.Client, user *schema.User, address string) b
 		return false
 	}
 	token_id, _ := strconv.Atoi(user.NFTId)
-	if user.ShowNFT == boolAddr(true) && !web3.CheckNFTOwner(address, user.NFTAddress, token_id) {
+	if user.ShowNFT == BoolAddr(true) && !web3.CheckNFTOwner(address, user.NFTAddress, token_id) {
 		fmt.Println("NFT Error")
 		return false
 	}
-	if user.ShowEns == boolAddr(true) && !web3.CheckENSOwner(address, user.EnsName) {
+	if user.ShowEns == BoolAddr(true) && !web3.CheckENSOwner(address, user.EnsName) {
 		fmt.Println("ENS Error")
 		return false
 	}
@@ -67,7 +66,7 @@ func ValidateJobInput(job *schema.Job) error {
 	return nil
 }
 
-func boolAddr(b bool) *bool {
+func BoolAddr(b bool) *bool {
 	boolVar := b
 	return &boolVar
 }

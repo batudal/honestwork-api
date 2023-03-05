@@ -1,37 +1,14 @@
 package repository
 
 import (
-	"log"
-	"os"
+	"time"
 
-	"github.com/go-redis/redis/v8"
-	"github.com/joho/godotenv"
-	"github.com/takez0o/honestwork-api/utils/config"
+	"github.com/takez0o/honestwork-api/utils/client"
 )
 
-func newClient() *redis.Client {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	password := os.Getenv("REDIS_PASSWORD")
-	host := os.Getenv("REDIS_HOST")
-
-	// todo: rename into MustParseConfig
-	conf, err := config.ParseConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return redis.NewClient(&redis.Options{
-		Addr:     host,
-		Password: password,
-		DB:       conf.DB.ID,
-	})
-}
-
 func JSONRead(record_id string) (interface{}, error) {
-	redis := newClient()
+	redis := client.NewClient()
+	defer redis.Close()
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		return nil, err
@@ -39,8 +16,9 @@ func JSONRead(record_id string) (interface{}, error) {
 	return data, nil
 }
 
-func JSONWrite(record_id string, data []byte) error {
-	redis := newClient()
+func JSONWrite(record_id string, data []byte, ttl time.Duration) error {
+	redis := client.NewClient()
+	defer redis.Close()
 	err := redis.Do(redis.Context(), "JSON.SET", record_id, ".", string(data)).Err()
 	if err != nil {
 		return err
@@ -49,7 +27,8 @@ func JSONWrite(record_id string, data []byte) error {
 }
 
 func JSONDelete(record_id string) error {
-	redis := newClient()
+	redis := client.NewClient()
+	defer redis.Close()
 	err := redis.Do(redis.Context(), "JSON.DEL", record_id).Err()
 	if err != nil {
 		return err
@@ -58,7 +37,8 @@ func JSONDelete(record_id string) error {
 }
 
 func StringRead(record_id string) (string, error) {
-	redis := newClient()
+	redis := client.NewClient()
+	defer redis.Close()
 	data, err := redis.Get(redis.Context(), record_id).Result()
 	if err != nil {
 		return "", err
@@ -66,9 +46,10 @@ func StringRead(record_id string) (string, error) {
 	return data, nil
 }
 
-func StringWrite(record_id string, data string) error {
-	redis := newClient()
-	err := redis.Set(redis.Context(), record_id, data, 0).Err()
+func StringWrite(record_id string, data string, ttl time.Duration) error {
+	redis := client.NewClient()
+	defer redis.Close()
+	err := redis.Set(redis.Context(), record_id, data, ttl).Err()
 	if err != nil {
 		return err
 	}
@@ -76,7 +57,8 @@ func StringWrite(record_id string, data string) error {
 }
 
 func StringDelete(record_id string) error {
-	redis := newClient()
+	redis := client.NewClient()
+	defer redis.Close()
 	err := redis.Del(redis.Context(), record_id).Err()
 	if err != nil {
 		return err
