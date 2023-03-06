@@ -71,7 +71,6 @@ type Job struct {
 	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Budget         int           `json:"budget" validate:"required,min=1000,max=1000000"`
-	Installments   int64         `json:"installments" validate:"required,min=2,max=5"`
 	TimeZone       string        `json:"timezone" validate:"oneof='UTC-12' 'UTC-11' 'UTC-10' 'UTC-9' 'UTC-8' 'UTC-7' 'UTC-6' 'UTC-5' 'UTC-4' 'UTC-3' 'UTC-2' 'UTC-1' 'UTC' 'UTC+1' 'UTC+2' 'UTC+3' 'UTC+4' 'UTC+5' 'UTC+6' 'UTC+7' 'UTC+8' 'UTC+9' 'UTC+10' 'UTC+11' 'UTC+12' 'UTC+13' 'UTC+14'"`
 	TokensAccepted []Network     `json:"tokens_accepted" validate:"required,min=1"`
 	StickyDuration int64         `json:"sticky_duration" validate:"omitempty,lte=30"`
@@ -112,10 +111,10 @@ type Conversation struct {
 }
 
 type Deal struct {
-  Status string `json:"status"`
-  Signature string `json:"signature"`
-  Network string `json:"network"`
-  TokenAddress string `json:"token_address"`
-  TotalAmount string `json:"total_amount"`
-  DownPayment string `json:"downpayment"`
+	Status       string `json:"status"`
+	Signature    string `json:"signature"`
+	Network      string `json:"network"`
+	TokenAddress string `json:"token_address"`
+	TotalAmount  string `json:"total_amount"`
+	DownPayment  string `json:"downpayment"`
 }

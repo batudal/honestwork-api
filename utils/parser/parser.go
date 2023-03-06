@@ -1,41 +1,50 @@
 package parser
 
 import (
-	"strings"
+	"encoding/json"
+	"log"
 )
 
-func ParseContent(content string) string {
-	ps := strings.Split(content, "<p>")
-	h4s := strings.Split(content, "<h4>")
+func Parse(content string) string {
+	m := map[string]interface{}{}
+	err := json.Unmarshal([]byte(content), &m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return parseMapping(m, "")
+}
 
-	ps_ := make([]string, 0)
-	h4s_ := make([]string, 0)
+func parseMapping(m map[string]interface{}, carry string) string {
+	for _, value := range m {
+		switch v := value.(type) {
+		case []interface{}:
+			for _, sub_v := range v {
+				for key, value := range sub_v.(map[string]interface{}) {
+					if key == "type" && (value == "paragraph" || value == "heading") {
+						for _, j := range sub_v.(map[string]interface{})["content"].([]interface{}) {
+							for z, u := range j.(map[string]interface{}) {
+								if z == "text" {
+									carry += u.(string)
+								}
+							}
+						}
+					} else if key == "type" && value == "bulletList" {
+						for _, i := range sub_v.(map[string]interface{})["content"].([]interface{}) {
+							for _, p := range i.(map[string]interface{})["content"].([]interface{}) {
+								for _, t := range p.(map[string]interface{})["content"].([]interface{}) {
+									for x, y := range t.(map[string]interface{}) {
+										if x == "text" {
+											carry += y.(string)
+										}
+									}
+								}
+							}
+						}
 
-	for i, p := range ps {
-		if strings.Contains(p, "</p>") {
-			ps_ = append(ps_, strings.Split(ps[i], "</p>")[0])
+					}
+				}
+			}
 		}
-		ps[i] = strings.ReplaceAll(p, "<em>", "")
-		ps[i] = strings.ReplaceAll(p, "</em>", "")
-		ps[i] = strings.ReplaceAll(p, "<strong>", "")
-		ps[i] = strings.ReplaceAll(p, "</strong>", "")
 	}
-	for j, h4 := range h4s {
-		if strings.Contains(h4, "</h4>") {
-			h4s_ = append(h4s_, strings.Split(h4s[j], "</h4>")[0])
-		}
-		h4s[j] = strings.ReplaceAll(h4, "<em>", "")
-		h4s[j] = strings.ReplaceAll(h4, "</em>", "")
-		h4s[j] = strings.ReplaceAll(h4, "<strong>", "")
-		h4s[j] = strings.ReplaceAll(h4, "</strong>", "")
-	}
-	var flat_ps string
-	var flat_h4s string
-	for _, h4 := range h4s_ {
-		flat_h4s += h4
-	}
-	for _, p := range ps_ {
-		flat_ps += p
-	}
-	return flat_h4s + flat_ps
+	return carry
 }

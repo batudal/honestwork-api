@@ -63,6 +63,7 @@ func main() {
 	)
 	guest_api := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
+		fmt.Println("Middleware authorized user.")
 		return c.Next()
 	},
 	)
@@ -105,7 +106,6 @@ func main() {
 		return c.JSON(handler.HandleGetSkills(c.Params("address")))
 	})
 	public_api.Get("/skill/:address/:slot", func(c *fiber.Ctx) error {
-		fmt.Println("Hit")
 		return c.JSON(handler.HandleGetSkill(c.Params("address"), c.Params("slot")))
 	})
 	member_api.Post("/skills/:address/:signature", func(c *fiber.Ctx) error {

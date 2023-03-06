@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -12,7 +11,7 @@ import (
 	"github.com/takez0o/honestwork-api/utils/config"
 )
 
-func NewClient() *redis.Client {
+func NewRedisClient() *redis.Client {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -20,7 +19,7 @@ func NewClient() *redis.Client {
 
 	conf, err := config.ParseConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error loading config file")
 	}
 
 	password := os.Getenv("REDIS_PASSWORD")
@@ -34,10 +33,9 @@ func NewClient() *redis.Client {
 	return client
 }
 
-func NewSearchClient(index_name string) *redisearch.Client {
+func NewRedisSearchClient(index_name string) *redisearch.Client {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error:", err)
 		log.Fatal("Error loading .env file")
 	}
 	password := os.Getenv("REDIS_PASSWORD")

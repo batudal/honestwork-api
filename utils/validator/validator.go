@@ -22,14 +22,12 @@ func ValidateUserInput(user *schema.User, address string) bool {
 	}
 	token_id, _ := strconv.Atoi(user.NFTId)
 	if user.ShowNFT == BoolAddr(true) && !web3.CheckNFTOwner(address, user.NFTAddress, token_id) {
-		fmt.Println("NFT Error")
 		return false
 	}
 	if user.ShowEns == BoolAddr(true) && !web3.CheckENSOwner(address, user.EnsName) {
-		fmt.Println("ENS Error")
 		return false
 	}
-	bio_length := len(parser.ParseContent(user.Bio))
+	bio_length := len(parser.Parse(user.Bio))
 	if bio_length < 200 || bio_length > 2000 {
 		return false
 	}
@@ -44,7 +42,7 @@ func ValidateSkillInput(skill *schema.Skill) error {
 			return err
 		}
 	}
-	description_length := len(parser.ParseContent(skill.Description))
+	description_length := len(parser.Parse(skill.Description))
 	if description_length < 200 || description_length > 2000 {
 		return fmt.Errorf("Description length is invalid")
 	}
@@ -59,8 +57,9 @@ func ValidateJobInput(job *schema.Job) error {
 			return err
 		}
 	}
-	description_length := len(parser.ParseContent(job.Description))
-	if description_length > 200 || description_length < 2000 {
+	description_length := len(parser.Parse(job.Description))
+	fmt.Println("Description length:", description_length)
+	if description_length < 200 || description_length > 2000 {
 		return fmt.Errorf("Description length is invalid")
 	}
 	return nil
