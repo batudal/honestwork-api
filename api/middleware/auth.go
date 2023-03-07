@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"errors"
+
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/crypto"
 )
@@ -13,7 +15,7 @@ func AuthorizeMember(address string, signature string) error {
 	}
 	result := crypto.VerifySignature(user.Salt, address, signature)
 	if !result {
-		return err
+		return errors.New("Invalid signature")
 	}
 	return nil
 }
