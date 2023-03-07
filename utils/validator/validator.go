@@ -58,7 +58,6 @@ func ValidateJobInput(job *schema.Job) error {
 		}
 	}
 	description_length := len(parser.Parse(job.Description))
-	fmt.Println("Description length:", description_length)
 	if description_length < 200 || description_length > 2000 {
 		return fmt.Errorf("Description length is invalid")
 	}

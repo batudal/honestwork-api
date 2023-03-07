@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -59,14 +58,11 @@ func main() {
 	member_api := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		return c.Next()
-	},
-	)
+	})
 	guest_api := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
-		fmt.Println("Middleware authorized user.")
 		return c.Next()
-	},
-	)
+	})
 	unknown_api := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		middleware.AuthorizeUnknown(c.Params("address"), c.Params("signature"))
 		return c.Next()

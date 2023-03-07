@@ -32,6 +32,7 @@ func FetchUserNFT(address string) int {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
@@ -46,7 +47,6 @@ func FetchUserNFT(address string) int {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client.Close()
 	return int(token_id.Int64())
 }
 

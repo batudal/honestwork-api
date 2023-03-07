@@ -31,7 +31,6 @@ func (u *UserController) GetUser() (schema.User, error) {
 	return user, nil
 }
 
-// todo: remove hardcoded ttl
 func (u *UserController) SetUser(user *schema.User) error {
 	data, err := json.Marshal(user)
 	if err != nil {

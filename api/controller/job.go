@@ -46,6 +46,22 @@ func (j *JobController) GetJob() (schema.Job, error) {
 	return job, nil
 }
 
+func (j *JobIndexer) GetJobs(address string) ([]schema.Job, error) {
+	return getJobs(address, "created_at", false, 0, 10000)
+}
+
+func (j *JobIndexer) GetAllJobs() ([]schema.Job, error) {
+	return getJobs("*", "created_at", false, 0, 10000)
+}
+
+func (j *JobIndexer) GetAllJobsLimit(offset int, size int) ([]schema.Job, error) {
+	return getJobs("*", "created_at", false, offset, size)
+}
+
+func (j *JobIndexer) GetAllJobsFilter(filter_field string, filter_value float64) ([]schema.Job, error) {
+	return getJobsFilter("created_at", false, filter_field, filter_value)
+}
+
 func (j *JobController) SetJob(job *schema.Job) error {
 	data, err := json.Marshal(job)
 	if err != nil {
@@ -119,20 +135,4 @@ func getJobsFilter(sort_field string, ascending bool, filter_field string, filte
 		jobs = append(jobs, job)
 	}
 	return jobs, nil
-}
-
-func (j *JobIndexer) GetJobs(address string) ([]schema.Job, error) {
-	return getJobs(address, "created_at", false, 0, 10000)
-}
-
-func (j *JobIndexer) GetAllJobs() ([]schema.Job, error) {
-	return getJobs("*", "created_at", false, 0, 10000)
-}
-
-func (j *JobIndexer) GetAllJobsLimit(offset int, size int) ([]schema.Job, error) {
-	return getJobs("*", "created_at", false, offset, size)
-}
-
-func (j *JobIndexer) GetAllJobsFilter(filter_field string, filter_value float64) ([]schema.Job, error) {
-	return getJobsFilter("created_at", false, filter_field, filter_value)
 }
