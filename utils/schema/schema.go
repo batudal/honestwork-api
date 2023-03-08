@@ -97,10 +97,6 @@ type Token struct {
 	Address string `json:"address"`
 }
 
-type Whitelist struct {
-	Tokens []Token `json:"tokens"`
-}
-
 type Tags struct {
 	Tags []string `json:"tags"`
 }
@@ -119,4 +115,8 @@ type Deal struct {
 	TokenAddress string `json:"token_address"`
 	TotalAmount  string `json:"total_amount"`
 	DownPayment  string `json:"downpayment"`
+}
+
+type Whitelist struct {
+	Addresses []string `json:"addresses"`
 }

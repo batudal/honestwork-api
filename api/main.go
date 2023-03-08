@@ -273,5 +273,9 @@ func main() {
 	api_v1.Get("/rating/:address", func(c *fiber.Ctx) error {
 		return c.JSON(handler.HandleGetRating(c.Params("address")))
 	})
+	api_v1.Get("/whitelist", func(c *fiber.Ctx) error {
+		return c.JSON(handler.HandleWhitelist())
+	})
+
 	app.Listen(":" + conf.API.Port)
 }
