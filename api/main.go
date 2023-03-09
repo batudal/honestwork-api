@@ -49,8 +49,8 @@ func main() {
 	go rating_watcher.WatchRatings()
 	revenue_watcher := worker.NewRevenueWatcher()
 	go revenue_watcher.WatchRevenues()
-	//deal_watcher := worker.NewDealWatcher()
-	//go deal_watcher.WatchDeals()
+	deal_watcher := worker.NewDealWatcher()
+	go deal_watcher.WatchDeals()
 
 	api_v1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		return c.Next()

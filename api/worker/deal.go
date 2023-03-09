@@ -93,11 +93,16 @@ func getDealCount() int {
 func getJobs() {
 	//get all skills and loop
 	jobs_controller := controller.NewJobIndexer("jobsIndex")
+
 	jobs, err := jobs_controller.GetAllJobs()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = jobs
+	fmt.Println("jobs:", jobs[0].DealId)
+	jobs[0].DealId = "10"
+	job_writer := controller.NewJobController(jobs[0].UserAddress, jobs[0].Slot)
+	job_writer.SetJob(&jobs[0])
+	//set deal id for each job in database
 
 }
 
