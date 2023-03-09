@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/takez0o/honestwork-api/utils/client"
@@ -49,6 +50,7 @@ func StringRead(record_id string) (string, error) {
 func StringWrite(record_id string, data string, ttl time.Duration) error {
 	redis := client.NewRedisClient()
 	defer redis.Close()
+	fmt.Println("Writing string:", record_id, data, ttl)
 	err := redis.Set(redis.Context(), record_id, data, ttl).Err()
 	if err != nil {
 		return err

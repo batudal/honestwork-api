@@ -14,6 +14,9 @@ import (
 func HandleSignup(address string, signature string) string {
 	salt_controller := controller.NewSaltController(address)
 	salt, err := salt_controller.GetSalt()
+	if err != nil {
+		return err.Error()
+	}
 
 	state := web3.FetchUserState(address)
 	switch state {

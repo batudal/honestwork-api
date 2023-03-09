@@ -61,10 +61,6 @@ func main() {
 	//-----------------//
 
 	api_v1.Post("/users/:address/:signature", func(c *fiber.Ctx) error {
-		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
-		if err != nil {
-			return c.JSON(err)
-		}
 		return c.JSON(handler.HandleSignup(c.Params("address"), c.Params("signature")))
 	})
 	api_v1.Get("/users/:address", func(c *fiber.Ctx) error {
@@ -256,7 +252,7 @@ func main() {
 		return c.JSON(handler.HandleAddSalt(c.Params("address")))
 	})
 	api_v1.Get("/verify/:address/:signature", func(c *fiber.Ctx) error {
-		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
+		err := middleware.AuthorizeUnknown(c.Params("address"), c.Params("signature"))
 		if err != nil {
 			return c.JSON(err)
 		}

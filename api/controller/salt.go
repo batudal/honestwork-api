@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/takez0o/honestwork-api/api/repository"
@@ -28,6 +29,7 @@ func (u *SaltController) GetSalt() (string, error) {
 func (u *SaltController) AddSalt(salt string) (string, error) {
 	salt_id := "salt:" + u.Address
 	ttl := time.Duration(24*30) * time.Hour
+	fmt.Println("Adding salt:", salt_id, salt, ttl)
 	err := repository.StringWrite(salt_id, salt, ttl)
 	if err != nil {
 		return "", err
