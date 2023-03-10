@@ -222,7 +222,7 @@ func main() {
 		return c.JSON(handler.HandleGetDeals(c.Params("recruiter"), c.Params("creator")))
 	})
 	api_v1.Post("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
-		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
+		err := middleware.AuthorizeGuest(c.Params("recruiter"), c.Params("signature"))
 		if err != nil {
 			return c.JSON(err)
 		}
