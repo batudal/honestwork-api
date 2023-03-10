@@ -230,7 +230,7 @@ func main() {
 		return c.JSON(handler.HandleAddDeal(c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Patch("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
-		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
+		err := middleware.AuthorizeMember(c.Params("recruiter"), c.Params("signature"))
 		if err != nil {
 			return c.JSON(err)
 		}
