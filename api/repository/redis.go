@@ -41,6 +41,7 @@ func StringRead(record_id string) (string, error) {
 	redis := client.NewRedisClient()
 	defer redis.Close()
 	data, err := redis.Get(redis.Context(), record_id).Result()
+	fmt.Println("Data:", data)
 	if err != nil {
 		return "", err
 	}
