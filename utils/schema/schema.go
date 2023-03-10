@@ -115,6 +115,7 @@ type Deal struct {
 	TokenAddress string `json:"token_address"`
 	TotalAmount  string `json:"total_amount"`
 	DownPayment  string `json:"downpayment"`
+	JobId        int    `json:"job_id"`
 }
 
 type Whitelist struct {
