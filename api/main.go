@@ -238,7 +238,7 @@ func main() {
 	})
 	// todo: remove record
 	api_v1.Delete("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
-		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
+		err := middleware.AuthorizeGuest(c.Params("recruiter"), c.Params("signature"))
 		if err != nil {
 			return c.JSON(err)
 		}
