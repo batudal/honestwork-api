@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/schema"
@@ -19,20 +20,22 @@ func HandleGetDeals(recruiter string, creator string) []*schema.Deal {
 func HandleAddDeal(recruiter string, creator string, signature string, body []byte) string {
 	deal_controller := controller.NewDealController(recruiter, creator)
 	deals, _ := deal_controller.GetDeals()
+	fmt.Println("deals: ", deals)
 
 	var deal *schema.Deal
 	err := json.Unmarshal(body, &deal)
 	if err != nil {
 		return err.Error()
 	}
-
+	fmt.Println("deal: ", &deal)
 	deal.Status = "offered"
 	deals = append(deals, deal)
-
+	fmt.Println("final deals:", deals)
 	err = deal_controller.SetDeal(deals)
 	if err != nil {
 		return err.Error()
 	}
+
 	return "success"
 }
 

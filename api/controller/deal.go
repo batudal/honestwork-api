@@ -42,6 +42,9 @@ func (s *DealController) SetDeal(deals []*schema.Deal) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("data: ", data)
+	record_id := "deals:" + s.RecruiterAddress + ":" + s.CreatorAddress
+	fmt.Println("record_id: ", record_id)
 	err = repository.JSONWrite("deals:"+s.RecruiterAddress+":"+s.CreatorAddress, data, 0)
 	if err != nil {
 		return err
