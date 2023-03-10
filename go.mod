@@ -1,6 +1,6 @@
 module github.com/takez0o/honestwork-api
 
-go 1.19
+go 1.18
 
 require (
 	github.com/RediSearch/redisearch-go v1.1.1
