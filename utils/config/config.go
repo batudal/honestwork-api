@@ -72,10 +72,10 @@ type Config struct {
 			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
 		} `yaml:"polygon"`
-		Binance struct {
+		Arbitrum struct {
 			ID     int64  `yaml:"id"`
 			RPCURL string `yaml:"rpc_url"`
-		} `yaml:"binance"`
+		} `yaml:"arbitrum"`
 	} `yaml:"network"`
 }
 

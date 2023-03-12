@@ -98,6 +98,8 @@ func HandleAddJob(address string, signature string, body []byte) string {
 		return err.Error()
 	}
 	job.Slot = len(existing_jobs)
+	job.DealNetworkId = 0
+	job.DealId = -1
 
 	amount, err := web3.CalculatePayment(&job)
 	if err != nil {

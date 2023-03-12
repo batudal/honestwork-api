@@ -79,7 +79,7 @@ type Job struct {
 	ImageUrl       string        `json:"image_url" validate:"url"`
 	Applications   []Application `json:"application"`
 	DealNetworkId  int           `json:"deal_network_id"`
-	DealId         string        `json:"deal_id"`
+	DealId         int           `json:"deal_id"`
 }
 
 type Application struct {

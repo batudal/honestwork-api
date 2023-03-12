@@ -59,7 +59,7 @@ func (r *RevenueWatcher) WatchRevenues() {
 func fetchAllRevenues() {
 	total_supply := web3.FetchTotalSupply()
 	for i := 1; i <= total_supply; i++ {
-		revenue := fetchRevenue(56, i)
+		revenue := fetchRevenue(42161, i)
 		writeJSON(revenue)
 	}
 }
