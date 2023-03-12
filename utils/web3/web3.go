@@ -193,8 +193,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 		return err
 	}
 
-	event_sig := []byte("PaymentAdded(address,uint256)")
-	event_sig_hash := crypto.Keccak256Hash(event_sig)
+	event_sig_hash := crypto.Keccak256Hash([]byte("PaymentAdded(address,uint256)"))
 
 	// block_hash := receipt.BlockHash
 	query := ethereum.FilterQuery{

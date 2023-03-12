@@ -24,11 +24,11 @@ settings:
       percentage_4: 10
     highlight_prices:
       sticky_prices:
-        7_days: 49000000000000000000
-        14_days: 69000000000000000000
-        30_days: 99000000000000000000
+        7_days: 49000000
+        14_days: 69000000
+        30_days: 99000000
       highlight_frame:
-        default: 79000000000000000000
+        default: 79000000
   # char_limits:
   #   profile:
   #     username: 25
