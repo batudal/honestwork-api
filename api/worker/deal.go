@@ -34,7 +34,7 @@ func fetchDeals(dealAmount int) {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func getDealCount() int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Binance.RPCURL)
+	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,9 +99,9 @@ func getJobs() {
 		log.Fatal(err)
 	}
 	fmt.Println("jobs:", jobs[0].DealId)
-	jobs[0].DealId = "10"
-	job_writer := controller.NewJobController(jobs[0].UserAddress, jobs[0].Slot)
-	job_writer.SetJob(&jobs[0])
+	// jobs[0].DealId = "10"
+	// job_writer := controller.NewJobController(jobs[0].UserAddress, jobs[0].Slot)
+	// job_writer.SetJob(&jobs[0])
 	//set deal id for each job in database
 
 }

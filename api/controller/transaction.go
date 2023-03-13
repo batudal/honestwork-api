@@ -14,8 +14,8 @@ func NewTransactionController(hash string) *TransactionController {
 	}
 }
 
-func (u *TransactionController) GetTransaction() (string, error) {
-	tx, err := repository.StringRead("tx:" + u.Hash)
+func (t *TransactionController) GetTransaction() (string, error) {
+	tx, err := repository.StringRead("tx:" + t.Hash)
 	if err != nil {
 		return "", err
 	}

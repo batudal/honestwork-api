@@ -26,7 +26,6 @@ var (
 	_ = common.Big1
 	_ = types.BloomLookup
 	_ = event.NewSubscription
-	_ = abi.ConvertType
 )
 
 // HWEscrowDeal is an auto generated low-level Go binding around an user-defined struct.
@@ -35,7 +34,7 @@ type HWEscrowDeal struct {
 	Creator         common.Address
 	PaymentToken    common.Address
 	TotalPayment    *big.Int
-	SuccessFee      *big.Int
+	HwProfit        *big.Int
 	ClaimedAmount   *big.Int
 	ClaimableAmount *big.Int
 	JobId           *big.Int
@@ -46,7 +45,7 @@ type HWEscrowDeal struct {
 
 // HwescrowMetaData contains all meta data concerning the Hwescrow contract.
 var HwescrowMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_registry\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_pool\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_stableCoin\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_router\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_payment\",\"type\":\"uint256\"}],\"name\":\"AdditionalPayment\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_newPaymentLimit\",\"type\":\"uint256\"}],\"name\":\"ExtraLimitChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_newSuccessFee\",\"type\":\"uint256\"}],\"name\":\"FeeChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"FeeClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_grossRevenue\",\"type\":\"uint256\"}],\"name\":\"GrossRevenueUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"}],\"name\":\"OfferCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_paymentReceived\",\"type\":\"uint256\"}],\"name\":\"PaymentClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_unlockedAmount\",\"type\":\"uint256\"}],\"name\":\"PaymentUnlocked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"PaymentWithdrawn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_collector\",\"type\":\"address\"}],\"name\":\"TotalFeeClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_payment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFT\",\"type\":\"uint256\"},{\"internalType\":\"uint128\",\"name\":\"_rating\",\"type\":\"uint128\"}],\"name\":\"additionalPayment\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"additionalPaymentLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bool\",\"name\":\"_bool\",\"type\":\"bool\"}],\"name\":\"allowNativePayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_limit\",\"type\":\"uint64\"}],\"name\":\"changeExtraPaymentLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contractIHWRegistry\",\"name\":\"_registry\",\"type\":\"address\"}],\"name\":\"changeRegistry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint128\",\"name\":\"_fee\",\"type\":\"uint128\"}],\"name\":\"changeSuccessFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_withdrawAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint128\",\"name\":\"_rating\",\"type\":\"uint128\"},{\"internalType\":\"uint256\",\"name\":\"_creatorNFT\",\"type\":\"uint256\"}],\"name\":\"claimPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_feeCollector\",\"type\":\"address\"}],\"name\":\"claimSuccessFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_feeCollector\",\"type\":\"address\"}],\"name\":\"claimTotalSuccessFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_downPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFTId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_jobId\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"createDeal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_downPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFTId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_jobId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"createDealSignature\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"dealIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"dealsMapping\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"successFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimableAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"extraPaymentLimit\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getAdditionalPaymentLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"getAggregatedRating\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllDeals\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"successFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimableAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint128[]\",\"name\":\"recruiterRating\",\"type\":\"uint128[]\"},{\"internalType\":\"uint128[]\",\"name\":\"creatorRating\",\"type\":\"uint128[]\"}],\"internalType\":\"structHWEscrow.Deal[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getAvgCreatorRating\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getAvgRecruiterRating\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getDeal\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"successFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimableAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint128[]\",\"name\":\"recruiterRating\",\"type\":\"uint128[]\"},{\"internalType\":\"uint128[]\",\"name\":\"creatorRating\",\"type\":\"uint128[]\"}],\"internalType\":\"structHWEscrow.Deal\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"getDealsOf\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_messageHash\",\"type\":\"bytes32\"}],\"name\":\"getEthSignedMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_downPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_jobId\",\"type\":\"uint256\"}],\"name\":\"getMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPrecision\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalSuccessFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"honestWorkSuccessFee\",\"outputs\":[{\"internalType\":\"uint128\",\"name\":\"\",\"type\":\"uint128\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nativePaymentAllowed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pool\",\"outputs\":[{\"internalType\":\"contractIPool\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_ethSignedMessageHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"recoverSigner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"internalType\":\"contractIHWRegistry\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"router\",\"outputs\":[{\"internalType\":\"contractIUniswapV2Router01\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_pool\",\"type\":\"address\"}],\"name\":\"setPool\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_router\",\"type\":\"address\"}],\"name\":\"setRouter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_stableCoin\",\"type\":\"address\"}],\"name\":\"setStableCoin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"}],\"name\":\"splitSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stableCoin\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalCollectedSuccessFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_paymentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint128\",\"name\":\"_rating\",\"type\":\"uint128\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFT\",\"type\":\"uint256\"}],\"name\":\"unlockPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"withdrawPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_registry\",\"type\":\"address\"},{\"internalType\":\"uint128\",\"name\":\"_fee\",\"type\":\"uint128\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_payment\",\"type\":\"uint256\"}],\"name\":\"AdditionalPayment\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_newPaymentLimit\",\"type\":\"uint256\"}],\"name\":\"ExtraLimitChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_newSuccessFee\",\"type\":\"uint256\"}],\"name\":\"FeeChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"FeeClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_grossRevenue\",\"type\":\"uint256\"}],\"name\":\"GrossRevenueUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"}],\"name\":\"OfferCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_paymentReceived\",\"type\":\"uint256\"}],\"name\":\"PaymentClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_unlockedAmount\",\"type\":\"uint256\"}],\"name\":\"PaymentUnlocked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"PaymentWithdrawn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_collector\",\"type\":\"address\"}],\"name\":\"TotalFeeClaimed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"additionalPaymentLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_limit\",\"type\":\"uint64\"}],\"name\":\"changeExtraPaymentLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contractIHWRegistry\",\"name\":\"_registry\",\"type\":\"address\"}],\"name\":\"changeRegistry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint128\",\"name\":\"_fee\",\"type\":\"uint128\"}],\"name\":\"changeSuccessFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_claimAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint128\",\"name\":\"_rating\",\"type\":\"uint128\"},{\"internalType\":\"uint256\",\"name\":\"_creatorNFT\",\"type\":\"uint256\"}],\"name\":\"claimPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_feeCollector\",\"type\":\"address\"}],\"name\":\"claimProfit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_feeCollector\",\"type\":\"address\"}],\"name\":\"claimProfits\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_downPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFTId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_jobId\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"createDeal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_downPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFTId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_jobId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"createDealSignature\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"dealIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"dealsMap\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"hwProfit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimableAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"extraPaymentLimit\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"getAggregatedRating\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAllDeals\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"hwProfit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimableAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint128[]\",\"name\":\"recruiterRating\",\"type\":\"uint128[]\"},{\"internalType\":\"uint128[]\",\"name\":\"creatorRating\",\"type\":\"uint128[]\"}],\"internalType\":\"structHWEscrow.Deal[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getAvgCreatorRating\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getAvgRecruiterRating\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"getDeal\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"hwProfit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"claimableAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"jobId\",\"type\":\"uint256\"},{\"internalType\":\"enumHWEscrow.Status\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint128[]\",\"name\":\"recruiterRating\",\"type\":\"uint128[]\"},{\"internalType\":\"uint128[]\",\"name\":\"creatorRating\",\"type\":\"uint128[]\"}],\"internalType\":\"structHWEscrow.Deal\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"getDealsOf\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_messageHash\",\"type\":\"bytes32\"}],\"name\":\"getEthSignedMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_recruiter\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_creator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_paymentToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_totalPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_downPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_jobId\",\"type\":\"uint256\"}],\"name\":\"getMessageHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPrecision\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getProfits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nativePaymentAllowed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"profits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_ethSignedMessageHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"recoverSigner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"registry\",\"outputs\":[{\"internalType\":\"contractIHWRegistry\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"sig\",\"type\":\"bytes\"}],\"name\":\"splitSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"successFee\",\"outputs\":[{\"internalType\":\"uint128\",\"name\":\"\",\"type\":\"uint128\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_paymentAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint128\",\"name\":\"_rating\",\"type\":\"uint128\"},{\"internalType\":\"uint256\",\"name\":\"_recruiterNFT\",\"type\":\"uint256\"}],\"name\":\"unlockPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_dealId\",\"type\":\"uint256\"}],\"name\":\"withdrawPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // HwescrowABI is the input ABI used to generate the binding from.
@@ -150,11 +149,11 @@ func NewHwescrowFilterer(address common.Address, filterer bind.ContractFilterer)
 
 // bindHwescrow binds a generic wrapper to an already deployed contract.
 func bindHwescrow(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := HwescrowMetaData.GetAbi()
+	parsed, err := abi.JSON(strings.NewReader(HwescrowABI))
 	if err != nil {
 		return nil, err
 	}
-	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
 }
 
 // Call invokes the (constant) contract method with params as input values and
@@ -257,29 +256,29 @@ func (_Hwescrow *HwescrowCallerSession) DealIds() (*big.Int, error) {
 	return _Hwescrow.Contract.DealIds(&_Hwescrow.CallOpts)
 }
 
-// DealsMapping is a free data retrieval call binding the contract method 0x79f6375f.
+// DealsMap is a free data retrieval call binding the contract method 0x8d0369c6.
 //
-// Solidity: function dealsMapping(uint256 ) view returns(address recruiter, address creator, address paymentToken, uint256 totalPayment, uint256 successFee, uint256 claimedAmount, uint256 claimableAmount, uint256 jobId, uint8 status)
-func (_Hwescrow *HwescrowCaller) DealsMapping(opts *bind.CallOpts, arg0 *big.Int) (struct {
+// Solidity: function dealsMap(uint256 ) view returns(address recruiter, address creator, address paymentToken, uint256 totalPayment, uint256 hwProfit, uint256 claimedAmount, uint256 claimableAmount, uint256 jobId, uint8 status)
+func (_Hwescrow *HwescrowCaller) DealsMap(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	Recruiter       common.Address
 	Creator         common.Address
 	PaymentToken    common.Address
 	TotalPayment    *big.Int
-	SuccessFee      *big.Int
+	HwProfit        *big.Int
 	ClaimedAmount   *big.Int
 	ClaimableAmount *big.Int
 	JobId           *big.Int
 	Status          uint8
 }, error) {
 	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "dealsMapping", arg0)
+	err := _Hwescrow.contract.Call(opts, &out, "dealsMap", arg0)
 
 	outstruct := new(struct {
 		Recruiter       common.Address
 		Creator         common.Address
 		PaymentToken    common.Address
 		TotalPayment    *big.Int
-		SuccessFee      *big.Int
+		HwProfit        *big.Int
 		ClaimedAmount   *big.Int
 		ClaimableAmount *big.Int
 		JobId           *big.Int
@@ -293,7 +292,7 @@ func (_Hwescrow *HwescrowCaller) DealsMapping(opts *bind.CallOpts, arg0 *big.Int
 	outstruct.Creator = *abi.ConvertType(out[1], new(common.Address)).(*common.Address)
 	outstruct.PaymentToken = *abi.ConvertType(out[2], new(common.Address)).(*common.Address)
 	outstruct.TotalPayment = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
-	outstruct.SuccessFee = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.HwProfit = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
 	outstruct.ClaimedAmount = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
 	outstruct.ClaimableAmount = *abi.ConvertType(out[6], new(*big.Int)).(**big.Int)
 	outstruct.JobId = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
@@ -303,38 +302,38 @@ func (_Hwescrow *HwescrowCaller) DealsMapping(opts *bind.CallOpts, arg0 *big.Int
 
 }
 
-// DealsMapping is a free data retrieval call binding the contract method 0x79f6375f.
+// DealsMap is a free data retrieval call binding the contract method 0x8d0369c6.
 //
-// Solidity: function dealsMapping(uint256 ) view returns(address recruiter, address creator, address paymentToken, uint256 totalPayment, uint256 successFee, uint256 claimedAmount, uint256 claimableAmount, uint256 jobId, uint8 status)
-func (_Hwescrow *HwescrowSession) DealsMapping(arg0 *big.Int) (struct {
+// Solidity: function dealsMap(uint256 ) view returns(address recruiter, address creator, address paymentToken, uint256 totalPayment, uint256 hwProfit, uint256 claimedAmount, uint256 claimableAmount, uint256 jobId, uint8 status)
+func (_Hwescrow *HwescrowSession) DealsMap(arg0 *big.Int) (struct {
 	Recruiter       common.Address
 	Creator         common.Address
 	PaymentToken    common.Address
 	TotalPayment    *big.Int
-	SuccessFee      *big.Int
+	HwProfit        *big.Int
 	ClaimedAmount   *big.Int
 	ClaimableAmount *big.Int
 	JobId           *big.Int
 	Status          uint8
 }, error) {
-	return _Hwescrow.Contract.DealsMapping(&_Hwescrow.CallOpts, arg0)
+	return _Hwescrow.Contract.DealsMap(&_Hwescrow.CallOpts, arg0)
 }
 
-// DealsMapping is a free data retrieval call binding the contract method 0x79f6375f.
+// DealsMap is a free data retrieval call binding the contract method 0x8d0369c6.
 //
-// Solidity: function dealsMapping(uint256 ) view returns(address recruiter, address creator, address paymentToken, uint256 totalPayment, uint256 successFee, uint256 claimedAmount, uint256 claimableAmount, uint256 jobId, uint8 status)
-func (_Hwescrow *HwescrowCallerSession) DealsMapping(arg0 *big.Int) (struct {
+// Solidity: function dealsMap(uint256 ) view returns(address recruiter, address creator, address paymentToken, uint256 totalPayment, uint256 hwProfit, uint256 claimedAmount, uint256 claimableAmount, uint256 jobId, uint8 status)
+func (_Hwescrow *HwescrowCallerSession) DealsMap(arg0 *big.Int) (struct {
 	Recruiter       common.Address
 	Creator         common.Address
 	PaymentToken    common.Address
 	TotalPayment    *big.Int
-	SuccessFee      *big.Int
+	HwProfit        *big.Int
 	ClaimedAmount   *big.Int
 	ClaimableAmount *big.Int
 	JobId           *big.Int
 	Status          uint8
 }, error) {
-	return _Hwescrow.Contract.DealsMapping(&_Hwescrow.CallOpts, arg0)
+	return _Hwescrow.Contract.DealsMap(&_Hwescrow.CallOpts, arg0)
 }
 
 // ExtraPaymentLimit is a free data retrieval call binding the contract method 0x493d7e0c.
@@ -366,37 +365,6 @@ func (_Hwescrow *HwescrowSession) ExtraPaymentLimit() (uint64, error) {
 // Solidity: function extraPaymentLimit() view returns(uint64)
 func (_Hwescrow *HwescrowCallerSession) ExtraPaymentLimit() (uint64, error) {
 	return _Hwescrow.Contract.ExtraPaymentLimit(&_Hwescrow.CallOpts)
-}
-
-// GetAdditionalPaymentLimit is a free data retrieval call binding the contract method 0xfdfe0a3f.
-//
-// Solidity: function getAdditionalPaymentLimit(uint256 _dealId) view returns(uint256)
-func (_Hwescrow *HwescrowCaller) GetAdditionalPaymentLimit(opts *bind.CallOpts, _dealId *big.Int) (*big.Int, error) {
-	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "getAdditionalPaymentLimit", _dealId)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetAdditionalPaymentLimit is a free data retrieval call binding the contract method 0xfdfe0a3f.
-//
-// Solidity: function getAdditionalPaymentLimit(uint256 _dealId) view returns(uint256)
-func (_Hwescrow *HwescrowSession) GetAdditionalPaymentLimit(_dealId *big.Int) (*big.Int, error) {
-	return _Hwescrow.Contract.GetAdditionalPaymentLimit(&_Hwescrow.CallOpts, _dealId)
-}
-
-// GetAdditionalPaymentLimit is a free data retrieval call binding the contract method 0xfdfe0a3f.
-//
-// Solidity: function getAdditionalPaymentLimit(uint256 _dealId) view returns(uint256)
-func (_Hwescrow *HwescrowCallerSession) GetAdditionalPaymentLimit(_dealId *big.Int) (*big.Int, error) {
-	return _Hwescrow.Contract.GetAdditionalPaymentLimit(&_Hwescrow.CallOpts, _dealId)
 }
 
 // GetAggregatedRating is a free data retrieval call binding the contract method 0xb7ba315c.
@@ -678,12 +646,12 @@ func (_Hwescrow *HwescrowCallerSession) GetPrecision() (*big.Int, error) {
 	return _Hwescrow.Contract.GetPrecision(&_Hwescrow.CallOpts)
 }
 
-// GetTotalSuccessFee is a free data retrieval call binding the contract method 0x45c60359.
+// GetProfits is a free data retrieval call binding the contract method 0x3ad15258.
 //
-// Solidity: function getTotalSuccessFee() view returns(uint256)
-func (_Hwescrow *HwescrowCaller) GetTotalSuccessFee(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function getProfits() view returns(uint256)
+func (_Hwescrow *HwescrowCaller) GetProfits(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "getTotalSuccessFee")
+	err := _Hwescrow.contract.Call(opts, &out, "getProfits")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -695,49 +663,18 @@ func (_Hwescrow *HwescrowCaller) GetTotalSuccessFee(opts *bind.CallOpts) (*big.I
 
 }
 
-// GetTotalSuccessFee is a free data retrieval call binding the contract method 0x45c60359.
+// GetProfits is a free data retrieval call binding the contract method 0x3ad15258.
 //
-// Solidity: function getTotalSuccessFee() view returns(uint256)
-func (_Hwescrow *HwescrowSession) GetTotalSuccessFee() (*big.Int, error) {
-	return _Hwescrow.Contract.GetTotalSuccessFee(&_Hwescrow.CallOpts)
+// Solidity: function getProfits() view returns(uint256)
+func (_Hwescrow *HwescrowSession) GetProfits() (*big.Int, error) {
+	return _Hwescrow.Contract.GetProfits(&_Hwescrow.CallOpts)
 }
 
-// GetTotalSuccessFee is a free data retrieval call binding the contract method 0x45c60359.
+// GetProfits is a free data retrieval call binding the contract method 0x3ad15258.
 //
-// Solidity: function getTotalSuccessFee() view returns(uint256)
-func (_Hwescrow *HwescrowCallerSession) GetTotalSuccessFee() (*big.Int, error) {
-	return _Hwescrow.Contract.GetTotalSuccessFee(&_Hwescrow.CallOpts)
-}
-
-// HonestWorkSuccessFee is a free data retrieval call binding the contract method 0x72a1ade2.
-//
-// Solidity: function honestWorkSuccessFee() view returns(uint128)
-func (_Hwescrow *HwescrowCaller) HonestWorkSuccessFee(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "honestWorkSuccessFee")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// HonestWorkSuccessFee is a free data retrieval call binding the contract method 0x72a1ade2.
-//
-// Solidity: function honestWorkSuccessFee() view returns(uint128)
-func (_Hwescrow *HwescrowSession) HonestWorkSuccessFee() (*big.Int, error) {
-	return _Hwescrow.Contract.HonestWorkSuccessFee(&_Hwescrow.CallOpts)
-}
-
-// HonestWorkSuccessFee is a free data retrieval call binding the contract method 0x72a1ade2.
-//
-// Solidity: function honestWorkSuccessFee() view returns(uint128)
-func (_Hwescrow *HwescrowCallerSession) HonestWorkSuccessFee() (*big.Int, error) {
-	return _Hwescrow.Contract.HonestWorkSuccessFee(&_Hwescrow.CallOpts)
+// Solidity: function getProfits() view returns(uint256)
+func (_Hwescrow *HwescrowCallerSession) GetProfits() (*big.Int, error) {
+	return _Hwescrow.Contract.GetProfits(&_Hwescrow.CallOpts)
 }
 
 // NativePaymentAllowed is a free data retrieval call binding the contract method 0x7709807b.
@@ -802,35 +739,35 @@ func (_Hwescrow *HwescrowCallerSession) Owner() (common.Address, error) {
 	return _Hwescrow.Contract.Owner(&_Hwescrow.CallOpts)
 }
 
-// Pool is a free data retrieval call binding the contract method 0x16f0115b.
+// Profits is a free data retrieval call binding the contract method 0x2b36a657.
 //
-// Solidity: function pool() view returns(address)
-func (_Hwescrow *HwescrowCaller) Pool(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function profits() view returns(uint256)
+func (_Hwescrow *HwescrowCaller) Profits(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "pool")
+	err := _Hwescrow.contract.Call(opts, &out, "profits")
 
 	if err != nil {
-		return *new(common.Address), err
+		return *new(*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
 
 }
 
-// Pool is a free data retrieval call binding the contract method 0x16f0115b.
+// Profits is a free data retrieval call binding the contract method 0x2b36a657.
 //
-// Solidity: function pool() view returns(address)
-func (_Hwescrow *HwescrowSession) Pool() (common.Address, error) {
-	return _Hwescrow.Contract.Pool(&_Hwescrow.CallOpts)
+// Solidity: function profits() view returns(uint256)
+func (_Hwescrow *HwescrowSession) Profits() (*big.Int, error) {
+	return _Hwescrow.Contract.Profits(&_Hwescrow.CallOpts)
 }
 
-// Pool is a free data retrieval call binding the contract method 0x16f0115b.
+// Profits is a free data retrieval call binding the contract method 0x2b36a657.
 //
-// Solidity: function pool() view returns(address)
-func (_Hwescrow *HwescrowCallerSession) Pool() (common.Address, error) {
-	return _Hwescrow.Contract.Pool(&_Hwescrow.CallOpts)
+// Solidity: function profits() view returns(uint256)
+func (_Hwescrow *HwescrowCallerSession) Profits() (*big.Int, error) {
+	return _Hwescrow.Contract.Profits(&_Hwescrow.CallOpts)
 }
 
 // RecoverSigner is a free data retrieval call binding the contract method 0xd45167d0.
@@ -895,37 +832,6 @@ func (_Hwescrow *HwescrowCallerSession) Registry() (common.Address, error) {
 	return _Hwescrow.Contract.Registry(&_Hwescrow.CallOpts)
 }
 
-// Router is a free data retrieval call binding the contract method 0xf887ea40.
-//
-// Solidity: function router() view returns(address)
-func (_Hwescrow *HwescrowCaller) Router(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "router")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Router is a free data retrieval call binding the contract method 0xf887ea40.
-//
-// Solidity: function router() view returns(address)
-func (_Hwescrow *HwescrowSession) Router() (common.Address, error) {
-	return _Hwescrow.Contract.Router(&_Hwescrow.CallOpts)
-}
-
-// Router is a free data retrieval call binding the contract method 0xf887ea40.
-//
-// Solidity: function router() view returns(address)
-func (_Hwescrow *HwescrowCallerSession) Router() (common.Address, error) {
-	return _Hwescrow.Contract.Router(&_Hwescrow.CallOpts)
-}
-
 // SplitSignature is a free data retrieval call binding the contract method 0xa7bb5803.
 //
 // Solidity: function splitSignature(bytes sig) pure returns(bytes32 r, bytes32 s, uint8 v)
@@ -976,43 +882,12 @@ func (_Hwescrow *HwescrowCallerSession) SplitSignature(sig []byte) (struct {
 	return _Hwescrow.Contract.SplitSignature(&_Hwescrow.CallOpts, sig)
 }
 
-// StableCoin is a free data retrieval call binding the contract method 0x992642e5.
+// SuccessFee is a free data retrieval call binding the contract method 0x7554fffd.
 //
-// Solidity: function stableCoin() view returns(address)
-func (_Hwescrow *HwescrowCaller) StableCoin(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function successFee() view returns(uint128)
+func (_Hwescrow *HwescrowCaller) SuccessFee(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "stableCoin")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// StableCoin is a free data retrieval call binding the contract method 0x992642e5.
-//
-// Solidity: function stableCoin() view returns(address)
-func (_Hwescrow *HwescrowSession) StableCoin() (common.Address, error) {
-	return _Hwescrow.Contract.StableCoin(&_Hwescrow.CallOpts)
-}
-
-// StableCoin is a free data retrieval call binding the contract method 0x992642e5.
-//
-// Solidity: function stableCoin() view returns(address)
-func (_Hwescrow *HwescrowCallerSession) StableCoin() (common.Address, error) {
-	return _Hwescrow.Contract.StableCoin(&_Hwescrow.CallOpts)
-}
-
-// TotalCollectedSuccessFee is a free data retrieval call binding the contract method 0xa19b94f8.
-//
-// Solidity: function totalCollectedSuccessFee() view returns(uint256)
-func (_Hwescrow *HwescrowCaller) TotalCollectedSuccessFee(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Hwescrow.contract.Call(opts, &out, "totalCollectedSuccessFee")
+	err := _Hwescrow.contract.Call(opts, &out, "successFee")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -1024,60 +899,18 @@ func (_Hwescrow *HwescrowCaller) TotalCollectedSuccessFee(opts *bind.CallOpts) (
 
 }
 
-// TotalCollectedSuccessFee is a free data retrieval call binding the contract method 0xa19b94f8.
+// SuccessFee is a free data retrieval call binding the contract method 0x7554fffd.
 //
-// Solidity: function totalCollectedSuccessFee() view returns(uint256)
-func (_Hwescrow *HwescrowSession) TotalCollectedSuccessFee() (*big.Int, error) {
-	return _Hwescrow.Contract.TotalCollectedSuccessFee(&_Hwescrow.CallOpts)
+// Solidity: function successFee() view returns(uint128)
+func (_Hwescrow *HwescrowSession) SuccessFee() (*big.Int, error) {
+	return _Hwescrow.Contract.SuccessFee(&_Hwescrow.CallOpts)
 }
 
-// TotalCollectedSuccessFee is a free data retrieval call binding the contract method 0xa19b94f8.
+// SuccessFee is a free data retrieval call binding the contract method 0x7554fffd.
 //
-// Solidity: function totalCollectedSuccessFee() view returns(uint256)
-func (_Hwescrow *HwescrowCallerSession) TotalCollectedSuccessFee() (*big.Int, error) {
-	return _Hwescrow.Contract.TotalCollectedSuccessFee(&_Hwescrow.CallOpts)
-}
-
-// AdditionalPayment is a paid mutator transaction binding the contract method 0xac04b3b3.
-//
-// Solidity: function additionalPayment(uint256 _dealId, uint256 _payment, uint256 _recruiterNFT, uint128 _rating) payable returns()
-func (_Hwescrow *HwescrowTransactor) AdditionalPayment(opts *bind.TransactOpts, _dealId *big.Int, _payment *big.Int, _recruiterNFT *big.Int, _rating *big.Int) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "additionalPayment", _dealId, _payment, _recruiterNFT, _rating)
-}
-
-// AdditionalPayment is a paid mutator transaction binding the contract method 0xac04b3b3.
-//
-// Solidity: function additionalPayment(uint256 _dealId, uint256 _payment, uint256 _recruiterNFT, uint128 _rating) payable returns()
-func (_Hwescrow *HwescrowSession) AdditionalPayment(_dealId *big.Int, _payment *big.Int, _recruiterNFT *big.Int, _rating *big.Int) (*types.Transaction, error) {
-	return _Hwescrow.Contract.AdditionalPayment(&_Hwescrow.TransactOpts, _dealId, _payment, _recruiterNFT, _rating)
-}
-
-// AdditionalPayment is a paid mutator transaction binding the contract method 0xac04b3b3.
-//
-// Solidity: function additionalPayment(uint256 _dealId, uint256 _payment, uint256 _recruiterNFT, uint128 _rating) payable returns()
-func (_Hwescrow *HwescrowTransactorSession) AdditionalPayment(_dealId *big.Int, _payment *big.Int, _recruiterNFT *big.Int, _rating *big.Int) (*types.Transaction, error) {
-	return _Hwescrow.Contract.AdditionalPayment(&_Hwescrow.TransactOpts, _dealId, _payment, _recruiterNFT, _rating)
-}
-
-// AllowNativePayment is a paid mutator transaction binding the contract method 0x90376302.
-//
-// Solidity: function allowNativePayment(bool _bool) returns()
-func (_Hwescrow *HwescrowTransactor) AllowNativePayment(opts *bind.TransactOpts, _bool bool) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "allowNativePayment", _bool)
-}
-
-// AllowNativePayment is a paid mutator transaction binding the contract method 0x90376302.
-//
-// Solidity: function allowNativePayment(bool _bool) returns()
-func (_Hwescrow *HwescrowSession) AllowNativePayment(_bool bool) (*types.Transaction, error) {
-	return _Hwescrow.Contract.AllowNativePayment(&_Hwescrow.TransactOpts, _bool)
-}
-
-// AllowNativePayment is a paid mutator transaction binding the contract method 0x90376302.
-//
-// Solidity: function allowNativePayment(bool _bool) returns()
-func (_Hwescrow *HwescrowTransactorSession) AllowNativePayment(_bool bool) (*types.Transaction, error) {
-	return _Hwescrow.Contract.AllowNativePayment(&_Hwescrow.TransactOpts, _bool)
+// Solidity: function successFee() view returns(uint128)
+func (_Hwescrow *HwescrowCallerSession) SuccessFee() (*big.Int, error) {
+	return _Hwescrow.Contract.SuccessFee(&_Hwescrow.CallOpts)
 }
 
 // ChangeExtraPaymentLimit is a paid mutator transaction binding the contract method 0x89c278d0.
@@ -1145,105 +978,105 @@ func (_Hwescrow *HwescrowTransactorSession) ChangeSuccessFee(_fee *big.Int) (*ty
 
 // ClaimPayment is a paid mutator transaction binding the contract method 0x885e2091.
 //
-// Solidity: function claimPayment(uint256 _dealId, uint256 _withdrawAmount, uint128 _rating, uint256 _creatorNFT) returns()
-func (_Hwescrow *HwescrowTransactor) ClaimPayment(opts *bind.TransactOpts, _dealId *big.Int, _withdrawAmount *big.Int, _rating *big.Int, _creatorNFT *big.Int) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "claimPayment", _dealId, _withdrawAmount, _rating, _creatorNFT)
+// Solidity: function claimPayment(uint256 _dealId, uint256 _claimAmount, uint128 _rating, uint256 _creatorNFT) returns()
+func (_Hwescrow *HwescrowTransactor) ClaimPayment(opts *bind.TransactOpts, _dealId *big.Int, _claimAmount *big.Int, _rating *big.Int, _creatorNFT *big.Int) (*types.Transaction, error) {
+	return _Hwescrow.contract.Transact(opts, "claimPayment", _dealId, _claimAmount, _rating, _creatorNFT)
 }
 
 // ClaimPayment is a paid mutator transaction binding the contract method 0x885e2091.
 //
-// Solidity: function claimPayment(uint256 _dealId, uint256 _withdrawAmount, uint128 _rating, uint256 _creatorNFT) returns()
-func (_Hwescrow *HwescrowSession) ClaimPayment(_dealId *big.Int, _withdrawAmount *big.Int, _rating *big.Int, _creatorNFT *big.Int) (*types.Transaction, error) {
-	return _Hwescrow.Contract.ClaimPayment(&_Hwescrow.TransactOpts, _dealId, _withdrawAmount, _rating, _creatorNFT)
+// Solidity: function claimPayment(uint256 _dealId, uint256 _claimAmount, uint128 _rating, uint256 _creatorNFT) returns()
+func (_Hwescrow *HwescrowSession) ClaimPayment(_dealId *big.Int, _claimAmount *big.Int, _rating *big.Int, _creatorNFT *big.Int) (*types.Transaction, error) {
+	return _Hwescrow.Contract.ClaimPayment(&_Hwescrow.TransactOpts, _dealId, _claimAmount, _rating, _creatorNFT)
 }
 
 // ClaimPayment is a paid mutator transaction binding the contract method 0x885e2091.
 //
-// Solidity: function claimPayment(uint256 _dealId, uint256 _withdrawAmount, uint128 _rating, uint256 _creatorNFT) returns()
-func (_Hwescrow *HwescrowTransactorSession) ClaimPayment(_dealId *big.Int, _withdrawAmount *big.Int, _rating *big.Int, _creatorNFT *big.Int) (*types.Transaction, error) {
-	return _Hwescrow.Contract.ClaimPayment(&_Hwescrow.TransactOpts, _dealId, _withdrawAmount, _rating, _creatorNFT)
+// Solidity: function claimPayment(uint256 _dealId, uint256 _claimAmount, uint128 _rating, uint256 _creatorNFT) returns()
+func (_Hwescrow *HwescrowTransactorSession) ClaimPayment(_dealId *big.Int, _claimAmount *big.Int, _rating *big.Int, _creatorNFT *big.Int) (*types.Transaction, error) {
+	return _Hwescrow.Contract.ClaimPayment(&_Hwescrow.TransactOpts, _dealId, _claimAmount, _rating, _creatorNFT)
 }
 
-// ClaimSuccessFee is a paid mutator transaction binding the contract method 0xa1d16c49.
+// ClaimProfit is a paid mutator transaction binding the contract method 0x265bdcd5.
 //
-// Solidity: function claimSuccessFee(uint256 _dealId, address _feeCollector) returns()
-func (_Hwescrow *HwescrowTransactor) ClaimSuccessFee(opts *bind.TransactOpts, _dealId *big.Int, _feeCollector common.Address) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "claimSuccessFee", _dealId, _feeCollector)
+// Solidity: function claimProfit(uint256 _dealId, address _feeCollector) returns()
+func (_Hwescrow *HwescrowTransactor) ClaimProfit(opts *bind.TransactOpts, _dealId *big.Int, _feeCollector common.Address) (*types.Transaction, error) {
+	return _Hwescrow.contract.Transact(opts, "claimProfit", _dealId, _feeCollector)
 }
 
-// ClaimSuccessFee is a paid mutator transaction binding the contract method 0xa1d16c49.
+// ClaimProfit is a paid mutator transaction binding the contract method 0x265bdcd5.
 //
-// Solidity: function claimSuccessFee(uint256 _dealId, address _feeCollector) returns()
-func (_Hwescrow *HwescrowSession) ClaimSuccessFee(_dealId *big.Int, _feeCollector common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.ClaimSuccessFee(&_Hwescrow.TransactOpts, _dealId, _feeCollector)
+// Solidity: function claimProfit(uint256 _dealId, address _feeCollector) returns()
+func (_Hwescrow *HwescrowSession) ClaimProfit(_dealId *big.Int, _feeCollector common.Address) (*types.Transaction, error) {
+	return _Hwescrow.Contract.ClaimProfit(&_Hwescrow.TransactOpts, _dealId, _feeCollector)
 }
 
-// ClaimSuccessFee is a paid mutator transaction binding the contract method 0xa1d16c49.
+// ClaimProfit is a paid mutator transaction binding the contract method 0x265bdcd5.
 //
-// Solidity: function claimSuccessFee(uint256 _dealId, address _feeCollector) returns()
-func (_Hwescrow *HwescrowTransactorSession) ClaimSuccessFee(_dealId *big.Int, _feeCollector common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.ClaimSuccessFee(&_Hwescrow.TransactOpts, _dealId, _feeCollector)
+// Solidity: function claimProfit(uint256 _dealId, address _feeCollector) returns()
+func (_Hwescrow *HwescrowTransactorSession) ClaimProfit(_dealId *big.Int, _feeCollector common.Address) (*types.Transaction, error) {
+	return _Hwescrow.Contract.ClaimProfit(&_Hwescrow.TransactOpts, _dealId, _feeCollector)
 }
 
-// ClaimTotalSuccessFee is a paid mutator transaction binding the contract method 0x5da9c898.
+// ClaimProfits is a paid mutator transaction binding the contract method 0x993ac84c.
 //
-// Solidity: function claimTotalSuccessFee(address _feeCollector) returns()
-func (_Hwescrow *HwescrowTransactor) ClaimTotalSuccessFee(opts *bind.TransactOpts, _feeCollector common.Address) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "claimTotalSuccessFee", _feeCollector)
+// Solidity: function claimProfits(address _feeCollector) returns()
+func (_Hwescrow *HwescrowTransactor) ClaimProfits(opts *bind.TransactOpts, _feeCollector common.Address) (*types.Transaction, error) {
+	return _Hwescrow.contract.Transact(opts, "claimProfits", _feeCollector)
 }
 
-// ClaimTotalSuccessFee is a paid mutator transaction binding the contract method 0x5da9c898.
+// ClaimProfits is a paid mutator transaction binding the contract method 0x993ac84c.
 //
-// Solidity: function claimTotalSuccessFee(address _feeCollector) returns()
-func (_Hwescrow *HwescrowSession) ClaimTotalSuccessFee(_feeCollector common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.ClaimTotalSuccessFee(&_Hwescrow.TransactOpts, _feeCollector)
+// Solidity: function claimProfits(address _feeCollector) returns()
+func (_Hwescrow *HwescrowSession) ClaimProfits(_feeCollector common.Address) (*types.Transaction, error) {
+	return _Hwescrow.Contract.ClaimProfits(&_Hwescrow.TransactOpts, _feeCollector)
 }
 
-// ClaimTotalSuccessFee is a paid mutator transaction binding the contract method 0x5da9c898.
+// ClaimProfits is a paid mutator transaction binding the contract method 0x993ac84c.
 //
-// Solidity: function claimTotalSuccessFee(address _feeCollector) returns()
-func (_Hwescrow *HwescrowTransactorSession) ClaimTotalSuccessFee(_feeCollector common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.ClaimTotalSuccessFee(&_Hwescrow.TransactOpts, _feeCollector)
+// Solidity: function claimProfits(address _feeCollector) returns()
+func (_Hwescrow *HwescrowTransactorSession) ClaimProfits(_feeCollector common.Address) (*types.Transaction, error) {
+	return _Hwescrow.Contract.ClaimProfits(&_Hwescrow.TransactOpts, _feeCollector)
 }
 
 // CreateDeal is a paid mutator transaction binding the contract method 0xd1116ad7.
 //
-// Solidity: function createDeal(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, uint8 v, bytes32 r, bytes32 s) payable returns(uint256)
+// Solidity: function createDeal(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, uint8 v, bytes32 r, bytes32 s) returns(uint256)
 func (_Hwescrow *HwescrowTransactor) CreateDeal(opts *bind.TransactOpts, _recruiter common.Address, _creator common.Address, _paymentToken common.Address, _totalPayment *big.Int, _downPayment *big.Int, _recruiterNFTId *big.Int, _jobId *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
 	return _Hwescrow.contract.Transact(opts, "createDeal", _recruiter, _creator, _paymentToken, _totalPayment, _downPayment, _recruiterNFTId, _jobId, v, r, s)
 }
 
 // CreateDeal is a paid mutator transaction binding the contract method 0xd1116ad7.
 //
-// Solidity: function createDeal(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, uint8 v, bytes32 r, bytes32 s) payable returns(uint256)
+// Solidity: function createDeal(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, uint8 v, bytes32 r, bytes32 s) returns(uint256)
 func (_Hwescrow *HwescrowSession) CreateDeal(_recruiter common.Address, _creator common.Address, _paymentToken common.Address, _totalPayment *big.Int, _downPayment *big.Int, _recruiterNFTId *big.Int, _jobId *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
 	return _Hwescrow.Contract.CreateDeal(&_Hwescrow.TransactOpts, _recruiter, _creator, _paymentToken, _totalPayment, _downPayment, _recruiterNFTId, _jobId, v, r, s)
 }
 
 // CreateDeal is a paid mutator transaction binding the contract method 0xd1116ad7.
 //
-// Solidity: function createDeal(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, uint8 v, bytes32 r, bytes32 s) payable returns(uint256)
+// Solidity: function createDeal(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, uint8 v, bytes32 r, bytes32 s) returns(uint256)
 func (_Hwescrow *HwescrowTransactorSession) CreateDeal(_recruiter common.Address, _creator common.Address, _paymentToken common.Address, _totalPayment *big.Int, _downPayment *big.Int, _recruiterNFTId *big.Int, _jobId *big.Int, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
 	return _Hwescrow.Contract.CreateDeal(&_Hwescrow.TransactOpts, _recruiter, _creator, _paymentToken, _totalPayment, _downPayment, _recruiterNFTId, _jobId, v, r, s)
 }
 
 // CreateDealSignature is a paid mutator transaction binding the contract method 0xbc247561.
 //
-// Solidity: function createDealSignature(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, bytes _signature) payable returns(uint256)
+// Solidity: function createDealSignature(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, bytes _signature) returns(uint256)
 func (_Hwescrow *HwescrowTransactor) CreateDealSignature(opts *bind.TransactOpts, _recruiter common.Address, _creator common.Address, _paymentToken common.Address, _totalPayment *big.Int, _downPayment *big.Int, _recruiterNFTId *big.Int, _jobId *big.Int, _signature []byte) (*types.Transaction, error) {
 	return _Hwescrow.contract.Transact(opts, "createDealSignature", _recruiter, _creator, _paymentToken, _totalPayment, _downPayment, _recruiterNFTId, _jobId, _signature)
 }
 
 // CreateDealSignature is a paid mutator transaction binding the contract method 0xbc247561.
 //
-// Solidity: function createDealSignature(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, bytes _signature) payable returns(uint256)
+// Solidity: function createDealSignature(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, bytes _signature) returns(uint256)
 func (_Hwescrow *HwescrowSession) CreateDealSignature(_recruiter common.Address, _creator common.Address, _paymentToken common.Address, _totalPayment *big.Int, _downPayment *big.Int, _recruiterNFTId *big.Int, _jobId *big.Int, _signature []byte) (*types.Transaction, error) {
 	return _Hwescrow.Contract.CreateDealSignature(&_Hwescrow.TransactOpts, _recruiter, _creator, _paymentToken, _totalPayment, _downPayment, _recruiterNFTId, _jobId, _signature)
 }
 
 // CreateDealSignature is a paid mutator transaction binding the contract method 0xbc247561.
 //
-// Solidity: function createDealSignature(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, bytes _signature) payable returns(uint256)
+// Solidity: function createDealSignature(address _recruiter, address _creator, address _paymentToken, uint256 _totalPayment, uint256 _downPayment, uint256 _recruiterNFTId, uint256 _jobId, bytes _signature) returns(uint256)
 func (_Hwescrow *HwescrowTransactorSession) CreateDealSignature(_recruiter common.Address, _creator common.Address, _paymentToken common.Address, _totalPayment *big.Int, _downPayment *big.Int, _recruiterNFTId *big.Int, _jobId *big.Int, _signature []byte) (*types.Transaction, error) {
 	return _Hwescrow.Contract.CreateDealSignature(&_Hwescrow.TransactOpts, _recruiter, _creator, _paymentToken, _totalPayment, _downPayment, _recruiterNFTId, _jobId, _signature)
 }
@@ -1267,69 +1100,6 @@ func (_Hwescrow *HwescrowSession) RenounceOwnership() (*types.Transaction, error
 // Solidity: function renounceOwnership() returns()
 func (_Hwescrow *HwescrowTransactorSession) RenounceOwnership() (*types.Transaction, error) {
 	return _Hwescrow.Contract.RenounceOwnership(&_Hwescrow.TransactOpts)
-}
-
-// SetPool is a paid mutator transaction binding the contract method 0x4437152a.
-//
-// Solidity: function setPool(address _pool) returns()
-func (_Hwescrow *HwescrowTransactor) SetPool(opts *bind.TransactOpts, _pool common.Address) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "setPool", _pool)
-}
-
-// SetPool is a paid mutator transaction binding the contract method 0x4437152a.
-//
-// Solidity: function setPool(address _pool) returns()
-func (_Hwescrow *HwescrowSession) SetPool(_pool common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.SetPool(&_Hwescrow.TransactOpts, _pool)
-}
-
-// SetPool is a paid mutator transaction binding the contract method 0x4437152a.
-//
-// Solidity: function setPool(address _pool) returns()
-func (_Hwescrow *HwescrowTransactorSession) SetPool(_pool common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.SetPool(&_Hwescrow.TransactOpts, _pool)
-}
-
-// SetRouter is a paid mutator transaction binding the contract method 0xc0d78655.
-//
-// Solidity: function setRouter(address _router) returns()
-func (_Hwescrow *HwescrowTransactor) SetRouter(opts *bind.TransactOpts, _router common.Address) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "setRouter", _router)
-}
-
-// SetRouter is a paid mutator transaction binding the contract method 0xc0d78655.
-//
-// Solidity: function setRouter(address _router) returns()
-func (_Hwescrow *HwescrowSession) SetRouter(_router common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.SetRouter(&_Hwescrow.TransactOpts, _router)
-}
-
-// SetRouter is a paid mutator transaction binding the contract method 0xc0d78655.
-//
-// Solidity: function setRouter(address _router) returns()
-func (_Hwescrow *HwescrowTransactorSession) SetRouter(_router common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.SetRouter(&_Hwescrow.TransactOpts, _router)
-}
-
-// SetStableCoin is a paid mutator transaction binding the contract method 0x23af4e17.
-//
-// Solidity: function setStableCoin(address _stableCoin) returns()
-func (_Hwescrow *HwescrowTransactor) SetStableCoin(opts *bind.TransactOpts, _stableCoin common.Address) (*types.Transaction, error) {
-	return _Hwescrow.contract.Transact(opts, "setStableCoin", _stableCoin)
-}
-
-// SetStableCoin is a paid mutator transaction binding the contract method 0x23af4e17.
-//
-// Solidity: function setStableCoin(address _stableCoin) returns()
-func (_Hwescrow *HwescrowSession) SetStableCoin(_stableCoin common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.SetStableCoin(&_Hwescrow.TransactOpts, _stableCoin)
-}
-
-// SetStableCoin is a paid mutator transaction binding the contract method 0x23af4e17.
-//
-// Solidity: function setStableCoin(address _stableCoin) returns()
-func (_Hwescrow *HwescrowTransactorSession) SetStableCoin(_stableCoin common.Address) (*types.Transaction, error) {
-	return _Hwescrow.Contract.SetStableCoin(&_Hwescrow.TransactOpts, _stableCoin)
 }
 
 // TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.

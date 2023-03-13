@@ -6,7 +6,7 @@ func HandleGetRating(address string) string {
 	rating_controller := controller.NewRatingController(address)
 	rating, err := rating_controller.GetRating()
 	if err != nil {
-		return "Db read failed."
+		return "0"
 	}
 	return rating
 }
