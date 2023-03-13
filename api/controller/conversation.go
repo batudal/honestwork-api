@@ -31,7 +31,7 @@ func (c *ConversationController) GetConversations() ([]*schema.Conversation, err
 	return conversations, nil
 }
 
-func (c *ConversationController) SetConversation(conversations *schema.Conversation) error {
+func (c *ConversationController) SetConversation(conversations []*schema.Conversation) error {
 	data, err := json.Marshal(conversations)
 	if err != nil {
 		return err
@@ -42,3 +42,4 @@ func (c *ConversationController) SetConversation(conversations *schema.Conversat
 	}
 	return nil
 }
+
