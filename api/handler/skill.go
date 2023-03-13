@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"time"
+  "fmt"
 
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/config"
@@ -80,6 +81,7 @@ func HandleAddSkill(address string, signature string, body []byte) string {
 	}
 
 	all_skills := HandleGetSkills(address)
+  fmt.Println("all_skills", all_skills)
 	if len(all_skills) == max_allowed {
 		return "User reached skill limit."
 	}
@@ -93,6 +95,7 @@ func HandleAddSkill(address string, signature string, body []byte) string {
 	skill.Slot = len(all_skills)
 	skill.CreatedAt = time.Now().Unix()
 
+  fmt.Println("Skill:",skill)
 	err = validator.ValidateSkillInput(&skill)
 	if err != nil {
 		return err.Error()
