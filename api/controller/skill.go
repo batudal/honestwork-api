@@ -59,7 +59,7 @@ func (s *SkillController) SetSkill(skill *schema.Skill) error {
 }
 
 func (s *SkillIndexer) GetSkills(address string) ([]schema.Skill, error) {
-	return getSkills(address, "created_at", false, 0, 10000)
+	return getSkills(address, "created_at", true, 0, 10000)
 }
 
 func (s *SkillIndexer) GetAllSkills() ([]schema.Skill, error) {
