@@ -78,12 +78,12 @@ func HandleAddConversation(address string, signature string, body []byte) string
 	target_conversations = append(target_conversations, &target_conversation)
 
 	conversation_controller := controller.NewConversationController(address)
-	err = conversation_controller.SetConversation(&conversation)
+	err = conversation_controller.SetConversation(conversations)
 	if err != nil {
 		return err.Error()
 	}
 	target_conversation_controller := controller.NewConversationController(target_address)
-	err = target_conversation_controller.SetConversation(&target_conversation)
+	err = target_conversation_controller.SetConversation(target_conversations)
 	if err != nil {
 		return err.Error()
 	}
