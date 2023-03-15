@@ -23,12 +23,12 @@ func NewDealWatcher() *DealWatcher {
 func (r *DealWatcher) WatchDeals() {
 	deal_count := getDealCount()
 
-	fetchDeals(deal_count)
-	getJobs()
-	time.Sleep(time.Duration(1) * time.Minute)
+	chain_map := fetchDeals(deal_count)
+	getJobs(chain_map)
+	time.Sleep(time.Duration(30) * time.Minute)
 }
 
-func fetchDeals(dealAmount int) {
+func fetchDeals(dealAmount int) map[string][]int64 {
 	conf, err := config.ParseConfig()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -54,12 +54,14 @@ func fetchDeals(dealAmount int) {
 			log.Fatal(err)
 		}
 		if deal.Recruiter.String() != "0x0000000000000000000000000000000000000000" {
-			addr_map[deal.Recruiter.String()] = append(addr_map[deal.Recruiter.String()], int64(i))
-			fmt.Println(addr_map)
+			addr_map[deal.Recruiter.String()] = append(addr_map[deal.Recruiter.String()], deal.JobId.Int64())
+			fmt.Println("addr map: ", addr_map)
 		}
 
 	}
 	defer client.Close()
+	return addr_map
+
 }
 
 func getDealCount() int {
@@ -90,15 +92,34 @@ func getDealCount() int {
 	return int(dealCount.Int64())
 }
 
-func getJobs() {
+func getJobs(chain_map map[string][]int64) {
 	//get all skills and loop
+	conf, err := config.ParseConfig()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 	jobs_controller := controller.NewJobIndexer("jobsIndex")
-
 	jobs, err := jobs_controller.GetAllJobs()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("jobs:", jobs[0].DealId)
+	for recruiterAddresses, jobIds := range chain_map {
+		fmt.Println("key:", recruiterAddresses, "element:", jobIds)
+		for _, job := range jobs {
+			if job.UserAddress == recruiterAddresses {
+				if job.DealId == -1 {
+
+					fmt.Println("job123:", job)
+					job_writer := controller.NewJobController(job.UserAddress, job.Slot)
+					job.DealId = int(jobIds[len(jobIds)-1])
+					job.DealNetworkId = int(conf.Network.Arbitrum.ID)
+					job_writer.SetJob(&job)
+				}
+			}
+		}
+
+	}
+
 	// jobs[0].DealId = "10"
 	// job_writer := controller.NewJobController(jobs[0].UserAddress, jobs[0].Slot)
 	// job_writer.SetJob(&jobs[0])
@@ -113,3 +134,6 @@ func getJobs() {
 //JOB DEFINITION: map[recruiteraddress] = job id
 // check if job has already been updated
 // update job on database with the deal_network_id and deal_id
+
+//update contract -- add timestamp to deal struct -- add random event to check --check getAllDeals
+//add subscription to deal watcher
