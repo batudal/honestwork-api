@@ -53,13 +53,12 @@ func connect() {
 
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
-	fmt.Println("subscribed")
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	logOfferCreatedSig := []byte("OfferCreated(address,address,uint256,address,uint256)")
 	logOfferCreatedHash := crypto.Keccak256Hash(logOfferCreatedSig)
-	fmt.Println("logOfferCreatedHash: ", logOfferCreatedHash)
 
 	for {
 		select {
