@@ -32,7 +32,6 @@ func NewEventSubscriber() *EventSubscriber {
 
 func (r *EventSubscriber) Subscribe() {
 	connect()
-	//getJobsForSubscriber()
 }
 
 func connect() {

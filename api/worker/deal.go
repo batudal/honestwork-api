@@ -109,7 +109,6 @@ func getJobs(chain_map map[string][]int64) {
 			if job.UserAddress == recruiterAddresses {
 				if job.DealId == -1 {
 
-					fmt.Println("job123:", job)
 					job_writer := controller.NewJobController(job.UserAddress, job.Slot)
 					job.DealId = int(jobIds[len(jobIds)-1])
 					job.DealNetworkId = int(conf.Network.Arbitrum.ID)
