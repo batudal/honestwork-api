@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum"
@@ -40,7 +41,7 @@ func connect() {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial("wss://arb-mainnet.g.alchemy.com/v2/RMZpJV5DAEEXlGMw4W5VugGRxoUgSKES")
+	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WEBSOCKET"))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -86,7 +86,6 @@ func getDealCount() int {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("deal count:", dealCount)
 
 	defer client.Close()
 	return int(dealCount.Int64())
@@ -104,7 +103,6 @@ func getJobs(chain_map map[string][]int64) {
 		log.Fatal(err)
 	}
 	for recruiterAddresses, jobIds := range chain_map {
-		fmt.Println("key:", recruiterAddresses, "element:", jobIds)
 		for _, job := range jobs {
 			if job.UserAddress == recruiterAddresses {
 				if job.DealId == -1 {
@@ -119,20 +117,4 @@ func getJobs(chain_map map[string][]int64) {
 
 	}
 
-	// jobs[0].DealId = "10"
-	// job_writer := controller.NewJobController(jobs[0].UserAddress, jobs[0].Slot)
-	// job_writer.SetJob(&jobs[0])
-	//set deal id for each job in database
-
 }
-
-// checks instead
-
-// get network_id, recruiter_addr + job_id (job:recruiter_addr:job_id)
-
-//JOB DEFINITION: map[recruiteraddress] = job id
-// check if job has already been updated
-// update job on database with the deal_network_id and deal_id
-
-//update contract -- add timestamp to deal struct -- add random event to check --check getAllDeals
-//add subscription to deal watcher
