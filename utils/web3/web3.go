@@ -250,23 +250,23 @@ func CalculatePayment(opts *schema.Job) (*big.Int, error) {
 		return big.NewInt(0), err
 	}
 
-	var highlight_fee = new(big.Int)
+	var extra = new(big.Int)
 	duration := opts.StickyDuration
 	if duration == 7 {
-		highlight_fee.SetString(conf.Settings.Jobs.HighlightPrices.StickyPrices.Week, 10)
+		extra.SetString(conf.Settings.Jobs.StickyPrices.Week, 10)
 	} else if duration == 14 {
-		highlight_fee.SetString(conf.Settings.Jobs.HighlightPrices.StickyPrices.Biweek, 10)
+		extra.SetString(conf.Settings.Jobs.StickyPrices.Biweek, 10)
 	} else if duration == 30 {
-		highlight_fee.SetString(conf.Settings.Jobs.HighlightPrices.StickyPrices.Month, 10)
+		extra.SetString(conf.Settings.Jobs.StickyPrices.Month, 10)
 	} else {
-		highlight_fee = big.NewInt(0)
+		extra = big.NewInt(0)
 	}
 
 	var service_fee = new(big.Int)
 	service_fee.SetString(conf.Settings.Jobs.ServiceFee, 10)
 
 	total_fee := new(big.Int)
-	total_fee.Add(highlight_fee, service_fee)
+	total_fee.Add(extra, service_fee)
 
 	return total_fee, nil
 }
