@@ -45,7 +45,6 @@ func fetchDeals() {
 
 	deals, err := instance.GetAllDeals(nil)
 	for _, deal := range deals {
-		fmt.Println(deal)
 		writeJob(&deal)
 
 	}
@@ -80,17 +79,14 @@ func writeJob(deal *hwescrow.HWEscrowDeal) {
 
 }
 
-// function to convert integer to bigInt
 func toBigInt(num int) *big.Int {
 	return big.NewInt(int64(num))
 }
 
-// function to convert bigInt to integer
 func toInt(num *big.Int) int {
 	return int(num.Int64())
 }
 
-// function to convert commonAddress to string
 func addressToString(address common.Address) string {
 	return address.Hex()
 }
