@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -226,7 +225,6 @@ func main() {
 		if err != nil {
 			return c.JSON(err)
 		}
-		fmt.Println("authorized")
 		return c.JSON(handler.HandleAddDeal(c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Patch("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
@@ -236,7 +234,6 @@ func main() {
 		}
 		return c.JSON(handler.HandleSignDeal(c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
 	})
-	// todo: remove record
 	api_v1.Delete("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
 		if err != nil {
