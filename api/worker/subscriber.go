@@ -32,15 +32,10 @@ func NewEventSubscriber() *EventSubscriber {
 }
 
 func (r *EventSubscriber) Subscribe() {
-	connect()
-}
-
-func connect() {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatal(err)
 	}
-
 	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WEBSOCKET"))
 	if err != nil {
 		log.Fatal(err)
@@ -53,54 +48,46 @@ func connect() {
 
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
-
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error:", err)
 	}
+
 	logOfferCreatedSig := []byte("OfferCreated(address,address,uint256,address,uint256)")
 	logOfferCreatedHash := crypto.Keccak256Hash(logOfferCreatedSig)
 
 	for {
 		select {
 		case err := <-sub.Err():
-			log.Fatal(err)
+			fmt.Println("Error:", err)
 		case log := <-logs:
 			if log.Topics[0] == logOfferCreatedHash {
-				writeJobsForSubscriber(hexToInt(log.Topics[len(log.Topics)-1]), string(hashToAddress(log.Topics[1]).Hex()))
+				updateJob(string(hashToAddress(log.Topics[1]).Hex()), hexToInt(log.Topics[len(log.Topics)-1]))
 			}
 		}
-
 	}
 }
 
 func hexToInt(hex common.Hash) int {
-	i, err := strconv.ParseInt(hex.Hex(), 0, 64)
-	if err != nil {
-		fmt.Println(err)
-	}
+	i, _ := strconv.ParseInt(hex.Hex(), 0, 64)
 	return int(i)
 }
 
-func writeJobsForSubscriber(_jobId int, _address string) {
+func updateJob(address string, slot int) {
 	conf, err := config.ParseConfig()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	jobs_controller := controller.NewJobIndexer("jobsIndex")
-	jobs, err := jobs_controller.GetAllJobs()
+	job_controller := controller.NewJobController(address, slot)
+	job, err := job_controller.GetJob()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error:", err)
 	}
-	for _, job := range jobs {
-		if job.UserAddress == _address {
-			if job.DealId == -1 {
-				job_writer := controller.NewJobController(job.UserAddress, job.Slot)
-				job.DealId = _jobId
-				job.DealNetworkId = int(conf.Network.Arbitrum.ID)
-				job_writer.SetJob(&job)
-			}
-		}
+	if job.UserAddress == address && job.DealId == -1 {
+		job.DealId = slot
+		job.DealNetworkId = int(conf.Network.Arbitrum.ID)
+		job_controller.SetJob(&job)
+
 	}
 }
 
