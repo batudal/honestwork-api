@@ -3,7 +3,6 @@ package worker
 import (
 	"fmt"
 	"log"
-	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -21,100 +20,44 @@ func NewDealWatcher() *DealWatcher {
 }
 
 func (r *DealWatcher) WatchDeals() {
-	deal_count := getDealCount()
-
-	chain_map := fetchDeals(deal_count)
-	getJobs(chain_map)
-	time.Sleep(time.Duration(30) * time.Minute)
-}
-
-func fetchDeals(dealAmount int) map[string][]int64 {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatal(err)
 	}
-
 	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
+	for {
+		updateDeals(conf, client)
+		time.Sleep(time.Duration(30) * time.Minute)
+	}
+}
 
+func updateDeals(conf *config.Config, client *ethclient.Client) {
 	escrow_address_hex := common.HexToAddress(conf.ContractAddresses.Escrow)
-
 	instance, err := hwescrow.NewHwescrow(escrow_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error:", err)
 	}
 
-	//loop through all deals
-	addr_map := make(map[string][]int64)
-	for i := 0; i <= dealAmount; i++ {
-		deal, err := instance.GetDeal(nil, big.NewInt(int64(i)))
+	deals, err := instance.GetAllDeals(nil)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	for i, deal := range deals {
+		job_controller := controller.NewJobController(deal.Recruiter.String(), int(deal.JobId.Int64()))
+		job, err := job_controller.GetJob()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println("Error:", err)
 		}
-		if deal.Recruiter.String() != "0x0000000000000000000000000000000000000000" {
-			addr_map[deal.Recruiter.String()] = append(addr_map[deal.Recruiter.String()], deal.JobId.Int64())
-			fmt.Println("addr map: ", addr_map)
+		if job.DealId == -1 {
+			job_writer := controller.NewJobController(job.UserAddress, job.Slot)
+			job.DealId = i
+			job.DealNetworkId = int(conf.Network.Arbitrum.ID)
+			job_writer.SetJob(&job)
 		}
-
 	}
-	defer client.Close()
-	return addr_map
-
-}
-
-func getDealCount() int {
-	conf, err := config.ParseConfig()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	escrow_address_hex := common.HexToAddress(conf.ContractAddresses.Escrow)
-
-	instance, err := hwescrow.NewHwescrow(escrow_address_hex, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	dealCount, err := instance.DealIds(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer client.Close()
-	return int(dealCount.Int64())
-}
-
-func getJobs(chain_map map[string][]int64) {
-	//get all skills and loop
-	conf, err := config.ParseConfig()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	jobs_controller := controller.NewJobIndexer("jobsIndex")
-	jobs, err := jobs_controller.GetAllJobs()
-	if err != nil {
-		log.Fatal(err)
-	}
-	for recruiterAddresses, jobIds := range chain_map {
-		for _, job := range jobs {
-			if job.UserAddress == recruiterAddresses {
-				if job.DealId == -1 {
-
-					job_writer := controller.NewJobController(job.UserAddress, job.Slot)
-					job.DealId = int(jobIds[len(jobIds)-1])
-					job.DealNetworkId = int(conf.Network.Arbitrum.ID)
-					job_writer.SetJob(&job)
-				}
-			}
-		}
-
-	}
-
 }
