@@ -39,12 +39,10 @@ type Config struct {
 	} `yaml:"contract_addresses"`
 	Network struct {
 		Eth struct {
-			ID     int64  `yaml:"id"`
-			RPCURL string `yaml:"rpc_url"`
+			ID int `yaml:"id"`
 		} `yaml:"eth"`
 		Arbitrum struct {
-			ID     int64  `yaml:"id"`
-			RPCURL string `yaml:"rpc_url"`
+			ID int `yaml:"id"`
 		} `yaml:"arbitrum"`
 	} `yaml:"network"`
 }
