@@ -2,10 +2,12 @@ package parser
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 )
 
 func Parse(content string) string {
+	fmt.Println("Parsing:", content)
 	m := map[string]interface{}{}
 	err := json.Unmarshal([]byte(content), &m)
 	if err != nil {
