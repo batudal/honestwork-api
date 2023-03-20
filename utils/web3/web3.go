@@ -3,7 +3,6 @@ package web3
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 
@@ -72,7 +71,8 @@ func FetchUserState(address string) int {
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		logger.InitSentry()
+		logger.CaptureErrorMessage(err.Error() + "honestworknftNewHonestworknftError")
 	}
 
 	user_address_hex := common.HexToAddress(address)
@@ -185,7 +185,6 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 	if err != nil {
 		logger.InitSentry()
 		logger.CaptureErrorMessage(err.Error() + "configParseConfigError")
-
 	}
 	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
 	if err != nil {
