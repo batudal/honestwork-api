@@ -3,6 +3,7 @@ package worker
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -24,14 +25,14 @@ func (r *DealWatcher) WatchDeals() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
 	for {
 		updateDeals(conf, client)
-		time.Sleep(time.Duration(30) * time.Minute)
+		time.Sleep(time.Duration(4) * time.Hour)
 	}
 }
 
@@ -42,7 +43,7 @@ func updateDeals(conf *config.Config, client *ethclient.Client) {
 		fmt.Println("Error:", err)
 	}
 
-	deals, err := instance.GetAllDeals(nil)
+	deals, err := instance.GetDeals(nil)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}

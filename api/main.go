@@ -47,8 +47,8 @@ func main() {
 	app.Use(cors.New())
 	app.Use(recover.New())
 	app.Use(limiter.New(limiter.Config{
-		Max:               5,
-		Expiration:        30 * time.Second,
+		Max:               50,
+		Expiration:        5 * time.Second,
 		LimiterMiddleware: limiter.SlidingWindow{},
 	}))
 

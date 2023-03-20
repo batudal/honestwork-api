@@ -18,11 +18,9 @@ contract_addresses:
   membership_nft: 0xAa4837866FFF4AE5EfB043491Eb7Ff1d26f1319B
   job_payments: 0xDe36E0135286cB1CA0ae73726b46859884c2ef50
   registry: 0x610907faEb17Db469fDFcd2b7355c2094cCD1bAF
-  escrow: 0x06AC421C346DE5a5254C27B2751f258eed1B0f1e
+  escrow: 0xD445555Fc8fA20C991D18a27EC73D56c6c4EB7e5
 network:
   eth:
     id: 1
-    rpc_url: https://eth-mainnet.g.alchemy.com/v2/6S77iu4XWkdCm3lztMIZql9JOLMW_adQ
   arbitrum:
     id: 42161
-    rpc_url: https://arb-mainnet.g.alchemy.com/v2/uohvoCVuyyMJ6M0C3xF7ByA-ClxaSTzh

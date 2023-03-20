@@ -4,15 +4,18 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 	"os"
-	"strconv"
+	"strings"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/abi/hwescrow"
 	"github.com/takez0o/honestwork-api/utils/config"
 )
 
@@ -36,7 +39,7 @@ func (r *EventSubscriber) Subscribe() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WEBSOCKET"))
+	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WSS"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +52,19 @@ func (r *EventSubscriber) Subscribe() {
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatal(err)
+	}
+
+	escrow_abi, err := abi.JSON(strings.NewReader(string(hwescrow.HwescrowABI)))
+	if err != nil {
+		log.Fatal(err)
+	}
+	type OfferEvent struct {
+		Recruiter    common.Address
+		Creator      common.Address
+		TotalPayment *big.Int
+		PaymentToken common.Address
+		JobId        *big.Int
 	}
 
 	logOfferCreatedSig := []byte("OfferCreated(address,address,uint256,address,uint256)")
@@ -61,15 +76,13 @@ func (r *EventSubscriber) Subscribe() {
 			fmt.Println("Error:", err)
 		case log := <-logs:
 			if log.Topics[0] == logOfferCreatedHash {
-				updateJob(string(hashToAddress(log.Topics[1]).Hex()), hexToInt(log.Topics[len(log.Topics)-1]))
+				var offerEvent OfferEvent
+				offerEvent.Recruiter = common.HexToAddress(log.Topics[1].Hex())
+				_ = escrow_abi.UnpackIntoInterface(&offerEvent, "OfferCreated", log.Data)
+				updateJob(offerEvent.Recruiter.String(), int(offerEvent.JobId.Int64()))
 			}
 		}
 	}
-}
-
-func hexToInt(hex common.Hash) int {
-	i, _ := strconv.ParseInt(hex.Hex(), 0, 64)
-	return int(i)
 }
 
 func updateJob(address string, slot int) {
@@ -85,12 +98,7 @@ func updateJob(address string, slot int) {
 	}
 	if job.UserAddress == address && job.DealId == -1 {
 		job.DealId = slot
-		job.DealNetworkId = int(conf.Network.Arbitrum.ID)
+		job.DealNetworkId = conf.Network.Arbitrum.ID
 		job_controller.SetJob(&job)
-
 	}
-}
-
-func hashToAddress(hash common.Hash) common.Address {
-	return common.BytesToAddress(hash.Bytes())
 }
