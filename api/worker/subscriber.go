@@ -79,18 +79,13 @@ func (r *EventSubscriber) Subscribe() {
 				var offerEvent OfferEvent
 				offerEvent.Recruiter = common.HexToAddress(log.Topics[1].Hex())
 				_ = escrow_abi.UnpackIntoInterface(&offerEvent, "OfferCreated", log.Data)
-				updateJob(offerEvent.Recruiter.String(), int(offerEvent.JobId.Int64()))
+				updateJob(conf, offerEvent.Recruiter.String(), int(offerEvent.JobId.Int64()))
 			}
 		}
 	}
 }
 
-func updateJob(address string, slot int) {
-	conf, err := config.ParseConfig()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
+func updateJob(conf *config.Config, address string, slot int) {
 	job_controller := controller.NewJobController(address, slot)
 	job, err := job_controller.GetJob()
 	if err != nil {
