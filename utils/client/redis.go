@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+
 	"github.com/takez0o/honestwork-api/utils/config"
 	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
