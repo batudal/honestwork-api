@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -9,6 +10,8 @@ func HandleGetTags() schema.Tags {
 	tag_controller := controller.NewTagController()
 	tags, err := tag_controller.GetTags()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetTags - handler")
 		return schema.Tags{}
 	}
 	return tags
@@ -27,6 +30,8 @@ func HandleAddTag(address string, signature string, tag string) string {
 
 	err := tag_controller.SetTags(&tags)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddTag - handler")
 		return err.Error()
 	}
 	return "success"

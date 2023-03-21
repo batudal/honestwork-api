@@ -14,7 +14,7 @@ func JSONRead(record_id string) (interface{}, error) {
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "JSONRead")
+		loggersentry.CaptureErrorMessage(err.Error() + "JSONRead")
 		return nil, err
 	}
 	return data, nil
@@ -26,7 +26,7 @@ func JSONWrite(record_id string, data []byte, ttl time.Duration) error {
 	err := redis.Do(redis.Context(), "JSON.SET", record_id, ".", string(data)).Err()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "JSONWrite")
+		loggersentry.CaptureErrorMessage(err.Error() + "JSONWrite")
 		return err
 	}
 	return nil
@@ -38,7 +38,7 @@ func JSONDelete(record_id string) error {
 	err := redis.Do(redis.Context(), "JSON.DEL", record_id).Err()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "JSONDelete")
+		loggersentry.CaptureErrorMessage(err.Error() + "JSONDelete")
 		return err
 	}
 	return nil
@@ -62,7 +62,7 @@ func StringWrite(record_id string, data string, ttl time.Duration) error {
 	err := redis.Set(redis.Context(), record_id, data, ttl).Err()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "StringWrite")
+		loggersentry.CaptureErrorMessage(err.Error() + "StringWrite")
 		return err
 	}
 	return nil
@@ -74,7 +74,7 @@ func StringDelete(record_id string) error {
 	err := redis.Del(redis.Context(), record_id).Err()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "StringDelete")
+		loggersentry.CaptureErrorMessage(err.Error() + "StringDelete")
 		return err
 	}
 	return nil

@@ -65,6 +65,8 @@ func HandleRemoveWatchlist(address string, signature string, body []byte) string
 	var watchlist_input schema.WatchlistInput
 	err := json.Unmarshal(body, &watchlist_input)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleRemoveWatchlist - handler")
 		return err.Error()
 	}
 
@@ -72,7 +74,7 @@ func HandleRemoveWatchlist(address string, signature string, body []byte) string
 	user, err := user_controller.GetUser()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorMessage(err.Error())
+		loggersentry.CaptureErrorMessage(err.Error() + "handleRemoveWatchlist - user_controller.GetUser")
 		return err.Error()
 	}
 	for i, app := range user.Watchlist {
@@ -84,7 +86,7 @@ func HandleRemoveWatchlist(address string, signature string, body []byte) string
 	err = user_controller.SetUser(&user)
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorMessage(err.Error())
+		loggersentry.CaptureErrorMessage(err.Error() + "handleRemoveWatchlist - user_controller.SetUser")
 		return err.Error()
 	}
 	return "success"

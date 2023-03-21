@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/abi/hwescrow"
 	"github.com/takez0o/honestwork-api/utils/config"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 type EventSubscriber struct {
@@ -37,11 +37,14 @@ func NewEventSubscriber() *EventSubscriber {
 func (r *EventSubscriber) Subscribe() {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		log.Fatal(err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error loading config file")
 	}
 	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WSS"))
 	if err != nil {
-		log.Fatal(err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error ethclient.Dial")
+
 	}
 
 	contractAddress := common.HexToAddress(conf.ContractAddresses.Escrow)
@@ -52,12 +55,14 @@ func (r *EventSubscriber) Subscribe() {
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		log.Fatal(err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error SubscribeFilterLogs")
 	}
 
 	escrow_abi, err := abi.JSON(strings.NewReader(string(hwescrow.HwescrowABI)))
 	if err != nil {
-		log.Fatal(err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error abi.JSON")
 	}
 	type OfferEvent struct {
 		Recruiter    common.Address
@@ -89,7 +94,8 @@ func updateJob(conf *config.Config, address string, slot int) {
 	job_controller := controller.NewJobController(address, slot)
 	job, err := job_controller.GetJob()
 	if err != nil {
-		fmt.Println("Error:", err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error job_controller.GetJob")
 	}
 	if job.UserAddress == address && job.DealId == -1 {
 		job.DealId = slot

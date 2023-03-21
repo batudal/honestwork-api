@@ -25,16 +25,17 @@ func main() {
 	// config/env setup
 	conf, err := config.ParseConfig()
 	if err != nil {
-		log.Fatal(err)
 		loggersentry.InitSentry()
 		loggersentry.CaptureErrorMessage(err.Error())
+		log.Fatal("Error loading config file")
 
 	}
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
 		loggersentry.InitSentry()
 		loggersentry.CaptureErrorMessage(err.Error())
+		log.Fatal("Error loading .env file")
+
 	}
 
 	app := fiber.New()
@@ -290,4 +291,5 @@ func main() {
 	})
 
 	app.Listen(":" + conf.API.Port)
+
 }

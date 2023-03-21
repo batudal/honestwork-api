@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/validator"
 	"github.com/takez0o/honestwork-api/utils/web3"
@@ -28,6 +29,8 @@ func HandleGetJobs(address string) []schema.Job {
 	job_index_controller := controller.NewJobIndexer("job_index")
 	jobs, err := job_index_controller.GetJobs(address)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return []schema.Job{}
 	}
 	return jobs
@@ -37,6 +40,8 @@ func HandleGetAllJobs(sort_field string, ascending bool) []schema.Job {
 	job_index_controller := controller.NewJobIndexer("job_index")
 	jobs, err := job_index_controller.GetAllJobs()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetAllJobs")
 		return []schema.Job{}
 	}
 	return jobs
@@ -46,6 +51,8 @@ func HandleGetJobsLimit(offset int, size int) []schema.Job {
 	job_index_controller := controller.NewJobIndexer("job_index")
 	jobs, err := job_index_controller.GetAllJobsLimit(offset, size)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetJobsLimit")
 		return []schema.Job{}
 	}
 	return jobs
@@ -74,21 +81,29 @@ func HandleAddJob(address string, signature string, body []byte) string {
 	var job schema.Job
 	err := json.Unmarshal(body, &job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return err.Error()
 	}
 
 	transaction_controller := controller.NewTransactionController(job.TxHash)
 	_, err = transaction_controller.GetTransaction()
 	if err == nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return "Transaction already consumed."
 	}
 	err = transaction_controller.AddTransaction(job.TxHash)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return err.Error()
 	}
 
 	err = validator.ValidateJobInput(&job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return err.Error()
 	}
 
@@ -103,17 +118,23 @@ func HandleAddJob(address string, signature string, body []byte) string {
 
 	amount, err := web3.CalculatePayment(&job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return err.Error()
 	}
 
 	err = web3.CheckOutstandingPayment(address, job.TokenPaid, amount, job.TxHash)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return err.Error()
 	}
 
 	job_controller := controller.NewJobController(address, job.Slot)
 	err = job_controller.SetJob(&job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddJob")
 		return err.Error()
 	}
 	return "success"
@@ -123,6 +144,8 @@ func HandleUpdateJob(address string, signature string, body []byte) string {
 	var job schema.Job
 	err := json.Unmarshal(body, &job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleUpdateJob")
 		return err.Error()
 	}
 
@@ -141,12 +164,16 @@ func HandleUpdateJob(address string, signature string, body []byte) string {
 
 	err = validator.ValidateJobInput(&job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleUpdateJob - validate job input")
 		return err.Error()
 	}
 
 	job_controller := controller.NewJobController(address, job.Slot)
 	err = job_controller.SetJob(&job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleUpdateJob - set job")
 		return err.Error()
 	}
 	return "success"
@@ -162,6 +189,8 @@ func HandleApplyJob(applicant_address string, signature string, recruiter_addres
 	var application schema.Application
 	err := json.Unmarshal(body, &application)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleApplyJob - unmarshal body")
 		return err.Error()
 	}
 	application.Date = time.Now().Unix()
@@ -169,11 +198,15 @@ func HandleApplyJob(applicant_address string, signature string, recruiter_addres
 	// todo: check if a deal has started on this job
 	s, err := strconv.Atoi(slot)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleApplyJob - convert slot to int")
 		return err.Error()
 	}
 	job_controller := controller.NewJobController(recruiter_address, s)
 	existing_job, err := job_controller.GetJob()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleApplyJob - get job")
 		return err.Error()
 	}
 
@@ -185,17 +218,23 @@ func HandleApplyJob(applicant_address string, signature string, recruiter_addres
 	existing_job.Applications = append(existing_job.Applications, application)
 	err = job_controller.SetJob(&existing_job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleApplyJob - set job")
 		return err.Error()
 	}
 
 	user_controller := controller.NewUserController(applicant_address)
 	existing_user, err := user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleApplyJob - get user")
 		return err.Error()
 	}
 	existing_user.Applications = append(existing_user.Applications, application)
 	err = user_controller.SetUser(&existing_user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleApplyJob - set user")
 		return err.Error()
 	}
 

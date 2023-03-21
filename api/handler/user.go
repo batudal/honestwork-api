@@ -76,6 +76,8 @@ func HandleUserUpdate(address string, signature string, body []byte) string {
 	var new_user schema.User
 	err := json.Unmarshal(body, &new_user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleUserUpdate - json.Unmarshal")
 		return err.Error()
 	}
 
@@ -87,6 +89,8 @@ func HandleUserUpdate(address string, signature string, body []byte) string {
 	user_controller := controller.NewUserController(address)
 	existing_user, err := user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleUserUpdate - user_controller.GetUser")
 		return err.Error()
 	}
 

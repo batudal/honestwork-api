@@ -14,13 +14,13 @@ func AuthorizeMember(address string, signature string) error {
 	user, err := user_controller.GetUser()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "AuthorizeMember")
+		loggersentry.CaptureErrorMessage(err.Error() + "AuthorizeMember")
 		return err
 	}
 	result := crypto.VerifySignature(user.Salt, address, signature)
 	if !result {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException("Invalid signature" + "AuthorizeMember")
+		loggersentry.CaptureErrorMessage("Invalid signature" + "AuthorizeMember")
 		return errors.New("Invalid signature")
 	}
 	return nil
@@ -32,18 +32,20 @@ func AuthorizeGuest(address string, signature string) error {
 	fmt.Println("salt: ", salt)
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "AuthorizeGuest")
+		loggersentry.CaptureErrorMessage(err.Error() + "AuthorizeGuest")
 		return err
 	}
 	result := crypto.VerifySignature(salt, address, signature)
 	if !result {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage("Invalid signature" + "AuthorizeGuest")
 		return err
 	}
 	fmt.Println("verified: ", result)
 	err = salt_controller.DeleteSalt()
 	if err != nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException(err.Error() + "AuthorizeGuest-deletesalt")
+		loggersentry.CaptureErrorMessage(err.Error() + "AuthorizeGuest-deletesalt")
 		return err
 	}
 	fmt.Println("deleted salt: ", salt)
@@ -55,7 +57,7 @@ func AuthorizeUnknown(address string, signature string) error {
 	_, err := user_controller.GetUser()
 	if err == nil {
 		loggersentry.InitSentry()
-		loggersentry.CaptureErrorException("User already exists")
+		loggersentry.CaptureErrorMessage("User already exists")
 		return AuthorizeMember(address, signature)
 	}
 	return AuthorizeGuest(address, signature)
