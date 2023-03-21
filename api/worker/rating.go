@@ -9,6 +9,7 @@ import (
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
 	"github.com/takez0o/honestwork-api/utils/client"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
 )
@@ -57,6 +58,8 @@ func search(length int, f func(index int) bool) int {
 func fetchAllListers(redis *redisearch.Client) []string {
 	data, _, err := redis.Search(redisearch.NewQuery("*"))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return []string{}
 	}
 	var jobs []schema.Job
@@ -68,6 +71,8 @@ func fetchAllListers(redis *redisearch.Client) []string {
 		var job schema.Job
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
 		if err != nil {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error())
 		}
 		jobs = append(jobs, job)
 	}
@@ -86,6 +91,8 @@ func fetchAllListers(redis *redisearch.Client) []string {
 func fetchAllMembers(redis *redisearch.Client) []string {
 	data, _, err := redis.Search(redisearch.NewQuery("*"))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return []string{}
 	}
 	var members []string

@@ -11,6 +11,7 @@ import (
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/abi/hwescrow"
 	"github.com/takez0o/honestwork-api/utils/config"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 type DealWatcher struct {
@@ -23,10 +24,14 @@ func NewDealWatcher() *DealWatcher {
 func (r *DealWatcher) WatchDeals() {
 	conf, err := config.ParseConfig()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error loading config file")
 		log.Fatal(err)
 	}
 	client, err := ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error ethclient.Dial")
 		log.Fatal(err)
 	}
 	defer client.Close()
@@ -40,11 +45,15 @@ func updateDeals(conf *config.Config, client *ethclient.Client) {
 	escrow_address_hex := common.HexToAddress(conf.ContractAddresses.Escrow)
 	instance, err := hwescrow.NewHwescrow(escrow_address_hex, client)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error NewHwescrow")
 		fmt.Println("Error:", err)
 	}
 
 	deals, err := instance.GetDeals(nil)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error GetDeals")
 		fmt.Println("Error:", err)
 	}
 
@@ -52,6 +61,8 @@ func updateDeals(conf *config.Config, client *ethclient.Client) {
 		job_controller := controller.NewJobController(deal.Recruiter.String(), int(deal.JobId.Int64()))
 		job, err := job_controller.GetJob()
 		if err != nil {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error() + "error GetJob, deal.go")
 			fmt.Println("Error:", err)
 		}
 		if job.DealId == -1 {
