@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum"
@@ -28,7 +29,7 @@ func FetchUserNFT(address string) int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +57,7 @@ func FetchUserState(address string) int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,7 +84,7 @@ func FetchTokenTier(token_id int) int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -112,7 +113,7 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 
 	var client *ethclient.Client
 	if network_id == 42161 {
-		client, err = ethclient.Dial(conf.Network.Arbitrum.RPCURL)
+		client, err = ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -141,7 +142,7 @@ func FetchTotalSupply() int {
 		fmt.Println("Error:", err)
 	}
 
-	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -165,7 +166,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(conf.Network.Arbitrum.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 	if err != nil {
 		return err
 	}
@@ -184,7 +185,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 		return fmt.Errorf("tx to address mismatch")
 	}
 
-	if tx.ChainId().Int64() != conf.Network.Arbitrum.ID {
+	if int(tx.ChainId().Int64()) != conf.Network.Arbitrum.ID {
 		return fmt.Errorf("tx chain id mismatch")
 	}
 
@@ -272,12 +273,7 @@ func CalculatePayment(opts *schema.Job) (*big.Int, error) {
 }
 
 func CheckNFTOwner(user_address string, token_address string, token_id int) bool {
-	conf, err := config.ParseConfig()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -302,12 +298,7 @@ func CheckNFTOwner(user_address string, token_address string, token_id int) bool
 }
 
 func CheckENSOwner(user_address string, ens_name string) bool {
-	conf, err := config.ParseConfig()
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	client, err := ethclient.Dial(conf.Network.Eth.RPCURL)
+	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -329,7 +320,7 @@ func FetchAggregatedRating(user_address string) float64 {
 	}
 
 	var client *ethclient.Client
-	client, err = ethclient.Dial(conf.Network.Arbitrum.RPCURL)
+	client, err = ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 	if err != nil {
 		log.Fatal(err)
 	}

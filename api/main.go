@@ -4,10 +4,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
@@ -43,14 +45,21 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New())
 	app.Use(recover.New())
+	app.Use(limiter.New(limiter.Config{
+		Max:               50,
+		Expiration:        5 * time.Second,
+		LimiterMiddleware: limiter.SlidingWindow{},
+	}))
 
 	// start workers
 	rating_watcher := worker.NewRatingWatcher()
 	go rating_watcher.WatchRatings()
 	revenue_watcher := worker.NewRevenueWatcher()
 	go revenue_watcher.WatchRevenues()
-	// deal_watcher := worker.NewDealWatcher()
-	// go deal_watcher.WatchDeals()
+	event_subscriber := worker.NewEventSubscriber()
+	go event_subscriber.Subscribe()
+	deal_watcher := worker.NewDealWatcher()
+	go deal_watcher.WatchDeals()
 
 	api_v1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		return c.Next()
