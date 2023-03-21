@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/parser"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/web3"
@@ -16,7 +17,8 @@ func ValidateUserInput(user *schema.User, address string) bool {
 	err := validate.StructExcept(user, "watchlist", "favorites", "rating")
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println("Error:", err)
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error())
 		}
 		return false
 	}
@@ -39,6 +41,8 @@ func ValidateSkillInput(skill *schema.Skill) error {
 	err := validate.StructExcept(skill, "created_at", "user_address")
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error())
 			return err
 		}
 	}
@@ -54,6 +58,8 @@ func ValidateJobInput(job *schema.Job) error {
 	err := validate.StructExcept(job, "created_at", "application", "slot")
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error())
 			return err
 		}
 	}

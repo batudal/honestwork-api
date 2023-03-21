@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 
 	"github.com/takez0o/honestwork-api/api/handler"
 	"github.com/takez0o/honestwork-api/api/middleware"
@@ -25,10 +26,15 @@ func main() {
 	conf, err := config.ParseConfig()
 	if err != nil {
 		log.Fatal(err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
+
 	}
 	err = godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 	}
 
 	app := fiber.New()
