@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 func Parse(content string) string {
@@ -11,6 +13,8 @@ func Parse(content string) string {
 	m := map[string]interface{}{}
 	err := json.Unmarshal([]byte(content), &m)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		log.Fatal(err)
 	}
 	return parseMapping(m, "")

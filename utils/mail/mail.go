@@ -5,6 +5,7 @@ import (
 
 	"github.com/mailazy/mailazy-go"
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 type MailClient struct {
@@ -23,7 +24,8 @@ func (mc *MailClient) sendNewApplicantMail(recruiter_address string, slot int, a
 	job_controller := controller.NewJobController(recruiter_address, slot)
 	job, err := job_controller.GetJob()
 	if err != nil {
-		fmt.Println(err)
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 	}
 
 	senderClient := mailazy.NewSenderClient(mc.Key, mc.Secret)

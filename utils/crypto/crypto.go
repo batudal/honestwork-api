@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 func VerifySignature(salt string, address string, signature string) bool {
@@ -18,6 +19,8 @@ func VerifySignature(salt string, address string, signature string) bool {
 
 	recovered, err := crypto.SigToPub(msg, sig)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return false
 	}
 

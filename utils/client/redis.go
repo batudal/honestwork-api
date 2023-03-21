@@ -9,16 +9,21 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 	"github.com/takez0o/honestwork-api/utils/config"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 func NewRedisClient() *redis.Client {
 	err := godotenv.Load()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error loading .env file")
 		log.Fatal("Error loading .env file")
 	}
 
 	conf, err := config.ParseConfig()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error loading config file")
 		log.Fatal("Error loading config file")
 	}
 
@@ -36,6 +41,8 @@ func NewRedisClient() *redis.Client {
 func NewRedisSearchClient(index_name string) *redisearch.Client {
 	err := godotenv.Load()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "error loading .env file")
 		log.Fatal("Error loading .env file")
 	}
 	password := os.Getenv("REDIS_PASSWORD")

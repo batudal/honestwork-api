@@ -31,6 +31,8 @@ func ValidateUserInput(user *schema.User, address string) bool {
 	}
 	bio_length := len(parser.Parse(user.Bio))
 	if bio_length < 200 || bio_length > 2000 {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage("Bio length is invalid")
 		return false
 	}
 	return true
@@ -48,6 +50,8 @@ func ValidateSkillInput(skill *schema.Skill) error {
 	}
 	description_length := len(parser.Parse(skill.Description))
 	if description_length < 200 || description_length > 2000 {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage("Description length is invalid")
 		return fmt.Errorf("Description length is invalid")
 	}
 	return nil
@@ -65,6 +69,8 @@ func ValidateJobInput(job *schema.Job) error {
 	}
 	description_length := len(parser.Parse(job.Description))
 	if description_length < 200 || description_length > 2000 {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage("Description length is invalid")
 		return fmt.Errorf("Description length is invalid")
 	}
 	return nil
