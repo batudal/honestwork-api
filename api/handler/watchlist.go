@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -12,6 +13,8 @@ func HandleGetWatchlist(address string) []*schema.Watchlist {
 	watchlist_controller := controller.NewWatchlistController(address)
 	watchlist, err := watchlist_controller.GetWatchlist()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return nil
 	}
 	return watchlist
@@ -21,6 +24,8 @@ func HandleAddWatchlist(address string, signature string, body []byte) string {
 	var watchlist_input schema.WatchlistInput
 	err := json.Unmarshal(body, &watchlist_input)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return err.Error()
 	}
 
@@ -36,6 +41,8 @@ func HandleAddWatchlist(address string, signature string, body []byte) string {
 	user_controller := controller.NewUserController(address)
 	user, err := user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return err.Error()
 	}
 	for _, app := range user.Watchlist {
@@ -47,6 +54,8 @@ func HandleAddWatchlist(address string, signature string, body []byte) string {
 
 	err = user_controller.SetUser(&user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return err.Error()
 	}
 	return "success"
@@ -62,6 +71,8 @@ func HandleRemoveWatchlist(address string, signature string, body []byte) string
 	user_controller := controller.NewUserController(address)
 	user, err := user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return err.Error()
 	}
 	for i, app := range user.Watchlist {
@@ -72,6 +83,8 @@ func HandleRemoveWatchlist(address string, signature string, body []byte) string
 
 	err = user_controller.SetUser(&user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return err.Error()
 	}
 	return "success"

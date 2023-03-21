@@ -6,6 +6,7 @@ import (
 
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/config"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/validator"
 	"github.com/takez0o/honestwork-api/utils/web3"
@@ -15,6 +16,8 @@ func HandleSignup(address string, signature string) string {
 	salt_controller := controller.NewSaltController(address)
 	salt, err := salt_controller.GetSalt()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleSignup")
 		return err.Error()
 	}
 
@@ -45,6 +48,8 @@ func HandleSignup(address string, signature string) string {
 
 	err = user_controller.SetUser(&user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleSignup")
 		return err.Error()
 	}
 	return "success"
@@ -54,6 +59,8 @@ func HandleGetUser(address string) schema.User {
 	user_controller := controller.NewUserController(address)
 	user, err := user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetUser")
 		return schema.User{}
 	}
 	return user
@@ -91,6 +98,8 @@ func HandleUserUpdate(address string, signature string, body []byte) string {
 
 	err = user_controller.SetUser(&new_user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleUserUpdate")
 		return err.Error()
 	}
 	return "success"

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -11,6 +12,8 @@ func HandleGetDeals(recruiter string, creator string) []*schema.Deal {
 	deal_controller := controller.NewDealController(recruiter, creator)
 	deals, err := deal_controller.GetDeals()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetDeals")
 		return []*schema.Deal{}
 	}
 	return deals
@@ -23,6 +26,8 @@ func HandleAddDeal(recruiter string, creator string, signature string, body []by
 	var deal *schema.Deal
 	err := json.Unmarshal(body, &deal)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddDeal")
 		return err.Error()
 	}
 	deal.Status = "offered"
@@ -31,6 +36,8 @@ func HandleAddDeal(recruiter string, creator string, signature string, body []by
 	deals = append(deals, deal)
 	err = deal_controller.SetDeal(deals)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddDeal")
 		return err.Error()
 	}
 
@@ -41,6 +48,8 @@ func HandleSignDeal(recruiter string, creator string, signature string, body []b
 	deal_controller := controller.NewDealController(recruiter, creator)
 	deals, err := deal_controller.GetDeals()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleSignDeal")
 		return err.Error()
 	}
 
@@ -52,6 +61,8 @@ func HandleSignDeal(recruiter string, creator string, signature string, body []b
 	var dealSignature DealSignature
 	err = json.Unmarshal(body, &dealSignature)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleSignDeal")
 		return err.Error()
 	}
 
@@ -64,6 +75,8 @@ func HandleSignDeal(recruiter string, creator string, signature string, body []b
 
 	err = deal_controller.SetDeal(deals)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleSignDeal")
 		return err.Error()
 	}
 	return "success"
@@ -73,6 +86,8 @@ func HandleExecuteDeal(recruiter string, creator string, signature string, body 
 	deal_controller := controller.NewDealController(recruiter, creator)
 	deals, err := deal_controller.GetDeals()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleExecuteDeal")
 		return err.Error()
 	}
 
@@ -83,6 +98,8 @@ func HandleExecuteDeal(recruiter string, creator string, signature string, body 
 	var dealExecution DealExecution
 	err = json.Unmarshal(body, &dealExecution)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleExecuteDeal")
 		return err.Error()
 	}
 
@@ -94,6 +111,8 @@ func HandleExecuteDeal(recruiter string, creator string, signature string, body 
 
 	err = deal_controller.SetDeal(deals)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleExecuteDeal")
 		return err.Error()
 	}
 	return "success"

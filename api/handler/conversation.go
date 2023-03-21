@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -12,6 +13,8 @@ func HandleGetConversations(address string) []*schema.Conversation {
 	conversation_controller := controller.NewConversationController(address)
 	conversations, err := conversation_controller.GetConversations()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetConversations")
 		return nil
 	}
 	return conversations
@@ -24,6 +27,8 @@ func HandleAddConversation(address string, signature string, body []byte) string
 	target_user := input_address{}
 	err := json.Unmarshal(body, &target_user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error())
 		return err.Error()
 	}
 	target_address := target_user.MatchedUser
@@ -80,11 +85,15 @@ func HandleAddConversation(address string, signature string, body []byte) string
 	conversation_controller := controller.NewConversationController(address)
 	err = conversation_controller.SetConversation(conversations)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddConversation - set conversation")
 		return err.Error()
 	}
 	target_conversation_controller := controller.NewConversationController(target_address)
 	err = target_conversation_controller.SetConversation(target_conversations)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddConversation")
 		return err.Error()
 	}
 	return "success"

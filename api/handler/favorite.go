@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -12,6 +13,8 @@ func HandleGetFavorites(address string) []*schema.Favorite {
 	favorite_controller := controller.NewFavoriteController(address)
 	favorite, err := favorite_controller.GetFavorites()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleGetFavorites")
 		return nil
 	}
 	return favorite
@@ -21,6 +24,8 @@ func HandleAddFavorite(address string, signature string, body []byte) string {
 	var favorite_input schema.FavoriteInput
 	err := json.Unmarshal(body, &favorite_input)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddFavorite")
 		return err.Error()
 	}
 
@@ -28,6 +33,8 @@ func HandleAddFavorite(address string, signature string, body []byte) string {
 	skill_user_controller := controller.NewUserController(skill.UserAddress)
 	skill_user, err := skill_user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddFavorite")
 		return err.Error()
 	}
 	favorite := schema.Favorite{
@@ -40,6 +47,8 @@ func HandleAddFavorite(address string, signature string, body []byte) string {
 	user_controller := controller.NewUserController(address)
 	user, err := user_controller.GetUser()
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleAddFavorite")
 		return err.Error()
 	}
 	for _, app := range user.Favorites {
@@ -60,6 +69,8 @@ func HandleRemoveFavorite(address string, signature string, body []byte) string 
 	var favorite_input schema.FavoriteInput
 	err := json.Unmarshal(body, &favorite_input)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleRemoveFavorite")
 		return err.Error()
 	}
 
@@ -76,6 +87,8 @@ func HandleRemoveFavorite(address string, signature string, body []byte) string 
 
 	err = user_controller.SetUser(&user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "handleRemoveFavorite")
 		return err.Error()
 	}
 	return "success"
