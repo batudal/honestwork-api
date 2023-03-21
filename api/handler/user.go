@@ -88,6 +88,10 @@ func HandleUserUpdate(address string, signature string, body []byte) string {
 	if new_user.ImageUrl == "" {
 		new_user.ImageUrl = existing_user.ImageUrl
 	}
+	new_user.Rating = existing_user.Rating
+	new_user.Applications = existing_user.Applications
+	new_user.Watchlist = existing_user.Watchlist
+	new_user.Favorites = existing_user.Favorites
 
 	err = user_controller.SetUser(&new_user)
 	if err != nil {
