@@ -55,7 +55,7 @@ type Skill struct {
 	Tags         []string `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links        []string `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	ImageUrls    []string `json:"image_urls" validate:"required,min=1,max=8,dive,omitempty,url"`
-	MinimumPrice int      `json:"minimum_price" validate:"required,min=200,max=1000000"`
+	MinimumPrice int      `json:"minimum_price" validate:"required,min=10,max=10000"`
 	Publish      bool     `json:"publish" validate:"boolean"`
 	CreatedAt    int64    `json:"created_at"`
 }
