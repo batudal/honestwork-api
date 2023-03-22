@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -289,7 +290,7 @@ func main() {
 	api_v1.Get("/whitelist", func(c *fiber.Ctx) error {
 		return c.JSON(handler.HandleWhitelist())
 	})
-
+	fmt.Println("API listening on port " + conf.API.Port)
 	app.Listen(":" + conf.API.Port)
 
 }

@@ -3,14 +3,17 @@ package loggersentry
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/getsentry/sentry-go"
 )
 
 func InitSentry() {
+
+	sentry_dsn := os.Getenv("SENTRY_DSN")
 	err := sentry.Init(sentry.ClientOptions{
-		Dsn:              "https://696fb708f8ab46d6834ba32a9ca4dfd0@o4504869668388864.ingest.sentry.io/4504870783680512",
+		Dsn:              sentry_dsn,
 		TracesSampleRate: 1.0,
 	})
 	if err != nil {

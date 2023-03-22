@@ -8,6 +8,7 @@ import (
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/takez0o/honestwork-api/api/repository"
 	"github.com/takez0o/honestwork-api/utils/client"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -37,10 +38,14 @@ func (j *JobController) GetJob() (schema.Job, error) {
 	var job schema.Job
 	data, err := repository.JSONRead("job:" + j.Address + ":" + strconv.Itoa(j.Slot))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetJob - JSONRead")
 		return schema.Job{}, err
 	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetJob - Unmarshal")
 		return schema.Job{}, err
 	}
 	return job, nil
@@ -65,11 +70,15 @@ func (j *JobIndexer) GetAllJobsFilter(filter_field string, filter_value float64)
 func (j *JobController) SetJob(job *schema.Job) error {
 	data, err := json.Marshal(job)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetJob - Marshal")
 		return err
 	}
 	// todo: update ttl -> how many days do they stay alive? 30 days?
 	err = repository.JSONWrite("job:"+j.Address+":"+strconv.Itoa(j.Slot), data, 0)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetJob - JSONWrite")
 		return err
 	}
 	return nil
@@ -78,6 +87,8 @@ func (j *JobController) SetJob(job *schema.Job) error {
 func (j *JobController) DeleteJob() error {
 	err := repository.JSONDelete("job:" + j.Address + ":" + strconv.Itoa(j.Slot))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "DeleteJob - JSONDelete")
 		return err
 	}
 	return nil
@@ -87,6 +98,8 @@ func getJobs(address string, sort_field string, ascending bool, offset int, size
 	redis := client.NewRedisSearchClient("jobIndex")
 	data, _, err := redis.Search(redisearch.NewQuery(address).SetSortBy(sort_field, ascending).Limit(0, size))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "getJobs - Search")
 		return []schema.Job{}, err
 	}
 
@@ -101,6 +114,8 @@ func getJobs(address string, sort_field string, ascending bool, offset int, size
 		var job schema.Job
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
 		if err != nil {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error() + "getJobs - Unmarshal")
 			return []schema.Job{}, err
 		}
 		jobs = append(jobs, job)
@@ -117,6 +132,8 @@ func getJobsFilter(sort_field string, ascending bool, filter_field string, filte
 	}
 	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, ascending).AddFilter(f))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "getJobsFilter - Search")
 		fmt.Println("Error:", err)
 	}
 	var jobs []schema.Job
@@ -130,6 +147,8 @@ func getJobsFilter(sort_field string, ascending bool, filter_field string, filte
 		var job schema.Job
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &job)
 		if err != nil {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error() + "getJobsFilter - Unmarshal")
 			return []schema.Job{}, err
 		}
 		jobs = append(jobs, job)

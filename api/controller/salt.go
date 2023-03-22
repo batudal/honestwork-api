@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/takez0o/honestwork-api/api/repository"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 )
 
 type SaltController struct {
@@ -21,6 +22,8 @@ func (u *SaltController) GetSalt() (string, error) {
 	salt, err := repository.StringRead("salt:" + u.Address)
 	fmt.Println("Salt:", salt)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetSalt - GetSalt")
 		return "", err
 	}
 	return salt, nil
@@ -32,6 +35,8 @@ func (u *SaltController) AddSalt(salt string) (string, error) {
 	ttl := time.Duration(24*30) * time.Hour
 	err := repository.StringWrite(salt_id, salt, ttl)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "AddSalt - AddSalt")
 		return "", err
 	}
 	return salt, nil
@@ -40,6 +45,8 @@ func (u *SaltController) AddSalt(salt string) (string, error) {
 func (u *SaltController) DeleteSalt() error {
 	err := repository.StringDelete("salt:" + u.Address)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "DeleteSalt - DeleteSalt")
 		return err
 	}
 	return nil

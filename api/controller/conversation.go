@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/takez0o/honestwork-api/api/repository"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -22,10 +23,14 @@ func (c *ConversationController) GetConversations() ([]*schema.Conversation, err
 	var conversations []*schema.Conversation
 	data, err := repository.JSONRead("conversations:" + c.Address)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetConversations - ")
 		return []*schema.Conversation{}, err
 	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &conversations)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetConversations - ")
 		return []*schema.Conversation{}, err
 	}
 	return conversations, nil
@@ -34,12 +39,15 @@ func (c *ConversationController) GetConversations() ([]*schema.Conversation, err
 func (c *ConversationController) SetConversation(conversations []*schema.Conversation) error {
 	data, err := json.Marshal(conversations)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetConversation - ")
 		return err
 	}
 	err = repository.JSONWrite("conversations:"+c.Address, data, 0)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetConversation - ")
 		return err
 	}
 	return nil
 }
-

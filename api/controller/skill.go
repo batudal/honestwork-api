@@ -8,6 +8,7 @@ import (
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/takez0o/honestwork-api/api/repository"
 	"github.com/takez0o/honestwork-api/utils/client"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -37,10 +38,14 @@ func (s *SkillController) GetSkill() (schema.Skill, error) {
 	var skill schema.Skill
 	data, err := repository.JSONRead("skill:" + s.Address + ":" + strconv.Itoa(s.Slot))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetSkill - JSONRead")
 		return schema.Skill{}, err
 	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &skill)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetSkill - Unmarshal")
 		return schema.Skill{}, err
 	}
 	return skill, nil
@@ -49,10 +54,14 @@ func (s *SkillController) GetSkill() (schema.Skill, error) {
 func (s *SkillController) SetSkill(skill *schema.Skill) error {
 	data, err := json.Marshal(skill)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetSkill - Marshal")
 		return err
 	}
 	err = repository.JSONWrite("skill:"+s.Address+":"+strconv.Itoa(s.Slot), data, 0)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetSkill - JSONWrite")
 		return err
 	}
 	return nil
@@ -75,6 +84,8 @@ func getSkills(address string, sort_field string, ascending bool, offset int, si
 	infield := "user_address"
 	data, _, err := redis.Search(redisearch.NewQuery(address).SetInFields(infield).SetSortBy(sort_field, ascending).Limit(0, size))
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetSkills - Search")
 		return []schema.Skill{}, err
 	}
 
@@ -89,6 +100,8 @@ func getSkills(address string, sort_field string, ascending bool, offset int, si
 		var skill schema.Skill
 		err = json.Unmarshal([]byte(fmt.Sprint(d.Properties[translationKeys[0]])), &skill)
 		if err != nil {
+			loggersentry.InitSentry()
+			loggersentry.CaptureErrorMessage(err.Error() + "GetSkills - Unmarshal")
 			return []schema.Skill{}, err
 		}
 		skills = append(skills, skill)
