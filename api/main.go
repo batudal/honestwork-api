@@ -99,8 +99,12 @@ func main() {
 		asc, _ := strconv.ParseBool(c.Params("order"))
 		return c.JSON(handler.HandleGetAllSkills(c.Params("sort"), asc))
 	})
+	// todo: add member auth
 	api_v1.Get("/skills/:address", func(c *fiber.Ctx) error {
 		return c.JSON(handler.HandleGetSkills(c.Params("address")))
+	})
+	api_v1.Get("/skills_published/:address", func(c *fiber.Ctx) error {
+		return c.JSON(handler.HandleGetPublishedSkills(c.Params("address")))
 	})
 	api_v1.Get("/skill/:address/:slot", func(c *fiber.Ctx) error {
 		return c.JSON(handler.HandleGetSkill(c.Params("address"), c.Params("slot")))

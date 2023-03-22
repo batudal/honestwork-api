@@ -35,6 +35,15 @@ func HandleGetSkills(address string) []schema.Skill {
 	return skills
 }
 
+func HandleGetPublishedSkills(address string) []schema.Skill {
+	skill_indexer := controller.NewSkillIndexer("skill_index")
+	skills, err := skill_indexer.GetPublishedSkills(address)
+	if err != nil {
+		return []schema.Skill{}
+	}
+	return skills
+}
+
 func HandleGetAllSkills(sort_field string, ascending bool) []schema.Skill {
 	skill_indexer := controller.NewSkillIndexer("skill_index")
 	skills, err := skill_indexer.GetAllSkills()
@@ -94,7 +103,6 @@ func HandleAddSkill(address string, signature string, body []byte) string {
 	skill.Slot = len(all_skills)
 	skill.CreatedAt = time.Now().Unix()
 
-	fmt.Println("Adding skill:", skill)
 	err = validator.ValidateSkillInput(&skill)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
@@ -137,7 +145,6 @@ func HandleUpdateSkill(address string, signature string, slot string, body []byt
 	if err != nil {
 		return err.Error()
 	}
-	fmt.Println("Skill:", new_skill)
 
 	for index, url := range new_skill.ImageUrls {
 		if url == "" {

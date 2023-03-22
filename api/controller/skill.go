@@ -62,6 +62,10 @@ func (s *SkillIndexer) GetSkills(address string) ([]schema.Skill, error) {
 	return getSkills(address, false, "created_at", true, 0, 10000)
 }
 
+func (s *SkillIndexer) GetPublishedSkills(address string) ([]schema.Skill, error) {
+	return getSkills(address, true, "created_at", true, 0, 10000)
+}
+
 func (s *SkillIndexer) GetAllSkills() ([]schema.Skill, error) {
 	return getSkills("*", true, "created_at", false, 0, 10000)
 }
