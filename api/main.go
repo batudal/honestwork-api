@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -96,11 +97,15 @@ func main() {
 		return c.JSON(handler.HandleGetSkillsLimit(offset, size))
 	})
 	api_v1.Get("/skills/:sort/:order", func(c *fiber.Ctx) error {
+		fmt.Println("Hit")
 		asc, _ := strconv.ParseBool(c.Params("order"))
 		return c.JSON(handler.HandleGetAllSkills(c.Params("sort"), asc))
 	})
-	// todo: add member auth
-	api_v1.Get("/skills/:address", func(c *fiber.Ctx) error {
+	api_v1.Get("/skills_member/:address/:signature", func(c *fiber.Ctx) error {
+		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
+		if err != nil {
+			return c.JSON(err)
+		}
 		return c.JSON(handler.HandleGetSkills(c.Params("address")))
 	})
 	api_v1.Get("/skills_published/:address", func(c *fiber.Ctx) error {
