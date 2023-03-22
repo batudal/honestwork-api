@@ -94,8 +94,10 @@ func HandleAddSkill(address string, signature string, body []byte) string {
 	skill.Slot = len(all_skills)
 	skill.CreatedAt = time.Now().Unix()
 
+	fmt.Println("Adding skill:", skill)
 	err = validator.ValidateSkillInput(&skill)
 	if err != nil {
+		fmt.Println("Error:", err.Error())
 		return err.Error()
 	}
 
@@ -149,6 +151,7 @@ func HandleUpdateSkill(address string, signature string, slot string, body []byt
 
 	new_skill.CreatedAt = existing_skill.CreatedAt
 	new_skill.UserAddress = existing_skill.UserAddress
+	new_skill.Slot = existing_skill.Slot
 
 	err = validator.ValidateSkillInput(&new_skill)
 	if err != nil {
