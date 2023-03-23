@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/takez0o/honestwork-api/api/repository"
+	"github.com/takez0o/honestwork-api/utils/loggersentry"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
@@ -22,10 +23,14 @@ func (u *UserController) GetUser() (schema.User, error) {
 	var user schema.User
 	data, err := repository.JSONRead("user:" + u.Address)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetUser - JSONRead")
 		return schema.User{}, err
 	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "GetUser - Unmarshal")
 		return schema.User{}, err
 	}
 	return user, nil
@@ -34,10 +39,14 @@ func (u *UserController) GetUser() (schema.User, error) {
 func (u *UserController) SetUser(user *schema.User) error {
 	data, err := json.Marshal(user)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetUser - Marshal")
 		return err
 	}
 	err = repository.JSONWrite("user:"+u.Address, data, 0)
 	if err != nil {
+		loggersentry.InitSentry()
+		loggersentry.CaptureErrorMessage(err.Error() + "SetUser - JSONWrite")
 		return err
 	}
 	return nil

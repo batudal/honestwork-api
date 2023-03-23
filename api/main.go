@@ -25,12 +25,14 @@ import (
 func main() {
 	// config/env setup
 	conf, err := config.ParseConfig()
+	fmt.Println(conf)
 	if err != nil {
 		loggersentry.InitSentry()
 		loggersentry.CaptureErrorMessage(err.Error())
 		log.Fatal("Error loading config file")
 
 	}
+
 	err = godotenv.Load()
 	if err != nil {
 		loggersentry.InitSentry()

@@ -24,3 +24,11 @@ network:
     id: 1
   arbitrum:
     id: 42161
+validation_settings:
+  min_description_length: 200
+  max_description_length: 2000
+
+#metadata
+#salt
+
+  

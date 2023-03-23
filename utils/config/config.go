@@ -45,6 +45,10 @@ type Config struct {
 			ID int `yaml:"id"`
 		} `yaml:"arbitrum"`
 	} `yaml:"network"`
+	ValidationSettings struct {
+		Min_description_length int `yaml:"min_description_length"`
+		Max_description_length int `yaml:"max_description_length"`
+	} `yaml:"validation_settings"`
 }
 
 func ParseConfig() (*Config, error) {
