@@ -25,7 +25,6 @@ import (
 func main() {
 	// config/env setup
 	conf, err := config.ParseConfig()
-	fmt.Println(conf)
 	if err != nil {
 		loggersentry.InitSentry()
 		loggersentry.CaptureErrorMessage(err.Error())
