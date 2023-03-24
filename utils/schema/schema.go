@@ -65,13 +65,13 @@ type Job struct {
 	Slot           int           `json:"slot"`
 	UserAddress    string        `json:"user_address" validate:"required,eth_addr"`
 	Username       string        `json:"username" validate:"required,min=5,max=50"`
-	TokenPaid      string        `json:"token_paid" validate:"required,eth_addr"`
+	TokenPaid      string        `json:"token_paid" validate:"eth_addr"`
 	Title          string        `json:"title" validate:"required,min=5,max=50"`
 	Description    string        `json:"description" validate:"required"` // custom
 	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
-	Budget         int           `json:"budget" validate:"required,min=500,max=1000000"`
-	TimeZone       string        `json:"timezone" validate:"oneof='UTC-12' 'UTC-11' 'UTC-10' 'UTC-9' 'UTC-8' 'UTC-7' 'UTC-6' 'UTC-5' 'UTC-4' 'UTC-3' 'UTC-2' 'UTC-1' 'UTC' 'UTC+1' 'UTC+2' 'UTC+3' 'UTC+4' 'UTC+5' 'UTC+6' 'UTC+7' 'UTC+8' 'UTC+9' 'UTC+10' 'UTC+11' 'UTC+12' 'UTC+13' 'UTC+14'"`
+	Budget         int           `json:"budget" validate:"required,min=200,max=100000"`
+	Timezone       int           `json:"timezone" validate:"required,min=-14,max=14"`
 	TokensAccepted []Network     `json:"tokens_accepted" validate:"required,min=1"`
 	StickyDuration int64         `json:"sticky_duration" validate:"omitempty,lte=30"`
 	CreatedAt      int64         `json:"created_at"`
