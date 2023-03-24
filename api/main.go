@@ -48,7 +48,7 @@ func main() {
 	app.Use(recover.New())
 	app.Use(limiter.New(limiter.Config{
 		Max:               50,
-		Expiration:        5 * time.Second,
+		Expiration:        1 * time.Second,
 		LimiterMiddleware: limiter.SlidingWindow{},
 	}))
 
