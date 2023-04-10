@@ -36,9 +36,6 @@ func NewJobIndexer(index_name string) *JobIndexer {
 func (j *JobController) GetJob() (schema.Job, error) {
 	var job schema.Job
 	data, err := repository.JSONRead("job:" + j.Address + ":" + strconv.Itoa(j.Slot))
-	fmt.Println("Given data:", j.Address, j.Slot)
-	fmt.Println("Reading data:", data)
-	fmt.Println("Error:", err)
 	if err != nil {
 		return schema.Job{}, err
 	}
@@ -46,6 +43,7 @@ func (j *JobController) GetJob() (schema.Job, error) {
 	if err != nil {
 		return schema.Job{}, err
 	}
+	fmt.Println("Job:", job)
 	return job, nil
 }
 
