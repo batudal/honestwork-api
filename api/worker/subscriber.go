@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -73,7 +72,7 @@ func (r *EventSubscriber) Subscribe() {
 	for {
 		select {
 		case err := <-sub.Err():
-			fmt.Println("Error:", err)
+			log.Fatal(err)
 		case log := <-logs:
 			if log.Topics[0] == logOfferCreatedHash {
 				var offerEvent OfferEvent
@@ -89,7 +88,7 @@ func updateJob(conf *config.Config, address string, slot int) {
 	job_controller := controller.NewJobController(address, slot)
 	job, err := job_controller.GetJob()
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatal(err)
 	}
 	if job.UserAddress == address && job.DealId == -1 {
 		job.DealId = slot

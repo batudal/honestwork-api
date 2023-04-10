@@ -26,12 +26,12 @@ import (
 func FetchUserNFT(address string) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer client.Close()
 
@@ -39,14 +39,14 @@ func FetchUserNFT(address string) int {
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	user_address_hex := common.HexToAddress(address)
 	index := big.NewInt(0)
 	token_id, err := instance.TokenOfOwnerByIndex(nil, user_address_hex, index)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return int(token_id.Int64())
 }
@@ -54,25 +54,25 @@ func FetchUserNFT(address string) int {
 func FetchUserState(address string) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	user_address_hex := common.HexToAddress(address)
 	state, err := instance.GetUserTier(nil, user_address_hex)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	client.Close()
 	return int(state.Int64())
@@ -81,25 +81,25 @@ func FetchUserState(address string) int {
 func FetchTokenTier(token_id int) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	token_id_big := big.NewInt(int64(token_id))
 	state, err := instance.GetTokenTier(nil, token_id_big)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	client.Close()
 	return int(state.Int64())
@@ -108,14 +108,14 @@ func FetchTokenTier(token_id int) int {
 func FetchNFTRevenue(network_id int, token_id int) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
 	var client *ethclient.Client
 	if network_id == 42161 {
 		client, err = ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 	}
 	defer client.Close()
@@ -123,12 +123,12 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 	registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
 	instance, err := hwregistry.NewHwregistry(registry_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	revenue, err := instance.GetNFTGrossRevenue(nil, big.NewInt(int64(token_id)))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	revenue_normalized := new(big.Int)
@@ -139,23 +139,23 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 func FetchTotalSupply() int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	total_supply, err := instance.TotalSupply(nil)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	client.Close()
 	return int(total_supply.Int64())
@@ -316,31 +316,31 @@ func CheckENSOwner(user_address string, ens_name string) bool {
 func FetchAggregatedRating(user_address string) float64 {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 
 	var client *ethclient.Client
 	client, err = ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	defer client.Close()
 
 	escrow_address_hex := common.HexToAddress(conf.ContractAddresses.Escrow)
 	instance, err := hwescrow.NewHwescrow(escrow_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	user_address_hex := common.HexToAddress(user_address)
 	rating, err := instance.GetAggregatedRating(nil, user_address_hex)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	precision, err := instance.GetPrecision(nil)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	rating_normalized := float64(rating.Int64()) / float64(precision.Int64())
 	return rating_normalized

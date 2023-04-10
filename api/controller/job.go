@@ -117,7 +117,7 @@ func getJobsFilter(sort_field string, ascending bool, filter_field string, filte
 	}
 	data, _, err := redis.Search(redisearch.NewQuery("*").SetSortBy(sort_field, ascending).AddFilter(f))
 	if err != nil {
-		fmt.Println("Error:", err)
+		panic(err)
 	}
 	var jobs []schema.Job
 	for _, d := range data {
