@@ -26,7 +26,7 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Patch("/users/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleUserUpdate(c.Params("address"), c.Params("signature"), c.Body()))
 	})
@@ -50,7 +50,7 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Get("/skills_member/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleGetSkills(c.Params("address")))
 	})
@@ -66,7 +66,7 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Patch("/skills/:address/:signature/:slot", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleUpdateSkill(c.Params("address"), c.Params("signature"), c.Params("slot"), c.Body()))
 	})
@@ -99,21 +99,21 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Post("/jobs/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleAddJob(c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Patch("/jobs/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleUpdateJob(c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Post("/jobs/apply/:address/:signature/:recruiter_address/:slot/", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleApplyJob(c.Params("address"), c.Params("signature"), c.Params("recruiter_address"), c.Params("slot"), c.Body()))
 	})
@@ -125,14 +125,14 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Post("/watchlist/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleAddWatchlist(c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Delete("/watchlist/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleRemoveWatchlist(c.Params("address"), c.Params("signature"), c.Body()))
 	})
@@ -147,14 +147,14 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Post("/favorites/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleAddFavorite(c.Params("address"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Delete("/favorites/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleRemoveFavorite(c.Params("address"), c.Params("signature"), c.Body()))
 	})
@@ -172,7 +172,7 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Post("/conversations/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeUnknown(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleAddConversation(c.Params("address"), c.Params("signature"), c.Body()))
 	})
@@ -187,21 +187,21 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Post("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeGuest(c.Params("recruiter"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleAddDeal(c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Patch("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeMember(c.Params("creator"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleSignDeal(c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
 	})
 	api_v1.Delete("/deals/:recruiter/:creator/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeGuest(c.Params("recruiter"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON(handler.HandleExecuteDeal(c.Params("recruiter"), c.Params("creator"), c.Params("signature"), c.Body()))
 	})
@@ -216,7 +216,7 @@ func setRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Get("/verify/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeUnknown(c.Params("address"), c.Params("signature"))
 		if err != nil {
-			return c.JSON(err)
+			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
 		}
 		return c.JSON("success")
 	})

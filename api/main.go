@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/joho/godotenv"
 
 	"github.com/takez0o/honestwork-api/utils/config"
@@ -46,8 +47,11 @@ func main() {
 			client_key: client_password,
 		},
 	}))
+	app.Use(requestid.New())
 	app.Use(logger.New())
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: os.Getenv("CLIENT_DOMAIN"),
+	}))
 	app.Use(recover.New())
 	app.Use(limiter.New(limiter.Config{
 		Max:               50,
