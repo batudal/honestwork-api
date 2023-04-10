@@ -2,7 +2,7 @@ package worker
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"math/big"
 	"os"
 	"strings"
@@ -36,11 +36,11 @@ func NewEventSubscriber() *EventSubscriber {
 func (r *EventSubscriber) Subscribe() {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error parsing config")
 	}
 	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WSS"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error dialing Arbitrum WSS")
 	}
 
 	contractAddress := common.HexToAddress(conf.ContractAddresses.Escrow)
@@ -51,12 +51,12 @@ func (r *EventSubscriber) Subscribe() {
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error subscribing to filter logs")
 	}
 
 	escrow_abi, err := abi.JSON(strings.NewReader(string(hwescrow.HwescrowABI)))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error parsing ABI")
 	}
 	type OfferEvent struct {
 		Recruiter    common.Address
@@ -72,7 +72,7 @@ func (r *EventSubscriber) Subscribe() {
 	for {
 		select {
 		case err := <-sub.Err():
-			log.Fatal(err)
+			fmt.Printf("Error in subscription: %v", err)
 		case log := <-logs:
 			if log.Topics[0] == logOfferCreatedHash {
 				var offerEvent OfferEvent
@@ -88,7 +88,7 @@ func updateJob(conf *config.Config, address string, slot int) {
 	job_controller := controller.NewJobController(address, slot)
 	job, err := job_controller.GetJob()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error getting job")
 	}
 	if job.UserAddress == address && job.DealId == -1 {
 		job.DealId = slot
