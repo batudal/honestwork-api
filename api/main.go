@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/getsentry/sentry-go"
+	"github.com/gofiber/contrib/fibersentry"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -50,6 +52,16 @@ func main() {
 		Max:               50,
 		Expiration:        1 * time.Second,
 		LimiterMiddleware: limiter.SlidingWindow{},
+	}))
+
+	_ = sentry.Init(sentry.ClientOptions{
+		Dsn:              os.Getenv("SENTRY_DSN"),
+		Debug:            true,
+		AttachStacktrace: true,
+	})
+	app.Use(fibersentry.New(fibersentry.Config{
+		Repanic:         true,
+		WaitForDelivery: false,
 	}))
 
 	// start workers
