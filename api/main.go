@@ -16,6 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/joho/godotenv"
 
+	"github.com/takez0o/honestwork-api/api/worker"
 	"github.com/takez0o/honestwork-api/utils/config"
 )
 
@@ -68,6 +69,6 @@ func main() {
 		WaitForDelivery: false,
 	}))
 
-	startWorkers()
+	worker.Start()
 	setRoutes(app, conf)
 }
