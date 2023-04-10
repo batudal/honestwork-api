@@ -41,10 +41,8 @@ func (j *JobController) GetJob() (schema.Job, error) {
 	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &job)
 	if err != nil {
-		fmt.Println("Error:", err)
 		return schema.Job{}, err
 	}
-	fmt.Println("Job:", job)
 	return job, nil
 }
 
