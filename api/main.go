@@ -64,5 +64,6 @@ func main() {
 		WaitForDelivery: false,
 	}))
 
+	startWorkers()
 	setRoutes(app, conf)
 }
