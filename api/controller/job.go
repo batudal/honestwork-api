@@ -38,6 +38,7 @@ func (j *JobController) GetJob() (schema.Job, error) {
 	data, err := repository.JSONRead("job:" + j.Address + ":" + strconv.Itoa(j.Slot))
 	fmt.Println("Given data:", j.Address, j.Slot)
 	fmt.Println("Reading data:", data)
+	fmt.Println("Error:", err)
 	if err != nil {
 		return schema.Job{}, err
 	}
