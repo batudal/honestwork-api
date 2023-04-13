@@ -48,7 +48,7 @@ type Config struct {
 }
 
 func ParseConfig() (*Config, error) {
-	data, err := os.ReadFile("../config.yaml")
+	data, err := os.ReadFile("config.yaml")
 	if err != nil {
 		return nil, err
 	}

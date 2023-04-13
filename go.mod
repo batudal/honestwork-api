@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/RediSearch/redisearch-go v1.1.1
+	github.com/bwmarrin/discordgo v0.27.1
 	github.com/ethereum/go-ethereum v1.11.3
 	github.com/getsentry/sentry-go v0.20.0
 	github.com/go-playground/validator/v10 v10.11.1

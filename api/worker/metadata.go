@@ -52,7 +52,7 @@ func NewRevenueWatcher() *RevenueWatcher {
 func (r *RevenueWatcher) WatchRevenues() {
 	for {
 		fetchAllRevenues()
-		time.Sleep(time.Duration(30) * time.Minute)
+		time.Sleep(time.Duration(4) * time.Hour)
 	}
 }
 
