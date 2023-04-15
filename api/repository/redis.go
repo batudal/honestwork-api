@@ -8,8 +8,10 @@ import (
 )
 
 func JSONRead(record_id string) (interface{}, error) {
+	start := time.Now()
 	redis := client.NewRedisClient()
 	defer redis.Close()
+	defer fmt.Println("JSONRead:", time.Since(start))
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		return nil, err
@@ -41,7 +43,6 @@ func StringRead(record_id string) (string, error) {
 	redis := client.NewRedisClient()
 	defer redis.Close()
 	data, err := redis.Get(redis.Context(), record_id).Result()
-	fmt.Println("Data:", data)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +52,6 @@ func StringRead(record_id string) (string, error) {
 func StringWrite(record_id string, data string, ttl time.Duration) error {
 	redis := client.NewRedisClient()
 	defer redis.Close()
-	fmt.Println("Writing string:", record_id, data, ttl)
 	err := redis.Set(redis.Context(), record_id, data, ttl).Err()
 	if err != nil {
 		return err

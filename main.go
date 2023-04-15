@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/helmet/v2"
 	"github.com/joho/godotenv"
 
 	"github.com/bwmarrin/discordgo"
@@ -38,6 +39,7 @@ func main() {
 	}
 	app := fiber.New()
 	app.Static("/", "./static")
+	defer route.SetRoutes(app, conf)
 
 	guild_id := os.Getenv("DISCORD_GUILD_ID")
 	bot_token := os.Getenv("DISCORD_BOT_TOKEN")
@@ -83,7 +85,7 @@ func main() {
 		Repanic:         true,
 		WaitForDelivery: false,
 	}))
-
+	app.Use(helmet.New())
 	worker.Start()
-	route.SetRoutes(app, conf)
+
 }

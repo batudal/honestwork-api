@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/takez0o/honestwork-api/api/controller"
@@ -53,6 +54,7 @@ func HandleSignup(address string, signature string) string {
 func HandleGetUser(address string) schema.User {
 	user_controller := controller.NewUserController(address)
 	user, err := user_controller.GetUser()
+	fmt.Println("Error:", err)
 	if err != nil {
 		return schema.User{}
 	}

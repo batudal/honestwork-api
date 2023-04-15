@@ -12,6 +12,11 @@ type UserController struct {
 	Address string
 }
 
+type UserControllerInterface interface {
+	GetUser() (schema.User, error)
+	GetUser2() (schema.User, error)
+}
+
 func NewUserController(address string) *UserController {
 	return &UserController{
 		Address: address,
@@ -25,6 +30,17 @@ func (u *UserController) GetUser() (schema.User, error) {
 		return schema.User{}, err
 	}
 	err = json.Unmarshal([]byte(fmt.Sprint(data)), &user)
+	if err != nil {
+		return schema.User{}, err
+	}
+	return user, nil
+}
+
+func (u *UserController) GetUser2() (schema.User, error) {
+	var user schema.User
+	data := repository.Get("users", "address", u.Address)
+	fmt.Println("Data:", data)
+	err := json.Unmarshal([]byte(fmt.Sprint(data)), &user)
 	if err != nil {
 		return schema.User{}, err
 	}

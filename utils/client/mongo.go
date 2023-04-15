@@ -23,6 +23,5 @@ func NewMongoClient() *mongo.Client {
 	if err != nil {
 		panic(err)
 	}
-
 	return client
 }
