@@ -3,7 +3,6 @@ package web3
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/getsentry/sentry-go"
 	"github.com/wealdtech/go-ens/v3"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -26,12 +26,12 @@ import (
 func FetchUserNFT(address string) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	defer client.Close()
 
@@ -39,14 +39,14 @@ func FetchUserNFT(address string) int {
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	user_address_hex := common.HexToAddress(address)
 	index := big.NewInt(0)
 	token_id, err := instance.TokenOfOwnerByIndex(nil, user_address_hex, index)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	return int(token_id.Int64())
 }
@@ -54,25 +54,25 @@ func FetchUserNFT(address string) int {
 func FetchUserState(address string) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	user_address_hex := common.HexToAddress(address)
 	state, err := instance.GetUserTier(nil, user_address_hex)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	client.Close()
 	return int(state.Int64())
@@ -81,25 +81,25 @@ func FetchUserState(address string) int {
 func FetchTokenTier(token_id int) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	token_id_big := big.NewInt(int64(token_id))
 	state, err := instance.GetTokenTier(nil, token_id_big)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	client.Close()
 	return int(state.Int64())
@@ -108,14 +108,14 @@ func FetchTokenTier(token_id int) int {
 func FetchNFTRevenue(network_id int, token_id int) int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	var client *ethclient.Client
 	if network_id == 42161 {
 		client, err = ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 		if err != nil {
-			panic(err)
+			sentry.CaptureException(err)
 		}
 	}
 	defer client.Close()
@@ -123,12 +123,12 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 	registry_address_hex := common.HexToAddress(conf.ContractAddresses.Registry)
 	instance, err := hwregistry.NewHwregistry(registry_address_hex, client)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	revenue, err := instance.GetNFTGrossRevenue(nil, big.NewInt(int64(token_id)))
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	revenue_normalized := new(big.Int)
@@ -139,23 +139,23 @@ func FetchNFTRevenue(network_id int, token_id int) int {
 func FetchTotalSupply() int {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	total_supply, err := instance.TotalSupply(nil)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	client.Close()
 	return int(total_supply.Int64())
@@ -221,7 +221,7 @@ func CheckOutstandingPayment(user_address string, token_address string, amount *
 
 	contract_abi, err := abi.JSON(strings.NewReader(string(hwlisting.HwlistingABI)))
 	if err != nil {
-		log.Fatal(err)
+		sentry.CaptureException(err)
 	}
 
 	//todo: multiple events scenario
@@ -275,14 +275,14 @@ func CalculatePayment(opts *schema.Job) (*big.Int, error) {
 func CheckNFTOwner(user_address string, token_address string, token_id int) bool {
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		sentry.CaptureException(err)
 	}
 
 	nft_address_hex := common.HexToAddress(token_address)
 
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
-		log.Fatal(err)
+		sentry.CaptureException(err)
 	}
 
 	user_address_hex := common.HexToAddress(user_address)
@@ -300,7 +300,7 @@ func CheckNFTOwner(user_address string, token_address string, token_id int) bool
 func CheckENSOwner(user_address string, ens_name string) bool {
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
-		log.Fatal(err)
+		sentry.CaptureException(err)
 	}
 
 	address, err := ens.Resolve(client, ens_name)
@@ -316,31 +316,31 @@ func CheckENSOwner(user_address string, ens_name string) bool {
 func FetchAggregatedRating(user_address string) float64 {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	var client *ethclient.Client
 	client, err = ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	defer client.Close()
 
 	escrow_address_hex := common.HexToAddress(conf.ContractAddresses.Escrow)
 	instance, err := hwescrow.NewHwescrow(escrow_address_hex, client)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	user_address_hex := common.HexToAddress(user_address)
 	rating, err := instance.GetAggregatedRating(nil, user_address_hex)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 
 	precision, err := instance.GetPrecision(nil)
 	if err != nil {
-		panic(err)
+		sentry.CaptureException(err)
 	}
 	rating_normalized := float64(rating.Int64()) / float64(precision.Int64())
 	return rating_normalized

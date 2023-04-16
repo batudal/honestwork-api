@@ -117,6 +117,6 @@ func writeJSON(revenue Revenue) {
 			}}}
 
 	file, _ := json.MarshalIndent(data, "", " ")
-
-	_ = ioutil.WriteFile(fmt.Sprintf("../static/metadata/%v", revenue.TokenId), file, 0644)
+	_ = ioutil.WriteFile(fmt.Sprintf("./static/metadata/%v", revenue.TokenId), file, 0644)
+	fmt.Println("Wrote metadata for token", revenue.TokenId)
 }

@@ -1,17 +1,14 @@
 package repository
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/takez0o/honestwork-api/utils/client"
 )
 
 func JSONRead(record_id string) (interface{}, error) {
-	start := time.Now()
 	redis := client.NewRedisClient()
 	defer redis.Close()
-	defer fmt.Println("JSONRead:", time.Since(start))
 	data, err := redis.Do(redis.Context(), "JSON.GET", record_id).Result()
 	if err != nil {
 		return nil, err

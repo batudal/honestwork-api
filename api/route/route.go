@@ -1,17 +1,32 @@
 package route
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/takez0o/honestwork-api/api/handler"
 	"github.com/takez0o/honestwork-api/api/middleware"
 	"github.com/takez0o/honestwork-api/utils/config"
-	"strconv"
 )
 
 func SetRoutes(app *fiber.App, conf *config.Config) {
 	api_v1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		return c.Next()
 	})
+
+	//-----------------//
+	//  workers        //
+	//-----------------//
+
+	// workers_api := app.Group("/api/workers/", func(c *fiber.Ctx) error {
+	// 	return c.Next()
+	// })
+	// workers_api.Patch("jobs/:address/:slot", func(c *fiber.Ctx) error {
+	// 	return c.JSON(handler.HandleConsumeJob(c.Params("address"), c.Params("slot"), c.Body()))
+	// })
+	// workers_api.Patch("rating/:address", func(c *fiber.Ctx) error {
+	// 	return c.JSON(handler.HandleUpdateRating(c.Params("address"), c.Body()))
+	// })
 
 	//-----------------//
 	//  users          //

@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/getsentry/sentry-go"
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/abi/hwescrow"
 	"github.com/takez0o/honestwork-api/utils/config"
@@ -36,11 +37,11 @@ func NewEventSubscriber() *EventSubscriber {
 func (r *EventSubscriber) Subscribe() {
 	conf, err := config.ParseConfig()
 	if err != nil {
-		fmt.Println("Error parsing config")
+		sentry.CaptureException(err)
 	}
 	client, err := ethclient.Dial(os.Getenv("ARBITRUM_WSS"))
 	if err != nil {
-		fmt.Println("Error dialing Arbitrum WSS")
+		sentry.CaptureException(err)
 	}
 
 	contractAddress := common.HexToAddress(conf.ContractAddresses.Escrow)
@@ -51,12 +52,12 @@ func (r *EventSubscriber) Subscribe() {
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		fmt.Println("Error subscribing to filter logs")
+		sentry.CaptureException(err)
 	}
 
 	escrow_abi, err := abi.JSON(strings.NewReader(string(hwescrow.HwescrowABI)))
 	if err != nil {
-		fmt.Println("Error parsing ABI")
+		sentry.CaptureException(err)
 	}
 	type OfferEvent struct {
 		Recruiter    common.Address
@@ -88,7 +89,7 @@ func updateJob(conf *config.Config, address string, slot int) {
 	job_controller := controller.NewJobController(address, slot)
 	job, err := job_controller.GetJob()
 	if err != nil {
-		fmt.Println("Error getting job")
+		sentry.CaptureException(err)
 	}
 	if job.UserAddress == address && job.DealId == -1 {
 		job.DealId = slot

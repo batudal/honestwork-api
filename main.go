@@ -87,5 +87,4 @@ func main() {
 	}))
 	app.Use(helmet.New())
 	worker.Start()
-
 }
