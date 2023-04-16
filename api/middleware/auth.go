@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/crypto"
@@ -24,7 +23,6 @@ func AuthorizeMember(address string, signature string) error {
 func AuthorizeGuest(address string, signature string) error {
 	salt_controller := controller.NewSaltController(address)
 	salt, err := salt_controller.GetSalt()
-	fmt.Println("salt: ", salt)
 	if err != nil {
 		return err
 	}
@@ -32,12 +30,10 @@ func AuthorizeGuest(address string, signature string) error {
 	if !result {
 		return err
 	}
-	fmt.Println("verified: ", result)
 	err = salt_controller.DeleteSalt()
 	if err != nil {
 		return err
 	}
-	fmt.Println("deleted salt: ", salt)
 	return nil
 }
 

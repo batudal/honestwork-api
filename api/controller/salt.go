@@ -26,10 +26,9 @@ func (u *SaltController) GetSalt() (string, error) {
 	return salt, nil
 }
 
-// todo: remove hardcoded ttl
 func (u *SaltController) AddSalt(salt string) (string, error) {
 	salt_id := "salt:" + u.Address
-	ttl := time.Duration(24*30) * time.Hour
+	ttl := time.Duration(24*15) * time.Hour
 	err := repository.StringWrite(salt_id, salt, ttl)
 	if err != nil {
 		return "", err

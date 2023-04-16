@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -105,7 +104,6 @@ func HandleAddSkill(address string, signature string, body []byte) string {
 
 	err = validator.ValidateSkillInput(&skill)
 	if err != nil {
-		fmt.Println("Error:", err.Error())
 		return err.Error()
 	}
 

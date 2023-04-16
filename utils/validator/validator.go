@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/go-playground/validator/v10"
 
 	"github.com/takez0o/honestwork-api/utils/parser"
@@ -16,7 +17,7 @@ func ValidateUserInput(user *schema.User, address string) bool {
 	err := validate.StructExcept(user, "watchlist", "favorites", "rating")
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println("Error:", err)
+			sentry.CaptureException(err)
 		}
 		return false
 	}
@@ -39,8 +40,9 @@ func ValidateSkillInput(skill *schema.Skill) error {
 	err := validate.StructExcept(skill, "created_at", "user_address")
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			return err
+			sentry.CaptureException(err)
 		}
+		return err
 	}
 	description_length := len(parser.Parse(skill.Description))
 	if description_length < 200 || description_length > 2000 {
