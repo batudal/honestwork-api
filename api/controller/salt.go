@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/takez0o/honestwork-api/api/repository"
@@ -19,7 +18,6 @@ func NewSaltController(address string) *SaltController {
 
 func (u *SaltController) GetSalt() (string, error) {
 	salt, err := repository.StringRead("salt:" + u.Address)
-	fmt.Println("Salt:", salt)
 	if err != nil {
 		return "", err
 	}

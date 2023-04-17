@@ -95,7 +95,6 @@ func getSkills(address string, filter bool, sort_field string, ascending bool, o
 		if err != nil {
 			return []schema.Skill{}, err
 		}
-		fmt.Println("Skill:", skill)
 		if filter {
 			if skill.Publish {
 				skills = append(skills, skill)

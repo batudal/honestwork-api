@@ -3,98 +3,107 @@ package handler
 import (
 	"encoding/json"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/schema"
 )
 
-func HandleGetDeals(recruiter string, creator string) []*schema.Deal {
-	deal_controller := controller.NewDealController(recruiter, creator)
-	deals, err := deal_controller.GetDeals()
-	if err != nil {
-		return []*schema.Deal{}
+func HandleGetDeals() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		deal_controller := controller.NewDealController(c.Params("recruiter"), c.Params("creator"))
+		deals, err := deal_controller.GetDeals()
+		if err != nil {
+			return c.JSON([]*schema.Deal{})
+		}
+		return c.JSON(deals)
 	}
-	return deals
 }
 
-func HandleAddDeal(recruiter string, creator string, signature string, body []byte) string {
-	deal_controller := controller.NewDealController(recruiter, creator)
-	deals, _ := deal_controller.GetDeals()
+func HandleAddDeal() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		deal_controller := controller.NewDealController(c.Params("recruiter"), c.Params("creator"))
+		deals, _ := deal_controller.GetDeals()
 
-	var deal *schema.Deal
-	err := json.Unmarshal(body, &deal)
-	if err != nil {
-		return err.Error()
+		var deal *schema.Deal
+		err := json.Unmarshal(c.Body(), &deal)
+		if err != nil {
+			return err
+		}
+		deal.Status = "offered"
+		// todo: check if given job id exists and not consumed
+
+		deals = append(deals, deal)
+		err = deal_controller.SetDeal(deals)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON("success")
 	}
-	deal.Status = "offered"
-	// todo: check if given job id exists and not consumed
-
-	deals = append(deals, deal)
-	err = deal_controller.SetDeal(deals)
-	if err != nil {
-		return err.Error()
-	}
-
-	return "success"
 }
 
-func HandleSignDeal(recruiter string, creator string, signature string, body []byte) string {
-	deal_controller := controller.NewDealController(recruiter, creator)
-	deals, err := deal_controller.GetDeals()
-	if err != nil {
-		return err.Error()
-	}
+func HandleSignDeal() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		deal_controller := controller.NewDealController(c.Params("recruiter"), c.Params("creator"))
+		deals, err := deal_controller.GetDeals()
+		if err != nil {
+			return err
+		}
 
-	type DealSignature struct {
-		Slot      int    `json:"slot"`
-		Signature string `json:"signature"`
-	}
+		type DealSignature struct {
+			Slot      int    `json:"slot"`
+			Signature string `json:"signature"`
+		}
 
-	var dealSignature DealSignature
-	err = json.Unmarshal(body, &dealSignature)
-	if err != nil {
-		return err.Error()
-	}
+		var dealSignature DealSignature
+		err = json.Unmarshal(c.Body(), &dealSignature)
+		if err != nil {
+			return err
+		}
 
-	if dealSignature.Slot > len(deals) {
-		return "Wrong slot."
-	}
+		if dealSignature.Slot > len(deals) {
+			return fiber.NewError(fiber.StatusBadRequest, "Wrong slot.")
+		}
 
-	deals[dealSignature.Slot].Signature = dealSignature.Signature
-	deals[dealSignature.Slot].Status = "accepted"
+		deals[dealSignature.Slot].Signature = dealSignature.Signature
+		deals[dealSignature.Slot].Status = "accepted"
 
-	err = deal_controller.SetDeal(deals)
-	if err != nil {
-		return err.Error()
+		err = deal_controller.SetDeal(deals)
+		if err != nil {
+			return err
+		}
+		return c.JSON("success")
 	}
-	return "success"
 }
 
-func HandleExecuteDeal(recruiter string, creator string, signature string, body []byte) string {
-	deal_controller := controller.NewDealController(recruiter, creator)
-	deals, err := deal_controller.GetDeals()
-	if err != nil {
-		return err.Error()
-	}
+func HandleExecuteDeal() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		deal_controller := controller.NewDealController(c.Params("recruiter"), c.Params("creator"))
+		deals, err := deal_controller.GetDeals()
+		if err != nil {
+			return err
+		}
 
-	type DealExecution struct {
-		Slot int `json:"slot"`
-	}
+		type DealExecution struct {
+			Slot int `json:"slot"`
+		}
 
-	var dealExecution DealExecution
-	err = json.Unmarshal(body, &dealExecution)
-	if err != nil {
-		return err.Error()
-	}
+		var dealExecution DealExecution
+		err = json.Unmarshal(c.Body(), &dealExecution)
+		if err != nil {
+			return err
+		}
 
-	if dealExecution.Slot > len(deals) {
-		return "Wrong slot."
-	}
+		if dealExecution.Slot > len(deals) {
+			return fiber.NewError(fiber.StatusBadRequest, "Wrong slot.")
+		}
 
-	deals[dealExecution.Slot].Status = "executed"
+		deals[dealExecution.Slot].Status = "executed"
 
-	err = deal_controller.SetDeal(deals)
-	if err != nil {
-		return err.Error()
+		err = deal_controller.SetDeal(deals)
+		if err != nil {
+			return err
+		}
+		return c.JSON("success")
 	}
-	return "success"
 }
