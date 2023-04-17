@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/takez0o/honestwork-api/api/controller"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/validator"
@@ -70,53 +71,59 @@ func HandleGetJobsFeed() []schema.Job {
 	return jobs
 }
 
-func HandleAddJob(address string, signature string, body []byte) string {
-	var job schema.Job
-	err := json.Unmarshal(body, &job)
-	if err != nil {
-		return err.Error()
-	}
+func HandleAddJob() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var job schema.Job
+		err := json.Unmarshal(c.Body(), &job)
+		if err != nil {
+			return err
+		}
 
-	transaction_controller := controller.NewTransactionController(job.TxHash)
-	_, err = transaction_controller.GetTransaction()
-	if err == nil {
-		return "Transaction already consumed."
-	}
-	err = transaction_controller.AddTransaction(job.TxHash)
-	if err != nil {
-		return err.Error()
-	}
+		transaction_controller := controller.NewTransactionController(job.TxHash)
+		_, err = transaction_controller.GetTransaction()
+		if err == nil {
+			return fiber.NewError(fiber.StatusPaymentRequired, "Transaction consumed previously")
+		}
+		err = transaction_controller.AddTransaction(job.TxHash)
+		if err != nil {
+			return err
+		}
 
-	err = validator.ValidateJobInput(&job)
-	if err != nil {
-		return err.Error()
-	}
+		if err == nil {
+			return err
+		}
 
-	job_indexer := controller.NewJobIndexer("job_index")
-	existing_jobs, err := job_indexer.GetJobs(address)
-	if err != nil {
-		return err.Error()
-	}
-	job.Slot = len(existing_jobs)
-	job.DealNetworkId = 0
-	job.DealId = -1
+		err = validator.ValidateJobInput(&job)
+		if err != nil {
+			return err
+		}
 
-	amount, err := web3.CalculatePayment(&job)
-	if err != nil {
-		return err.Error()
-	}
+		job_indexer := controller.NewJobIndexer("job_index")
+		existing_jobs, err := job_indexer.GetJobs(c.Params("address"))
+		if err != nil {
+			return err
+		}
+		job.Slot = len(existing_jobs)
+		job.DealNetworkId = 0
+		job.DealId = -1
 
-	err = web3.CheckOutstandingPayment(address, job.TokenPaid, amount, job.TxHash)
-	if err != nil {
-		return err.Error()
-	}
+		amount, err := web3.CalculatePayment(&job)
+		if err != nil {
+			return err
+		}
 
-	job_controller := controller.NewJobController(address, job.Slot)
-	err = job_controller.SetJob(&job)
-	if err != nil {
-		return err.Error()
+		err = web3.CheckOutstandingPayment(c.Params("address"), job.TokenPaid, amount, job.TxHash)
+		if err != nil {
+			return err
+		}
+
+		job_controller := controller.NewJobController(c.Params("address"), job.Slot)
+		err = job_controller.SetJob(&job)
+		if err != nil {
+			return err
+		}
+		return c.SendString("success")
 	}
-	return "success"
 }
 
 func HandleUpdateJob(address string, signature string, body []byte) string {

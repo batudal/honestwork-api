@@ -111,13 +111,10 @@ func SetRoutes(app *fiber.App, conf *config.Config) {
 	api_v1.Get("/jobs/feed", func(c *fiber.Ctx) error {
 		return c.JSON(handler.HandleGetJobsFeed())
 	})
-	api_v1.Post("/jobs/:address/:signature", func(c *fiber.Ctx) error {
-		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
-		if err != nil {
-			return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
-		}
-		return c.JSON(handler.HandleAddJob(c.Params("address"), c.Params("signature"), c.Body()))
-	})
+	api_v1.Post("/jobs/:address/:signature", middleware.AuthorizeGuest2(), handler.HandleAddJob())
+	// api_v1.Post("/jobs/:address/:signature", middleware.AuthorizeGuest2(), func(c *fiber.Ctx) error {
+	// 	return c.JSON(handler.HandleAddJob(c.Params("address"), c.Params("signature"), c.Body()))
+	// })
 	api_v1.Patch("/jobs/:address/:signature", func(c *fiber.Ctx) error {
 		err := middleware.AuthorizeGuest(c.Params("address"), c.Params("signature"))
 		if err != nil {
