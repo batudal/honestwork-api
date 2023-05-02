@@ -12,6 +12,28 @@ import (
 func VerifySignature(salt string, address string, signature string) bool {
 	sig := hexutil.MustDecode(signature)
 	msg := accounts.TextHash([]byte(salt))
+
+	if sig[crypto.RecoveryIDOffset] == 27 || sig[crypto.RecoveryIDOffset] == 28 {
+		sig[crypto.RecoveryIDOffset] -= 27 // Transform yellow paper V from 27/28 to 0/1
+	}
+
+	recovered, err := crypto.SigToPub(msg, sig)
+	if err != nil {
+		return false
+	}
+
+	recoveredAddr := crypto.PubkeyToAddress(*recovered)
+	return address == recoveredAddr.Hex()
+}
+
+func VerifyMember(salt string, address string, signature string) bool {
+	sig := hexutil.MustDecode(signature)
+	msg_raw := "HonestWork: Login\n" +
+		salt + "\n" +
+		"\n" +
+		"For more info: https://docs.honestwork.app"
+	msg := accounts.TextHash([]byte(msg_raw))
+
 	if sig[crypto.RecoveryIDOffset] == 27 || sig[crypto.RecoveryIDOffset] == 28 {
 		sig[crypto.RecoveryIDOffset] -= 27 // Transform yellow paper V from 27/28 to 0/1
 	}
