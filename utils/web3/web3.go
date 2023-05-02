@@ -264,7 +264,7 @@ func CalculatePayment(opts *schema.Job) (*big.Int, error) {
 	}
 
 	var service_fee = new(big.Int)
-	service_fee.SetString(conf.Settings.Jobs.ServiceFee, 10)
+	service_fee.SetString(conf.Settings.Jobs.ServiceFee, 0)
 
 	total_fee := new(big.Int)
 	total_fee.Add(extra, service_fee)

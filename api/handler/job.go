@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -101,20 +102,6 @@ func HandleAddJob() fiber.Handler {
 			return err
 		}
 
-		transaction_controller := controller.NewTransactionController(job.TxHash)
-		_, err = transaction_controller.GetTransaction()
-		if err == nil {
-			return fiber.NewError(fiber.StatusPaymentRequired, "Transaction consumed previously")
-		}
-		err = transaction_controller.AddTransaction(job.TxHash)
-		if err != nil {
-			return err
-		}
-
-		if err == nil {
-			return err
-		}
-
 		err = validator.ValidateJobInput(&job)
 		if err != nil {
 			return err
@@ -134,9 +121,20 @@ func HandleAddJob() fiber.Handler {
 			return err
 		}
 
-		err = web3.CheckOutstandingPayment(c.Params("address"), job.TokenPaid, amount, job.TxHash)
-		if err != nil {
-			return err
+		if amount.Cmp(big.NewInt(0)) != 0 {
+			transaction_controller := controller.NewTransactionController(job.TxHash)
+			_, err = transaction_controller.GetTransaction()
+			if err == nil {
+				return fiber.NewError(fiber.StatusPaymentRequired, "Transaction consumed previously")
+			}
+			err = transaction_controller.AddTransaction(job.TxHash)
+			if err != nil {
+				return err
+			}
+			err = web3.CheckOutstandingPayment(c.Params("address"), job.TokenPaid, amount, job.TxHash)
+			if err != nil {
+				return err
+			}
 		}
 
 		job_controller := controller.NewJobController(c.Params("address"), job.Slot)
@@ -144,7 +142,7 @@ func HandleAddJob() fiber.Handler {
 		if err != nil {
 			return err
 		}
-		return c.SendString("success")
+		return c.JSON("success")
 	}
 }
 
