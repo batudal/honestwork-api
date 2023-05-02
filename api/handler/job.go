@@ -2,12 +2,16 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"math/big"
+	"os"
 	"strconv"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/gofiber/fiber/v2"
 	"github.com/takez0o/honestwork-api/api/controller"
+	"github.com/takez0o/honestwork-api/utils/parser"
 	"github.com/takez0o/honestwork-api/utils/schema"
 	"github.com/takez0o/honestwork-api/utils/validator"
 	"github.com/takez0o/honestwork-api/utils/web3"
@@ -141,6 +145,46 @@ func HandleAddJob() fiber.Handler {
 		err = job_controller.SetJob(&job)
 		if err != nil {
 			return err
+		}
+		guild_id := os.Getenv("DISCORD_GUILD_ID")
+		bot_token := os.Getenv("DISCORD_BOT_TOKEN")
+		var s *discordgo.Session
+		s, err = discordgo.New("Bot " + bot_token)
+		if err != nil {
+			log.Fatalf("Invalid bot parameters(1): %v", err)
+		}
+		budget := strconv.Itoa(int(job.Budget))
+		timezone := strconv.Itoa(int(job.Timezone))
+		s.ChannelMessageSendEmbed(guild_id, &discordgo.MessageEmbed{
+			Title:       job.Title,
+			URL:         "https://honestwork.app/job/" + job.UserAddress + "/" + strconv.Itoa(job.Slot),
+			Color:       0xffd369,
+			Description: parser.Parse(job.Description)[:200] + "...",
+			Author: &discordgo.MessageEmbedAuthor{
+				Name:    job.Username,
+				IconURL: job.ImageUrl,
+			},
+			Timestamp: time.Now().Format(time.RFC3339),
+			Footer: &discordgo.MessageEmbedFooter{
+				Text:    "HonestWork Job Alerts",
+				IconURL: "https://honestwork-userfiles.fra1.cdn.digitaloceanspaces.com/hw-icon.png",
+			},
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "🤑 Budget",
+					Value:  "$" + budget,
+					Inline: true,
+				},
+				{
+					Name:   "🌍 Timezone",
+					Value:  "GMT " + timezone,
+					Inline: true,
+				},
+			},
+		})
+
+		if err != nil {
+			log.Fatalf("Message send err: %v", err)
 		}
 		return c.JSON("success")
 	}
