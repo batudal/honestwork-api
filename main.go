@@ -17,7 +17,6 @@ import (
 	"github.com/gofiber/helmet/v2"
 	"github.com/joho/godotenv"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/takez0o/honestwork-api/api/route"
 	"github.com/takez0o/honestwork-api/api/worker"
 	"github.com/takez0o/honestwork-api/utils/config"
@@ -40,19 +39,6 @@ func main() {
 	app := fiber.New()
 	app.Static("/", "./static")
 	defer route.SetRoutes(app, conf)
-
-	guild_id := os.Getenv("DISCORD_GUILD_ID")
-	bot_token := os.Getenv("DISCORD_BOT_TOKEN")
-
-	var s *discordgo.Session
-	s, err = discordgo.New("Bot " + bot_token)
-	if err != nil {
-		log.Fatalf("Invalid bot parameters(1): %v", err)
-	}
-	_, err = s.ChannelMessageSend(guild_id, "gm")
-	if err != nil {
-		log.Fatalf("Message send err: %v", err)
-	}
 
 	//-----------------//
 	//  middleware     //

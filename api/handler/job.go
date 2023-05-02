@@ -146,7 +146,7 @@ func HandleAddJob() fiber.Handler {
 		if err != nil {
 			return err
 		}
-		guild_id := os.Getenv("DISCORD_GUILD_ID")
+		guild_id := os.Getenv("DISCORD_GUILD_JOBS")
 		bot_token := os.Getenv("DISCORD_BOT_TOKEN")
 		var s *discordgo.Session
 		s, err = discordgo.New("Bot " + bot_token)
