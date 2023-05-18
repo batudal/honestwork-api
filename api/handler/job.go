@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -105,6 +106,7 @@ func HandleAddJob() fiber.Handler {
 		if err != nil {
 			return err
 		}
+		fmt.Println("Job timezone:", job.Timezone)
 
 		err = validator.ValidateJobInput(&job)
 		if err != nil {
@@ -154,7 +156,7 @@ func HandleAddJob() fiber.Handler {
 			log.Fatalf("Invalid bot parameters(1): %v", err)
 		}
 		budget := strconv.Itoa(int(job.Budget))
-		timezone := strconv.Itoa(int(job.Timezone))
+		timezone := strconv.Itoa(int(*job.Timezone))
 		s.ChannelMessageSendEmbed(guild_id, &discordgo.MessageEmbed{
 			Title:       job.Title,
 			URL:         "https://honestwork.app/job/" + job.UserAddress + "/" + strconv.Itoa(job.Slot),

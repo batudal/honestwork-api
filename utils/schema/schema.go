@@ -13,7 +13,7 @@ type User struct {
 	NFTAddress   string        `json:"nft_address" validate:"omitempty,eth_addr"`
 	NFTId        string        `json:"nft_id"` // custom
 	Email        string        `json:"email" validate:"omitempty,email"`
-	Timezone     string        `json:"timezone" validate:"oneof='UTC-12' 'UTC-11' 'UTC-10' 'UTC-9' 'UTC-8' 'UTC-7' 'UTC-6' 'UTC-5' 'UTC-4' 'UTC-3' 'UTC-2' 'UTC-1' 'UTC' 'UTC+1' 'UTC+2' 'UTC+3' 'UTC+4' 'UTC+5' 'UTC+6' 'UTC+7' 'UTC+8' 'UTC+9' 'UTC+10' 'UTC+11' 'UTC+12' 'UTC+13' 'UTC+14'"`
+	Timezone     int64         `json:"timezone" validate:"required,min=-12,max=14"`
 	Bio          string        `json:"bio"` // custom
 	Links        []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Rating       int64         `json:"rating"`
@@ -71,7 +71,7 @@ type Job struct {
 	Tags           []string      `json:"tags" validate:"required,min=1,max=3,dive,omitempty,min=2,max=20"`
 	Links          []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Budget         int           `json:"budget" validate:"required,min=200,max=100000"`
-	Timezone       int           `json:"timezone" validate:"required,min=-14,max=14"`
+	Timezone       *int64        `json:"timezone" validate:"required,min=-12,max=14"`
 	TokensAccepted []Network     `json:"tokens_accepted" validate:"required,min=1"`
 	StickyDuration int64         `json:"sticky_duration" validate:"omitempty,lte=30"`
 	CreatedAt      int64         `json:"created_at"`
