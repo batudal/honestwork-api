@@ -16,6 +16,7 @@ settings:
       14_days: 69000000
       30_days: 99000000
 contract_addresses:
+  starter_nft: 0x0
   membership_nft: 0xAa4837866FFF4AE5EfB043491Eb7Ff1d26f1319B
   job_payments: 0xDe36E0135286cB1CA0ae73726b46859884c2ef50
   registry: 0x610907faEb17Db469fDFcd2b7355c2094cCD1bAF

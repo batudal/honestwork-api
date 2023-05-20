@@ -13,7 +13,7 @@ type User struct {
 	NFTAddress   string        `json:"nft_address" validate:"omitempty,eth_addr"`
 	NFTId        string        `json:"nft_id"` // custom
 	Email        string        `json:"email" validate:"omitempty,email"`
-	Timezone     int64         `json:"timezone" validate:"required,min=-12,max=14"`
+	Timezone     *int64        `json:"timezone" validate:"required,min=-12,max=14"`
 	Bio          string        `json:"bio"` // custom
 	Links        []string      `json:"links" validate:"required,min=1,max=3,dive,omitempty,url"`
 	Rating       int64         `json:"rating"`

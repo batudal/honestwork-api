@@ -106,34 +106,30 @@ func HandleAddSkill() fiber.Handler {
 			max_allowed = conf.Settings.Skills.Tier_2
 		case 3:
 			max_allowed = conf.Settings.Skills.Tier_3
+		case 4: // starter nft
+			max_allowed = 1
 		}
-
 		skill_indexer := controller.NewSkillIndexer("skill_index")
 		skills, err := skill_indexer.GetSkills(c.Params("address"))
 		if len(skills) == max_allowed {
 			return fiber.ErrNotAcceptable
 		}
-
 		var skill schema.Skill
 		err = json.Unmarshal(c.Body(), &skill)
 		if err != nil {
 			return err
 		}
-
 		skill.Slot = len(skills)
 		skill.CreatedAt = time.Now().Unix()
-
 		err = validator.ValidateSkillInput(&skill)
 		if err != nil {
 			return err
 		}
-
 		skill_controller := controller.NewSkillController(c.Params("address"), skill.Slot)
 		err = skill_controller.SetSkill(&skill)
 		if err != nil {
 			return err
 		}
-
 		user_controller := controller.NewUserController(c.Params("address"))
 		existing_user, err := user_controller.GetUser()
 		var image_to_use string
@@ -183,7 +179,6 @@ func HandleAddSkill() fiber.Handler {
 				},
 			},
 		})
-
 		if err != nil {
 			log.Fatalf("Message send err: %v", err)
 		}

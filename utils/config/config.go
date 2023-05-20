@@ -32,6 +32,7 @@ type Config struct {
 		} `yaml:"jobs"`
 	} `yaml:"settings"`
 	ContractAddresses struct {
+		StarterNFT    string `yaml:"starter_nft"`
 		MembershipNFT string `yaml:"membership_nft"`
 		JobPayments   string `yaml:"job_payments"`
 		Registry      string `yaml:"registry"`

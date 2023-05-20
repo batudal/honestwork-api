@@ -15,6 +15,7 @@ import (
 	"github.com/wealdtech/go-ens/v3"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	// "github.com/takez0o/honestwork-api/utils/abi/starternft"
 	"github.com/takez0o/honestwork-api/utils/abi/honestworknft"
 	"github.com/takez0o/honestwork-api/utils/abi/hwescrow"
 	"github.com/takez0o/honestwork-api/utils/abi/hwlisting"
@@ -28,20 +29,16 @@ func FetchUserNFT(address string) int {
 	if err != nil {
 		sentry.CaptureException(err)
 	}
-
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		sentry.CaptureException(err)
 	}
 	defer client.Close()
-
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
-
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
 		sentry.CaptureException(err)
 	}
-
 	user_address_hex := common.HexToAddress(address)
 	index := big.NewInt(0)
 	token_id, err := instance.TokenOfOwnerByIndex(nil, user_address_hex, index)
@@ -56,27 +53,48 @@ func FetchUserState(address string) int {
 	if err != nil {
 		sentry.CaptureException(err)
 	}
-
 	client, err := ethclient.Dial(os.Getenv("ETH_RPC"))
 	if err != nil {
 		sentry.CaptureException(err)
 	}
-
+	defer client.Close()
 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.MembershipNFT)
-
 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
 	if err != nil {
 		sentry.CaptureException(err)
 	}
-
 	user_address_hex := common.HexToAddress(address)
 	state, err := instance.GetUserTier(nil, user_address_hex)
 	if err != nil {
 		sentry.CaptureException(err)
 	}
-	client.Close()
+	if state.Cmp(big.NewInt(0)) == 0 {
+
+	}
 	return int(state.Int64())
 }
+
+// func fetchStarterState() {
+// 	conf, err := config.ParseConfig()
+// 	if err != nil {
+// 		sentry.CaptureException(err)
+// 	}
+// 	client, err := ethclient.Dial(os.Getenv("ARBITRUM_RPC"))
+// 	if err != nil {
+// 		sentry.CaptureException(err)
+// 	}
+//   defer client.Close()
+// 	nft_address_hex := common.HexToAddress(conf.ContractAddresses.StarterNFT)
+// 	instance, err := honestworknft.NewHonestworknft(nft_address_hex, client)
+// 	if err != nil {
+// 		sentry.CaptureException(err)
+// 	}
+// 	user_address_hex := common.HexToAddress(address)
+// 	state, err := instance.GetUserTier(nil, user_address_hex)
+// 	if err != nil {
+// 		sentry.CaptureException(err)
+// 	}
+// }
 
 func FetchTokenTier(token_id int) int {
 	conf, err := config.ParseConfig()
