@@ -41,12 +41,10 @@ func updateDeals(conf *config.Config, client *ethclient.Client) {
 	if err != nil {
 		return
 	}
-
 	deals, err := instance.GetDeals(nil)
 	if err != nil {
 		return
 	}
-
 	for i, deal := range deals {
 		job_controller := controller.NewJobController(deal.Recruiter.String(), int(deal.JobId.Int64()))
 		job, _ := job_controller.GetJob()

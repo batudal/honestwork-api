@@ -11,6 +11,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gofiber/contrib/fibersentry v1.0.2
 	github.com/gofiber/fiber/v2 v2.44.0
+	github.com/gofiber/helmet/v2 v2.2.25
 	github.com/gomodule/redigo v1.8.9
 	github.com/joho/godotenv v1.4.0
 	github.com/mailazy/mailazy-go v0.0.2
@@ -32,8 +33,6 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/gofiber/helmet/v2 v2.2.25 // indirect
-	github.com/gofiber/storage/mongodb v1.3.6 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect

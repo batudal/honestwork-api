@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -106,13 +105,10 @@ func HandleAddJob() fiber.Handler {
 		if err != nil {
 			return err
 		}
-		fmt.Println("Job timezone:", job.Timezone)
-
 		err = validator.ValidateJobInput(&job)
 		if err != nil {
 			return err
 		}
-
 		job_indexer := controller.NewJobIndexer("job_index")
 		existing_jobs, err := job_indexer.GetJobs(c.Params("address"))
 		if err != nil {
@@ -121,12 +117,10 @@ func HandleAddJob() fiber.Handler {
 		job.Slot = len(existing_jobs)
 		job.DealNetworkId = 0
 		job.DealId = -1
-
 		amount, err := web3.CalculatePayment(&job)
 		if err != nil {
 			return err
 		}
-
 		if amount.Cmp(big.NewInt(0)) != 0 {
 			transaction_controller := controller.NewTransactionController(job.TxHash)
 			_, err = transaction_controller.GetTransaction()
@@ -142,7 +136,6 @@ func HandleAddJob() fiber.Handler {
 				return err
 			}
 		}
-
 		job_controller := controller.NewJobController(c.Params("address"), job.Slot)
 		err = job_controller.SetJob(&job)
 		if err != nil {
@@ -184,7 +177,6 @@ func HandleAddJob() fiber.Handler {
 				},
 			},
 		})
-
 		if err != nil {
 			log.Fatalf("Message send err: %v", err)
 		}

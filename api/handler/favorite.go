@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/takez0o/honestwork-api/api/controller"
@@ -10,11 +11,13 @@ import (
 
 func HandleGetFavorites() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		log.Println("Address:", c.Params("address"))
 		favorite_controller := controller.NewFavoriteController(c.Params("address"))
 		favorite, err := favorite_controller.GetFavorites()
 		if err != nil {
 			return nil
 		}
+		log.Println("Favs:", favorite)
 		return c.JSON(favorite)
 	}
 }

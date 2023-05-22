@@ -1,0 +1,28 @@
+api:
+  port: 3000
+db:
+  port: 6379
+  id: 0
+settings:
+  skills:
+    tier_1: 3
+    tier_2: 6
+    tier_3: 8
+  jobs:
+    # service_fee: 10000000
+    service_fee: 0
+    sticky_prices:
+      7_days: 49000000
+      14_days: 69000000
+      30_days: 99000000
+contract_addresses:
+  starter_nft: 0x0
+  membership_nft: 0xAa4837866FFF4AE5EfB043491Eb7Ff1d26f1319B
+  job_payments: 0xDe36E0135286cB1CA0ae73726b46859884c2ef50
+  registry: 0x610907faEb17Db469fDFcd2b7355c2094cCD1bAF
+  escrow: 0xAC2B87C7C85f1B4ff2607216dF04E53a2D95A43d
+network:
+  eth:
+    id: 1
+  arbitrum:
+    id: 42161

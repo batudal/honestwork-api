@@ -89,7 +89,6 @@ func getJobs(address string, sort_field string, ascending bool, offset int, size
 	if err != nil {
 		return []schema.Job{}, err
 	}
-
 	var jobs []schema.Job
 	for _, d := range data {
 		translationKeys := make([]string, 0, len(d.Properties))
